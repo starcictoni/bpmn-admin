@@ -52,12 +52,9 @@ export default {
     },
 };
 </script>
-<style>
+<style scoped>
 .vue-bpmn-diagram-container {
     background: lightgray;
     height: 280px;
-}
-.highlight:not(.djs-connection) .djs-visual > :nth-child(1) {
-    fill: yellow !important; /* color elements as green */
 }
 </style>

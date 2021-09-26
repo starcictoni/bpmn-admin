@@ -40,3 +40,8 @@ export default {
     }),
 };
 </script>
+<style lang="scss">
+.bjs-container .highlight:not(.djs-connection) .djs-visual > :nth-child(1) {
+    fill: yellow !important; /* color elements as green */
+}
+</style>
