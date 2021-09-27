@@ -51,7 +51,6 @@
                 </router-link>
             </v-app-bar-title>
         </v-app-bar> -->
-        <v-breadcrumbs></v-breadcrumbs>
 
         <!-- Sizes your content based upon application components -->
         <v-main>

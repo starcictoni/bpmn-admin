@@ -29,6 +29,7 @@ export default {
 
     data: () => ({
         instance: null,
+        promise: null,
         model_url: process.env.VUE_APP_BPMN_SERVER + '/model',
         options: {
             height: 280,
@@ -36,11 +37,13 @@ export default {
     }),
 
     async mounted() {
-        this.instance = await ProcessInstance.get(this.id);
+        this.promise = ProcessInstance.get(this.id);
+        this.instance = await this.promise;
     },
 
     methods: {
-        onShown() {
+        async onShown() {
+            await this.promise;
             let viewer = this.$refs.bpmn.bpmnViewer;
             var canvas = viewer.get('canvas');
 
