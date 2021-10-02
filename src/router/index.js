@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import Home from '../views/Home.vue';
 import SearchInstances from '../views/SearchInstances.vue';
 import ProcessInstance from '../views/ProcessInstance.vue';
+import Models from '../views/Models.vue';
 
 Vue.use(VueRouter);
 
@@ -13,15 +14,20 @@ const routes = [
         component: Home,
     },
     {
-        path: '/instances',
-        name: 'instances',
-        component: SearchInstances,
+        path: '/models',
+        name: 'models',
+        component: Models,
     },
     {
-        path: '/instance/:id',
+        path: '/instances/:id',
         name: 'instance',
         component: ProcessInstance,
         props: true,
+    },
+    {
+        path: '/instances',
+        name: 'instances',
+        component: SearchInstances,
     },
 ];
 

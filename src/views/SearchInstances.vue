@@ -20,7 +20,7 @@
             <v-flex xs12 sm9 offset-sm1 mt-3>
                 <v-hover v-for="r in results" v-bind:key="r._id" v-slot="{ hover }">
                     <v-card class="mb-4" :elevation="hover ? 12 : 2">
-                        <router-link :to="`instance/${r.id}`" custom v-slot="{ navigate }">
+                        <router-link :to="`instances/${r.id}`" custom v-slot="{ navigate }">
                             <div @click="navigate" style="cursor:pointer">
                                 <v-card-title>
                                     {{ r.model.model_path }}

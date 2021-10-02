@@ -1,5 +1,5 @@
 <template>
-    <v-container fluid>
+    <v-container fluid v-if="model_url">
         <v-layout row wrap>
             <v-flex xs12 sm9 offset-sm1 mt-3>
                 <vue-bpmn ref="bpmn" :url="model_url" :options="options" v-on:shown="onShown"></vue-bpmn>
@@ -30,7 +30,8 @@ export default {
     data: () => ({
         instance: null,
         promise: null,
-        model_url: process.env.VUE_APP_BPMN_SERVER + '/model',
+        user_tasks_ids: new Set(),
+        model_url: null,
         options: {
             height: 280,
         },
@@ -39,6 +40,10 @@ export default {
     async mounted() {
         this.promise = ProcessInstance.get(this.id);
         this.instance = await this.promise;
+
+        await this.promise;
+
+        this.model_url = process.env.VUE_APP_BPMN_SERVER + '/model/' + this.instance.model.model_path;
     },
 
     methods: {
@@ -47,10 +52,24 @@ export default {
             let viewer = this.$refs.bpmn.bpmnViewer;
             var canvas = viewer.get('canvas');
 
-            console.log(canvas);
             for (let next_task of this.instance.pending) {
                 canvas.addMarker(next_task, 'highlight');
             }
+
+            for (let task of this.instance.model.tasks) {
+                this.user_tasks_ids.add(task._id);
+                canvas.addMarker(task._id, 'user_task');
+            }
+
+            var eventBus = viewer.get('eventBus');
+
+            eventBus.on('element.click', (e) => {
+                let bpmn_object = e.element.businessObject;
+                let task_id = bpmn_object.id;
+                if (this.user_tasks_ids.has(task_id)) {
+                    window.open(`${this.instance.env._frontend_url}/form/${this.instance.id}/${task_id}`, '_blank');
+                }
+            });
         },
     },
 };

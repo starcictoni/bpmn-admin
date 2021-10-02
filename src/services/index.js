@@ -6,7 +6,29 @@ let Service = axios.create({
     timeout: 1000,
 });
 
-// naš objekt za sve pozive koji se dotiču `Post`ova
+let Model = {
+    async get(id) {
+        try {
+            let result = await Service.get(`/model/${id}`);
+            return result.data;
+        } catch (e) {
+            return null;
+        }
+    },
+    async search(query) {
+        try {
+            let result = await Service.get('/model', {
+                params: {
+                    q: query,
+                },
+            });
+            return result.data.results;
+        } catch (e) {
+            return [];
+        }
+    },
+};
+
 let ProcessInstance = {
     async get(id) {
         try {
@@ -30,4 +52,4 @@ let ProcessInstance = {
     },
 };
 
-export { Service, ProcessInstance };
+export { Service, ProcessInstance, Model };

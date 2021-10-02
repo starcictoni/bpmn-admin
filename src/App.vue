@@ -23,7 +23,7 @@
             <v-divider></v-divider>
 
             <v-list nav dense>
-                <v-list-item link>
+                <v-list-item link to="/models">
                     <v-list-item-icon>
                         <v-icon>mdi-folder</v-icon>
                     </v-list-item-icon>
@@ -79,7 +79,16 @@ export default {
 };
 </script>
 <style lang="scss">
-.bjs-container .highlight:not(.djs-connection) .djs-visual > :nth-child(1) {
-    fill: yellow !important; /* color elements as green */
+.bjs-container {
+    .user_task:not(.djs-connection) {
+        .djs-visual > :nth-child(1) {
+            fill: lightgray !important;
+        }
+
+        cursor: pointer !important; /* color elements as green */
+    }
+    .highlight:not(.djs-connection) .djs-visual > :nth-child(1) {
+        fill: yellow !important; /* color elements as green */
+    }
 }
 </style>
