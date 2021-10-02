@@ -7,7 +7,7 @@
                         <v-flex>
                             <v-text-field
                                 v-model="query"
-                                v-on:input="doSearch"
+                                v-on:input="handleType"
                                 filled
                                 label="Search process instance"
                                 type="text"
@@ -50,10 +50,20 @@ export default {
         query: '',
         results: [],
     }),
+    mounted() {
+        let query = this.$route.query;
+        if (query.q) {
+            this.query = query.q;
+            this.doSearch();
+        }
+    },
     methods: {
-        doSearch: _.debounce(async function() {
-            this.results = await ProcessInstance.search(this.query);
+        handleType: _.debounce(function() {
+            this.doSearch();
         }, 500),
+        doSearch: async function() {
+            this.results = await ProcessInstance.search(this.query);
+        },
     },
 };
 </script>
