@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Home from '../views/Home.vue';
 import SearchInstances from '../views/SearchInstances.vue';
+import ModelEditor from '../views/ModelEditor.vue';
 import ProcessInstance from '../views/ProcessInstance.vue';
 import Models from '../views/Models.vue';
 
@@ -17,6 +18,12 @@ const routes = [
         path: '/models',
         name: 'models',
         component: Models,
+    },
+    {
+        path: '/models/:id',
+        name: 'model-editor',
+        component: ModelEditor,
+        props: true,
     },
     {
         path: '/instances/:id',

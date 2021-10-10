@@ -19,12 +19,14 @@
 <script>
 import { ProcessInstance } from '@/services';
 import VueBpmn from 'vue-bpmn';
+//import VueBpmnModeler from '@/components/BpmnModeler';
 
 export default {
     name: 'ProcessInstance',
     props: ['id'],
     components: {
         VueBpmn,
+        //VueBpmnModeler,
     },
 
     data: () => ({
