@@ -15,7 +15,7 @@
                 ></vue-bpmn-modeler>
             </v-flex>
             <v-flex xs12 sm4 pa-3 pr-0>
-                <v-expansion-panels>
+                <v-expansion-panels accordion>
                     <v-expansion-panel v-for="p in panels" :key="p.label">
                         <div v-if="p.visible">
                             <v-expansion-panel-header>
@@ -33,7 +33,6 @@
 </template>
 
 <script>
-import { ProcessInstance } from '@/services';
 import { BpmnXml } from '@/utils/bpmn';
 import VueBpmnModeler from '@/components/BpmnModeler';
 
@@ -75,12 +74,8 @@ export default {
     }),
 
     async mounted() {
-        this.promise = ProcessInstance.get(this.id);
-        this.instance = await this.promise;
-
-        await this.promise;
-
-        this.model_url = process.env.VUE_APP_BPMN_SERVER + '/model/' + this.instance.model.model_path;
+        this.model_path = this.id;
+        this.model_url = process.env.VUE_APP_BPMN_SERVER + '/model/' + this.model_path;
     },
 
     methods: {
@@ -92,8 +87,6 @@ export default {
             modeling.updateProperties(e, { name: 'Foo' });
         },
         async onShown() {
-            await this.promise;
-
             this.modeler = this.$refs.bpmn.BpmnModeler;
             var eventBus = this.modeler.get('eventBus');
 

@@ -7,7 +7,13 @@
             :items="models"
             :items-per-page="5"
             class="elevation-1"
-        ></v-data-table>
+        >
+            <template v-slot:item.model_path="{ item }">
+                <router-link :to="{ name: 'model-editor', params: { id: item.model_path } }">
+                    {{ item.model_path }}
+                </router-link>
+            </template>
+        </v-data-table>
     </div>
 </template>
 <script>

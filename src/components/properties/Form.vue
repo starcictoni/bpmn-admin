@@ -1,18 +1,18 @@
 <template>
     <div v-if="this.data">
-        <v-list dense>
+        <v-list>
             <v-subheader>FIELDS</v-subheader>
             <draggable v-model="data.formData.$children" draggable=".v-list-item" v-bind="{ animation: 200 }">
                 <v-list-item v-for="c in data.formData.$children" :key="c.id">
                     <v-list-item-icon>
-                        <v-icon>mdi-format-text-variant</v-icon>
+                        <v-icon>{{ getIconFor(c.type) }}</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
                         <v-list-item-title v-text="c.id"></v-list-item-title>
                         <v-list-item-subtitle v-text="c.label"></v-list-item-subtitle>
                     </v-list-item-content>
                     <v-list-item-action>
-                        <v-btn icon @click.stop="dialogShown = true">
+                        <v-btn icon @click.stop="open(c)">
                             <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                         </v-btn>
                     </v-list-item-action>
@@ -20,33 +20,13 @@
             </draggable>
         </v-list>
 
-        <v-dialog v-model="dialogShown" max-width="290">
-            <v-card>
-                <v-card-title class="text-h5">
-                    Use Google's location service?
-                </v-card-title>
-
-                <v-card-text>
-                    Let Google help apps determine location. This means sending anonymous location data to Google, even
-                    when no apps are running.
-                </v-card-text>
-
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-
-                    <v-btn color="green darken-1" text @click="dialogShown = false">
-                        Disagree
-                    </v-btn>
-
-                    <v-btn color="green darken-1" text @click="dialogShown = false">
-                        Agree
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
+        <v-dialog v-model="dialogShown" max-width="600">
+            <form-item :data="formItem" @close="dialogShown = false"></form-item>
         </v-dialog>
     </div>
 </template>
 <script>
+import { FormItemMetaModel } from '@/utils/bpmn';
 import draggable from 'vuedraggable';
 
 export default {
@@ -56,9 +36,19 @@ export default {
         return {
             selectedItem: null,
             dialogShown: false,
+            formItem: null,
         };
     },
-    components: { draggable },
+    methods: {
+        open(formItem) {
+            this.formItem = formItem;
+            this.dialogShown = true;
+        },
+        getIconFor(type) {
+            return FormItemMetaModel[type].icon;
+        },
+    },
+    components: { draggable, formItem: () => import('@/components/properties/FormItem.vue') },
 };
 </script>
 <style lang="scss" scoped>
