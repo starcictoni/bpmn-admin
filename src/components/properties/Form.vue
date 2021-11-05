@@ -21,7 +21,7 @@
         </v-list>
 
         <v-dialog v-model="dialogShown" max-width="600">
-            <form-item :data="formItem" @close="dialogShown = false"></form-item>
+            <form-item :data="formItem" @close="dialogShown = false" :context="context"></form-item>
         </v-dialog>
     </div>
 </template>
@@ -31,12 +31,13 @@ import draggable from 'vuedraggable';
 
 export default {
     name: 'properties-form',
-    props: ['data'],
+    props: ['data', 'context'],
     data() {
         return {
             selectedItem: null,
             dialogShown: false,
             formItem: null,
+            modeler: this.context.modeler,
         };
     },
     methods: {

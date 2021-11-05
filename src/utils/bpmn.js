@@ -8,6 +8,19 @@ let BpmnXml = {
             return extensionElement.$instanceOf(type);
         })[0];
     },
+    setExtension(element, type, value, moddle) {
+        if (!element.extensionElements) {
+            element.extensionElements = moddle.create('bpmn:ExtensionElements');
+            element.extensionElements.get('values').push(value);
+        }
+
+        for (let i = 0; i < element.extensionElements.values.length; i++) {
+            let o = element.extensionElements.values[i];
+            if (o.$type == type) {
+                element.extensionElements.values[i] == value;
+            }
+        }
+    },
 };
 
 let FormItemMetaModel = {

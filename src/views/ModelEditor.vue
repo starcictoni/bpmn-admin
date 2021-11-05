@@ -2,9 +2,9 @@
     <v-container fluid v-if="model_url">
         <v-layout row wrap>
             <v-flex xs12 sm8 mt-3>
-                <v-btn @click="test()" elevation="2">Import</v-btn>
-                <v-btn @click="testPanel = 'propForm'" elevation="2">Save</v-btn>
-                {{ selectedElement }}
+                <v-btn mr-3 @click="save()" elevation="2">Save</v-btn>
+                <v-btn mr-3 @click="undo()" elevation="2">Undo</v-btn>
+                <v-btn @click="test()" elevation="2">Test change</v-btn>
                 <br />
                 <br />
                 <vue-bpmn-modeler
@@ -22,7 +22,11 @@
                                 {{ p.label }}
                             </v-expansion-panel-header>
                             <v-expansion-panel-content>
-                                <component :is="p.module" :data="propertyData"></component>
+                                <component
+                                    :is="p.module"
+                                    :data="propertyData"
+                                    :context="{ modeler, bpmnElement }"
+                                ></component>
                             </v-expansion-panel-content>
                         </div>
                     </v-expansion-panel>
@@ -34,6 +38,7 @@
 
 <script>
 import { BpmnXml } from '@/utils/bpmn';
+import { UpdateBusinessObjectHandler, MultiCommandHandler } from '@/utils/handlers';
 import VueBpmnModeler from '@/components/BpmnModeler';
 
 export default {
@@ -54,7 +59,6 @@ export default {
         options: {
             height: 800,
         },
-        selectedElement: '',
         panels: {
             general: {
                 label: 'General',
@@ -67,7 +71,7 @@ export default {
                 module: 'propForm',
             },
         },
-        bpmnObject: null,
+        bpmnElement: null,
         propertyData: {
             formData: {},
         },
@@ -79,36 +83,87 @@ export default {
     },
 
     methods: {
-        async test() {
-            let elementRegistry = this.modeler.get('elementRegistry');
+        updatePanels() {
+            let bpmnObject = this.bpmnElement.businessObject;
+            let formData = BpmnXml.getExtension(bpmnObject, 'camunda:formData');
+            if (formData) {
+                this.panels.form.visible = true;
+            }
+            this.panels.general.visible = true;
+        },
+        setPropertyData() {
+            let bpmnObject = this.bpmnElement.businessObject;
+            console.log('__', bpmnObject);
+            this.propertyData = {};
+            this.propertyData.id = bpmnObject.id;
+            this.propertyData.name = bpmnObject.name;
+            let formData = BpmnXml.getExtension(bpmnObject, 'camunda:formData');
+            if (formData) {
+                this.propertyData.formData = formData;
+            }
+        },
+        undo() {
+            this.modeler.get('commandStack').undo();
+            this.setPropertyData();
+        },
+        save() {
             let modeling = this.modeler.get('modeling');
+            let moddle = this.modeler.get('moddle');
+            let formData = BpmnXml.getExtension(this.bpmnElement.businessObject, 'camunda:formData');
+            if (formData) {
+                this.propertyData.extensionElements = moddle.create('bpmn:ExtensionElements');
+                this.propertyData.extensionElements.get('values').push(formData);
+                delete this.propertyData.formData;
+            }
+            console.log(this.propertyData);
+            modeling.updateProperties(this.bpmnElement, this.propertyData);
 
-            let e = elementRegistry.get('Activity_0bms7wc');
-            modeling.updateProperties(e, { name: 'Foo' });
+            this.setPropertyData();
+        },
+        async test() {
+            let modeling = this.modeler.get('modeling');
+            let moddle = this.modeler.get('moddle');
+            let elementRegistry = this.modeler.get('elementRegistry');
+            let bpmnFactory = this.modeler.get('bpmnFactory');
+            let e = elementRegistry.get('odabiranje_zadatka_student');
+            this.bpmnElement = e;
+
+            let formData = BpmnXml.getExtension(e.businessObject, 'camunda:formData');
+
+            //let extensionElements;
+            // if (formData) {
+            //     extensionElements = moddle.create('bpmn:ExtensionElements');
+            //     extensionElements.get('values').push(formData);
+            // }
+            //modeling.updateProperties(e, { extensionElements });
+            modeling;
+            bpmnFactory;
+            moddle;
+
+            let cs = this.modeler.get('commandStack');
+            cs.execute('bpmn-update', {
+                element: e,
+                businessObject: formData.$children[0],
+                properties: { label: 'NEW LABEL!' },
+                //oldProperties: { label: 'asdfasdf' },
+            });
         },
         async onShown() {
             this.modeler = this.$refs.bpmn.BpmnModeler;
             var eventBus = this.modeler.get('eventBus');
+            var commandStack = this.modeler.get('commandStack');
+            window.commandStack = commandStack;
 
-            eventBus.on('element.hover', (e) => {
-                let bpmn_object = e.element.businessObject;
-                let task_id = bpmn_object.id;
-                this.selectedElement = task_id;
-            });
-            eventBus.on('element.out', () => {
-                this.selectedElement = '';
-            });
+            commandStack.registerHandler('bpmn-update', UpdateBusinessObjectHandler);
+            commandStack.registerHandler('bpmn-multi-update', MultiCommandHandler);
+
+            eventBus.on('element.hover', () => {});
+            eventBus.on('element.out', () => {});
             eventBus.on('element.click', (e) => {
                 this.resetPanels();
-                this.bpmnObject = e.element.businessObject;
-                this.propertyData.id = this.bpmnObject.id;
-                this.propertyData.name = this.bpmnObject.name;
-                let formData = BpmnXml.getExtension(this.bpmnObject, 'camunda:formData');
-                if (formData) {
-                    this.propertyData.formData = formData;
-                    this.panels.form.visible = true;
-                }
-                this.panels.general.visible = true;
+                this.bpmnElement = e.element;
+                this.setPropertyData();
+                this.updatePanels();
             });
         },
         resetPanels() {
