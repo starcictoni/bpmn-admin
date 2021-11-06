@@ -33,11 +33,13 @@ export default {
     name: 'properties-form',
     props: ['data', 'context'],
     data() {
+        let modeler = this.context.modeler;
         return {
+            modeler,
             selectedItem: null,
             dialogShown: false,
             formItem: null,
-            modeler: this.context.modeler,
+            cs: modeler.get('commandStack'),
         };
     },
     methods: {

@@ -93,7 +93,6 @@ export default {
         },
         setPropertyData() {
             let bpmnObject = this.bpmnElement.businessObject;
-            console.log('__', bpmnObject);
             this.propertyData = {};
             this.propertyData.id = bpmnObject.id;
             this.propertyData.name = bpmnObject.name;
@@ -115,7 +114,6 @@ export default {
                 this.propertyData.extensionElements.get('values').push(formData);
                 delete this.propertyData.formData;
             }
-            console.log(this.propertyData);
             modeling.updateProperties(this.bpmnElement, this.propertyData);
 
             this.setPropertyData();

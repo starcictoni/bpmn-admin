@@ -1,7 +1,7 @@
 <template>
     <v-form>
-        <v-text-field v-model="id" label="Id" filled dense></v-text-field>
-        <v-text-field v-model="name" label="Name" filled dense></v-text-field>
+        <v-text-field v-model="state.id" label="Id" filled dense></v-text-field>
+        <v-text-field v-model="state.name" label="Name" filled dense></v-text-field>
         <v-btn v-if="changed" color="darken-1" text @click="setState()">
             Cancel
         </v-btn>
@@ -21,10 +21,11 @@ export default {
         let modeler = this.context.modeler;
         return {
             modeler: modeler,
-            id: null,
-            name: null,
+            state: {
+                id: null,
+                name: null,
+            },
             cs: modeler.get('commandStack'),
-            attributes: ['id', 'name'],
         };
     },
     watch: {
@@ -34,8 +35,8 @@ export default {
     },
     computed: {
         changed() {
-            for (let att of this.attributes) {
-                if (this[att] != this.data[att]) return true;
+            for (let att in this.state) {
+                if (this.state[att] != this.data[att]) return true;
             }
 
             return false;
@@ -43,20 +44,20 @@ export default {
     },
     methods: {
         setState() {
-            for (let att of this.attributes) {
-                this[att] = this.data[att];
+            for (let att in this.state) {
+                this.state[att] = this.data[att];
             }
         },
         save() {
             let updates = [];
-            for (let att of this.attributes) {
-                if (this[att] != this.data[att]) {
+            for (let att in this.state) {
+                if (this.state[att] != this.data[att]) {
                     updates.push({
                         cmd: 'bpmn-update',
                         context: {
                             element: this.context.bpmnElement,
                             businessObject: this.context.bpmnElement.businessObject,
-                            properties: { [att]: this[att] },
+                            properties: { [att]: this.state[att] },
                         },
                     });
                 }
