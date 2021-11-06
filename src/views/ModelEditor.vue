@@ -157,6 +157,9 @@ export default {
             commandStack.registerHandler('bpmn-update', UpdateBusinessObjectHandler);
             commandStack.registerHandler('bpmn-multi-update', MultiCommandHandler);
 
+            eventBus.on('commandStack.changed', () => {
+                this.setPropertyData();
+            });
             eventBus.on('element.hover', () => {});
             eventBus.on('element.out', () => {});
             eventBus.on('element.click', (e) => {

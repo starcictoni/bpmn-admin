@@ -2,7 +2,7 @@
     <v-form>
         <v-text-field v-model="id" label="Id" filled dense></v-text-field>
         <v-text-field v-model="name" label="Name" filled dense></v-text-field>
-        <v-btn v-if="changed" color="darken-1" text @click="revert()">
+        <v-btn v-if="changed" color="darken-1" text @click="setState()">
             Cancel
         </v-btn>
         <v-btn v-if="changed" color="blue darken-1" text @click="save()">
@@ -15,7 +15,7 @@ export default {
     name: 'properties-general',
     props: ['data', 'context'],
     created() {
-        this.revert();
+        this.setState();
     },
     data() {
         let modeler = this.context.modeler;
@@ -29,7 +29,7 @@ export default {
     },
     watch: {
         data: function() {
-            this.revert();
+            this.setState();
         },
     },
     computed: {
@@ -42,14 +42,13 @@ export default {
         },
     },
     methods: {
-        revert() {
+        setState() {
             for (let att of this.attributes) {
                 this[att] = this.data[att];
             }
         },
         save() {
             let updates = [];
-            console.log(this.id);
             for (let att of this.attributes) {
                 if (this[att] != this.data[att]) {
                     updates.push({
