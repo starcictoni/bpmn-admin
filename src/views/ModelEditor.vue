@@ -38,7 +38,7 @@
 
 <script>
 import { BpmnXml } from '@/utils/bpmn';
-import { UpdateBusinessObjectHandler, MultiCommandHandler } from '@/utils/handlers';
+import { UpdateBusinessObjectHandler, UpdateBusinessObjectListHandler, MultiCommandHandler } from '@/utils/handlers';
 import VueBpmnModeler from '@/components/BpmnModeler';
 
 export default {
@@ -93,12 +93,15 @@ export default {
         },
         setPropertyData() {
             let bpmnObject = this.bpmnElement.businessObject;
-            this.propertyData = {};
-            this.propertyData.id = bpmnObject.id;
-            this.propertyData.name = bpmnObject.name;
+            this.propertyData = {
+                id: bpmnObject.id,
+                name: bpmnObject.name,
+                //$bpmn: bpmnObject,
+            };
             let formData = BpmnXml.getExtension(bpmnObject, 'camunda:formData');
             if (formData) {
                 this.propertyData.formData = formData;
+                window.propertyData = this.propertyData;
             }
         },
         undo() {
@@ -153,6 +156,7 @@ export default {
             window.commandStack = commandStack;
 
             commandStack.registerHandler('bpmn-update', UpdateBusinessObjectHandler);
+            commandStack.registerHandler('bpmn-list-update', UpdateBusinessObjectListHandler);
             commandStack.registerHandler('bpmn-multi-update', MultiCommandHandler);
 
             eventBus.on('commandStack.changed', () => {

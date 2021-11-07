@@ -69,7 +69,7 @@ class UpdateBusinessObjectListHandler {
             } else if (referencePropertyName) {
                 // remove the list when it is empty
                 const parentObject = currentObject.$parent;
-                parentObject.set(referencePropertyName, undefined);
+                parentObject[referencePropertyName] = undefined;
             }
         }
 
@@ -95,11 +95,13 @@ class UpdateBusinessObjectListHandler {
             parentObject = currentObject.$parent;
 
         if (context.referencePropertyName) {
-            parentObject.set(context.referencePropertyName, currentObject);
+            //parentObject.set(context.referencePropertyName, currentObject);
+            parentObject[context.referencePropertyName] = currentObject;
         }
 
         // remove new element
-        currentObject.set(propertyName, previousList);
+        // currentObject.set(propertyName, previousList);
+        currentObject[propertyName] = previousList;
 
         return context.changed;
     }
