@@ -92,6 +92,7 @@ export default {
             this.panels.general.visible = true;
         },
         setPropertyData() {
+            if (!this.bpmnElement) return;
             let bpmnObject = this.bpmnElement.businessObject;
             this.propertyData = {
                 id: bpmnObject.id,
@@ -106,7 +107,6 @@ export default {
         },
         undo() {
             this.modeler.get('commandStack').undo();
-            this.setPropertyData();
         },
         save() {
             let modeling = this.modeler.get('modeling');

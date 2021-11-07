@@ -12,7 +12,7 @@
                         <v-list-item-subtitle v-text="c.label"></v-list-item-subtitle>
                     </v-list-item-content>
                     <v-list-item-action>
-                        <v-btn icon @click.stop="open(c.$bpmn)">
+                        <v-btn icon @click.stop="open(c)">
                             <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                         </v-btn>
                     </v-list-item-action>
@@ -27,7 +27,7 @@
         </v-btn>
 
         <v-dialog v-model="dialogShown" max-width="600">
-            <form-item :data="formItem" @close="dialogShown = false" :context="context"></form-item>
+            <form-item ref="formItem" :data="formItem" @close="closeDialog()" :context="context"></form-item>
         </v-dialog>
     </div>
 </template>
@@ -95,8 +95,12 @@ export default {
             this.state = fields;
         },
         open(formItem) {
-            this.formItem = formItem;
+            this.formItem = formItem.$bpmn;
             this.dialogShown = true;
+            if (this.$refs.formItem) this.$refs.formItem.setState();
+        },
+        closeDialog() {
+            this.dialogShown = false;
         },
         getIconFor(type) {
             return FormItemMetaModel[type].icon;
