@@ -93,12 +93,18 @@ export default {
         },
         setPropertyData() {
             if (!this.bpmnElement) return;
+
             let bpmnObject = this.bpmnElement.businessObject;
+
             this.propertyData = {
                 id: bpmnObject.id,
                 name: bpmnObject.name,
                 //$bpmn: bpmnObject,
             };
+            var canvas = this.modeler.get('canvas');
+
+            if (bpmnObject.$type != 'bpmn:Collaboration') canvas.addMarker(this.propertyData.id, 'highlight');
+
             let formData = BpmnXml.getExtension(bpmnObject, 'camunda:formData');
             if (formData) {
                 this.propertyData.formData = formData;
@@ -172,6 +178,11 @@ export default {
             });
         },
         resetPanels() {
+            var canvas = this.modeler.get('canvas');
+
+            if (this.propertyData && this.propertyData.id) {
+                canvas.removeMarker(this.propertyData.id, 'highlight');
+            }
             for (let p in this.panels) {
                 this.panels[p].visible = false;
             }
