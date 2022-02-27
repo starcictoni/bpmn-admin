@@ -1,0 +1,47 @@
+.bpmn-icon-save {
+  content: url('./icons/content-save.png');
+  padding: 6px 6px 6px 6px !important;
+  transform: rotate(90deg);
+}
+
+.bpmn-icon-undo {
+  content: url('./icons/undo.png');
+  padding: 6px 6px 6px 6px !important;
+  transform: rotate(90deg);
+}
+
+.bpmn-icon-redo {
+  content: url('./icons/redo.png');
+  padding: 6px 6px 6px 6px !important;
+  transform: rotate(90deg); 
+}
+
+.bpmn-icon-test {
+  content: url('./icons/ab-testing.png');
+  padding: 8px 6px 8px 6px !important;
+  transform: rotate(90deg);  
+}
+
+.bpmn-icon-save:hover {
+  color: blue
+}
+.bpmn-icon {
+  height: 30px !important;
+  width: 30px !important;
+}
+
+.djs-palette.two-column.open {
+  transform: rotate(-90deg) translateX(400px) translateY(47%);
+  width: 48px !important;
+}
+
+.djs-palette .entry:before {
+  vertical-align: text-bottom;
+  transform: rotate(90deg);
+}
+
+/* Palette separator */
+#app > div > main > div > div > div > div:nth-child(1) > div > div > div > div > div.djs-palette.two-column.open > div.djs-palette-entries > div:nth-child(1) > hr
+{
+  display: none !important;
+}

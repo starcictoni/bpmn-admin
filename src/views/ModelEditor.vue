@@ -1,20 +1,24 @@
 <template>
     <v-container fluid v-if="model_url">
-        <v-layout row wrap>
-            <v-flex xs12 sm8 mt-3>
-                <v-btn mr-3 @click="save()" elevation="2">Save</v-btn>
+        <v-layout col row wrap>
+            <v-flex xs12 sm12 mt-1>
+                <!-- <v-btn mr-3 @click="save()" elevation="2">Save</v-btn>
                 <v-btn mr-3 @click="undo()" elevation="2">Undo</v-btn>
                 <v-btn @click="test()" elevation="2">Test change</v-btn>
                 <br />
-                <br />
-                <vue-bpmn-modeler
-                    ref="bpmn"
-                    :url="model_url"
-                    :options="options"
-                    v-on:shown="onShown"
-                ></vue-bpmn-modeler>
+                <br /> -->
+                <v-sheet width="100%" elevation="1">
+                    <vue-bpmn-modeler
+                        ref="bpmn"
+                        :url="model_url"
+                        :options="options"
+                        v-on:shown="onShown"
+                    ></vue-bpmn-modeler>
+                </v-sheet>
             </v-flex>
-            <v-flex xs12 sm4 pa-3 pr-0>
+        </v-layout>
+        <v-layout col row wrap>
+            <!-- <v-flex xs12 sm4 pa-3 pr-0> -->
                 <v-expansion-panels accordion>
                     <v-expansion-panel v-for="p in panels" :key="p.label">
                         <div v-if="p.visible">
@@ -31,7 +35,7 @@
                         </div>
                     </v-expansion-panel>
                 </v-expansion-panels>
-            </v-flex>
+            <!-- </v-flex> -->
         </v-layout>
     </v-container>
 </template>
@@ -40,6 +44,8 @@
 import { BpmnXml } from '@/utils/bpmn';
 import { UpdateBusinessObjectHandler, UpdateBusinessObjectListHandler, MultiCommandHandler } from '@/utils/handlers';
 import VueBpmnModeler from '@/components/BpmnModeler';
+import SendAndService from '@/components/properties/SendAndService.vue'
+import NewFormItemVue from '../components/properties/NewFormItem.vue';
 
 export default {
     name: 'model-editor',
@@ -48,8 +54,9 @@ export default {
         VueBpmnModeler,
         propGeneral: () => import('@/components/properties/General.vue'),
         propForm: () => import('@/components/properties/Form.vue'),
+        propSend: SendAndService,
+        propNewForm: NewFormItemVue,
     },
-
     data: () => ({
         instance: null,
         promise: null,
@@ -57,19 +64,25 @@ export default {
         model_url: null,
         modeler: null,
         options: {
-            height: 800,
+            height: 600,
         },
         panels: {
             general: {
-                label: 'General',
+                label: 'General Item',
                 visible: false,
                 module: 'propGeneral',
             },
             form: {
-                label: 'Form',
+                label: 'User Form Task',
                 visible: false,
                 module: 'propForm',
             },
+            sendAndService: {
+                label: 'Send/Service Task',
+                visible: false,
+                module: 'propSend'
+            },
+
         },
         bpmnElement: null,
         propertyData: {
@@ -83,25 +96,103 @@ export default {
     },
 
     methods: {
-        updatePanels() {
+        updatePanels() { //Pokazi panele ispod ovisno o podacima
+            //debugger;
             let bpmnObject = this.bpmnElement.businessObject;
-            let formData = BpmnXml.getExtension(bpmnObject, 'camunda:formData');
-            if (formData) {
-                this.panels.form.visible = true;
-            }
-            this.panels.general.visible = true;
+            BpmnXml.showPanel(this.panels, bpmnObject.$type); //Shows the correct panel
+            BpmnXml.setLabelOntoPanel(this.panels, bpmnObject.$type);
         },
         setPropertyData() {
+            //debugger;
             let bpmnObject = this.bpmnElement.businessObject;
+            let bpmnType = this.bpmnElement.businessObject.$type;
+            if(bpmnType == "bpmn:Collaboration") {
+                console.log("Collaboration")
+                //id
+                //participants[0].$type
+                //participants[0].id
+                //participants[0].name
+            }
+            else if(bpmnType == "bpmn:Lane") {
+                //id
+                //name
+                console.log("Lane")
+            }
+            else if(bpmnType == "bpmn:UserTask") {
+                //id
+                //name
+                //extensionElements
+                //documentation
+                console.log("UserTask")
+            }
+            else if(bpmnType == "bpmn:ServiceTask") {
+                //id
+                //name
+                //extensionElements
+                console.log("ServiceTask")
+            }
+            else if(bpmnType == "bpmn:SendTask") {
+                //id
+                //name
+                //extensionElements
+                console.log("SendTask")
+            }
+            else if(bpmnType == "bpmn:ManualTask") {
+                //id
+                //name
+                console.log("ManualTask")
+            }
+            else if(bpmnType == "bpmn:StartEvent") {
+                //id
+                //name
+                console.log("StartEvent")
+            }
+            else if(bpmnType == "bpmn:EndEvent") {
+                //id
+                //name
+                console.log("EndEvent")
+            }
+            else if(bpmnType == "bpmn:SequenceFlow") {
+                console.log("SequenceFlow")
+                //id 
+                //name
+                if(bpmnObject.conditionExpression != null && bpmnObject.conditionExpression.$type == "bpmn:FormalExpression") {
+                    console.log("FormalExpression")
+                    //bpmnObject.conditionExpression.body = body -> string kao i ime
+                }
+                else {
+                    console.log("BezFormalExpressiona")
+                }
+            }
+            else if(bpmnType == "bpmn:ExclusiveGateway") {
+                //id
+                //name
+                console.log("ExclusiveGateway")
+            }
+            else if(bpmnType == "bpmn:ParallelGateway") {
+                //id
+                console.log("ParallelGateway")
+            }
+            else {
+                console.log("Something else")
+            }
+
+            // let basicData = BpmnXml.getPropertyData();
+            // console.log(basicData);
+            let formData = null;
+            if(bpmnType != undefined) {
+                formData = BpmnXml.getExtension(bpmnObject, bpmnType); //ExtensionData je mozda tocnije od form data
+            }
+            //Property data se šalje kao props u komponente, dodan bpmn kako bi se razlikovali tipovi - Mozda samo bpmnObject.$type?
             this.propertyData = {
                 id: bpmnObject.id,
                 name: bpmnObject.name,
-                //$bpmn: bpmnObject,
+                bpmn: bpmnObject,
             };
-            let formData = BpmnXml.getExtension(bpmnObject, 'camunda:formData');
             if (formData) {
-                this.propertyData.formData = formData;
-                window.propertyData = this.propertyData;
+                window.propertyData = this.propertyData; 
+                this.propertyData.formData = formData; //ExtensionData je mozda tocnije od form data
+
             }
         },
         undo() {
@@ -162,7 +253,9 @@ export default {
             eventBus.on('commandStack.changed', () => {
                 this.setPropertyData();
             });
-            eventBus.on('element.hover', () => {});
+            eventBus.on('element.hover', (e) => {
+                this.bpmnElement = e.element;
+            });
             eventBus.on('element.out', () => {});
             eventBus.on('element.click', (e) => {
                 this.resetPanels();
@@ -186,6 +279,7 @@ export default {
 <style scoped>
 .vue-bpmn-modeler-container {
     background: lightgray;
-    height: 800px;
+    height: 600px;
 }
+
 </style>

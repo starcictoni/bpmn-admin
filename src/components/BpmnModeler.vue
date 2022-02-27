@@ -4,9 +4,11 @@
 
 <script>
 import BpmnModeler from 'bpmn-js/dist/bpmn-modeler.production.min.js';
-
+import customPalette from '../utils/index.js';
+import '../utils/style.css';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+//import minimapModule from 'diagram-js-minimap';
 
 export default {
     name: 'vue-bpmn-modeler',
@@ -17,25 +19,27 @@ export default {
         },
         options: {
             type: Object,
-        },
+        }
     },
-    data: function() {
+    data() {
         return {
             diagramXML: null,
         };
     },
-    mounted: function() {
+    mounted() {
+        // console.log(this)
+        // console.log(customPalette)
         var container = this.$refs.container;
-
         var self = this;
         var _options = Object.assign(
             {
                 container: container,
+                additionalModules: [customPalette]
             },
-            this.options
+            this.options,
         );
-        this.BpmnModeler = new BpmnModeler(_options);
-
+        this.BpmnModeler = new BpmnModeler(_options); //, this.additionalModules
+        //console.log(this.BpmnModeler)
         this.BpmnModeler.on('import.done', function(event) {
             var error = event.error;
             var warnings = event.warnings;
@@ -45,8 +49,8 @@ export default {
             } else {
                 self.$emit('shown', warnings);
             }
-
-            self.BpmnModeler.get('canvas').zoom('fit-viewport');
+            //'fit-viewport'
+            self.BpmnModeler.get('canvas').zoom(0.8);
         });
 
         if (this.url) {
@@ -62,13 +66,13 @@ export default {
             this.fetchDiagram(val);
         },
         diagramXML: function(val) {
+            // debugger;
             this.BpmnModeler.importXML(val);
         },
     },
     methods: {
         fetchDiagram: function(url) {
             var self = this;
-
             fetch(url)
                 .then(function(response) {
                     return response.text();

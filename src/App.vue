@@ -2,7 +2,7 @@
     <!-- App.vue -->
 
     <v-app>
-        <v-navigation-drawer app permanent expand-on-hover>
+        <v-navigation-drawer app mini-variant>
             <v-list>
                 <v-list-item class="px-2">
                     <v-list-item-avatar>

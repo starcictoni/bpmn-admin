@@ -1,8 +1,9 @@
 <template>
     <div v-if="this.data">
         <v-list>
-            <v-subheader>FIELDS</v-subheader>
+            <!-- <v-subheader>FIELDS</v-subheader> -->
             <draggable v-model="state" draggable=".v-list-item" v-bind="{ animation: 200 }">
+
                 <v-list-item v-for="c in state" :key="c.id">
                     <v-list-item-icon>
                         <v-icon>{{ getIconFor(c.type) }}</v-icon>
@@ -17,14 +18,20 @@
                         </v-btn>
                     </v-list-item-action>
                 </v-list-item>
+                
             </draggable>
         </v-list>
+        <v-btn color="grey darken-4" tile text @click="add()"> ADD NEW </v-btn>
         <v-btn v-if="changed" color="darken-1" text @click="setState()">
-            Cancel
+            CANCEL
         </v-btn>
         <v-btn v-if="changed" color="blue darken-1" text @click="save()">
-            Apply
+            APPLY
         </v-btn>
+
+        <v-dialog v-model="dialogShown1" max-width="600">
+            <new-form-item @send-results="save" :data1="newFormItem" @close="dialogShown1 = false" :context1="context"></new-form-item>
+        </v-dialog>
 
         <v-dialog v-model="dialogShown" max-width="600">
             <form-item :data="formItem" @close="dialogShown = false" :context="context"></form-item>
@@ -37,7 +44,13 @@ import draggable from 'vuedraggable';
 
 export default {
     name: 'properties-form',
-    props: ['data', 'context'],
+    props: ['data', 'context', 'data1', 'context1'],
+    components: { 
+        draggable, 
+        formItem: () => import('@/components/properties/FormItem.vue') ,
+        //newFormItem: () => import('@/components/properties/NewFormItem.vue')
+        
+        },
     created() {
         this.setState();
     },
@@ -47,13 +60,16 @@ export default {
             modeler,
             selectedItem: null,
             dialogShown: false,
+            dialogShown1: false,
             formItem: null,
+            newFormItem: null,
             cs: modeler.get('commandStack'),
             state: [],
         };
     },
     watch: {
         data: function() {
+            //debugger;
             this.setState();
         },
     },
@@ -66,42 +82,80 @@ export default {
     },
     methods: {
         setState() {
+            debugger;
             let fields = [];
-            for (let formItem of this.data.formData.$children) {
-                let field = {
-                    $bpmn: formItem,
-                    id: formItem.id,
-                    label: formItem.label,
-                    type: formItem.type,
-                    validation: {
-                        required: false,
-                    },
-                };
-                if (formItem.$children) {
-                    for (let child of formItem.$children) {
-                        switch (child.$type) {
-                            case 'camunda:properties':
-                                // console.log('properties', child.$children);
-                                break;
-                            case 'camunda:validation':
-                                // console.log('validation', child.$children);
-                                break;
-                            // TODO, finish parsing this
+            //UserTask
+            if (this.data.formData.$type == "camunda:formData") {
+                for (let formItem of this.data.formData.$children) {
+                    let field = {
+                        $bpmn: formItem,
+                        id: formItem.id,
+                        label: formItem.label,
+                        type: formItem.type,
+                        validation: {
+                            required: false,
+                        },
+                    };
+                    if (formItem.$children) {
+                        for (let child of formItem.$children) {
+                            switch (child.$type) {
+                                case 'camunda:properties':
+                                    // console.log('properties', child.$children);
+                                    break;
+                                case 'camunda:validation':
+                                    // console.log('validation', child.$children);
+                                    break;
+                                case 'camunda:constraint':
+                                    break;
+                                // TODO, finish parsing this
+                            }
                         }
                     }
+                    fields.push(field);
                 }
-                fields.push(field);
             }
             this.state = fields;
         },
+        add() {
+            this.newFormItem = {
+                id: null,
+                label: null,
+                type: null,
+                validation: null,
+            }
+            this.dialogShown1 = true;
+        },
+
         open(formItem) {
+            debugger;
             this.formItem = formItem;
             this.dialogShown = true;
         },
         getIconFor(type) {
+            // debugger;
+            // console.log(FormItemMetaModel) -> model_01.bpmn -> param type is long?
             return FormItemMetaModel[type].icon;
         },
         save() {
+            debugger;
+            let temp = {}
+            if(this.newFormItem != null) {
+                if(this.newFormItem.validation == null) {
+                    this.newFormItem.validation = false;
+                }
+                temp = {
+                    $bpmn: this.newFormItem,
+                    id: this.newFormItem.id,
+                    label: this.newFormItem.label,
+                    type: this.newFormItem.type,
+                    icon: this.getIconFor(this.newFormItem.type),
+                    validation:  {
+                        required: this.newFormItem.validation,
+                    },
+
+                }
+                this.state.push(temp)
+            }
             let values = this.state.map((x) => x.$bpmn);
 
             let cs = this.modeler.get('commandStack');
@@ -113,7 +167,6 @@ export default {
             });
         },
     },
-    components: { draggable, formItem: () => import('@/components/properties/FormItem.vue') },
 };
 </script>
 <style lang="scss" scoped>

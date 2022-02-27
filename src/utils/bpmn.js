@@ -1,13 +1,218 @@
 let BpmnXml = {
+    setLabelOntoPanel(panel, bpmnType) {
+        let slicedLabels = bpmnType.split(':')[1].match(/[A-Z][a-z]+/g); //ili bpmnType.slice(5)
+        let label = slicedLabels.join(' ');
+        if(bpmnType == "bpmn:UserTask") {
+            panel.form.label = label;
+        }
+        else if(bpmnType == "bpmn:ServiceTask" || bpmnType == "bpmn:SendTask") {
+            panel.sendAndService.label = label;
+        }
+        else {
+            panel.general.label = label;
+        }
+
+    },
+    showPanel(panel, bpmnType) {
+        if(bpmnType == "bpmn:Collaboration" || bpmnType == "bpmn:Lane" || bpmnType == "bpmn:ManualTask" || bpmnType == "bpmn:StartEvent" 
+        || bpmnType == "bpmn:EndEvent" || bpmnType == "bpmn:ExclusiveGateway" || bpmnType == "bpmn:ParallelGateway" 
+        || bpmnType == "bpmn:SequenceFlow" || bpmnType == 'bpmn:Participant') {
+            panel.general.visible = true;
+        }
+        else if(bpmnType == "bpmn:ServiceTask" || bpmnType == "bpmn:SendTask") {
+            panel.sendAndService.visible = true;
+        }
+        else if(bpmnType == "bpmn:UserTask") {
+            panel.form.visible = true;
+        }
+        else {
+            console.log("New element in the diagram or i've misspelled")
+        }
+        // if(bpmnType == "bpmn:Collaboration") {
+        //     console.log("Collaboration")
+        //     //id
+        //     //participants[0].$type
+        //     //participants[0].id
+        //     //participants[0].name
+        // }
+        // else if(bpmnType == "bpmn:Lane") {
+        //     //id
+        //     //name
+        //     console.log("Lane")
+        // }
+        // else if(bpmnType == "bpmn:UserTask") {
+        //     //id
+        //     //name
+        //     //extensionElements
+        //     //documentation
+        //     console.log("UserTask")
+        // }
+        // else if(bpmnType == "bpmn:ServiceTask") {
+        //     //id
+        //     //name
+        //     //extensionElements
+        //     console.log("ServiceTask")
+        // }
+        // else if(bpmnType == "bpmn:SendTask") {
+        //     //id
+        //     //name
+        //     //extensionElements
+        //     console.log("SendTask")
+        // }
+        // else if(bpmnType == "bpmn:ManualTask") {
+        //     //id
+        //     //name
+        //     console.log("ManualTask")
+        // }
+        // else if(bpmnType == "bpmn:StartEvent") {
+        //     //id
+        //     //name
+        //     console.log("StartEvent")
+        // }
+        // else if(bpmnType == "bpmn:EndEvent") {
+        //     //id
+        //     //name
+        //     console.log("EndEvent")
+        // }
+        // else if(bpmnType == "bpmn:SequenceFlow") {
+        //     console.log("SequenceFlow")
+        //     //id 
+        //     //name
+        //     if(bpmnObject?.conditionExpression.$type == "bpmn:FormalExpression") {
+        //         console.log("FormalExpression")
+        //         //bpmnObject.conditionExpression.body = body -> string kao i ime
+        //     }
+        //     else {
+        //         console.log("BezFormalExpressiona")
+        //     }
+        // }
+        // else if(bpmnType == "bpmn:ExclusiveGateway") {
+        //     //id
+        //     //name
+        //     console.log("ExclusiveGateway")
+        // }
+        // else if(bpmnType == "bpmn:ParallelGateway") {
+        //     //id
+        //     console.log("ParallelGateway")
+        // }
+        // else {
+        //     console.log("Something else")
+        // }
+    },
+    // getPropertyData(bpmnObject, bpmnElement) {
+    //     console.log(bpmnElement, bpmnObject)
+    // },
+    getAllExtensionsForSendOrServiceTask(bpmnObject) {
+        let properties = [];
+        let inputOutputs = [];
+        let connectors = [];
+        let state = [];
+        // state.push({"General Info": [{
+        //     id: bpmnObject.id,
+        //     name: bpmnObject.name
+        // }]})
+        state.push({"General": {
+            id: bpmnObject.id,
+            name: bpmnObject.name
+        }})
+
+        if(bpmnObject.$type == "bpmn:ServiceTask" || bpmnObject.$type == "bpmn:SendTask") {
+            let extensionElements = bpmnObject.extensionElements.values;
+            let camProperties = extensionElements.find(x => x.$type == "camunda:properties")?.$children //$type, value, name
+            if(camProperties != undefined) {
+                for(let camProperty of camProperties) {
+                    let field = {
+                        name: camProperty.name,
+                        type: camProperty.$type,
+                        value: camProperty.value
+                    }
+                    properties.push(field)
+                }
+                state.push({"Props": properties})
+            }
+            
+            let camInputOutput = extensionElements.find(x => x.$type == "camunda:inputOutput")?.$children //$body, $type, name - $type - name
+            if(camInputOutput != undefined) {
+                for(let camIO of camInputOutput) {
+                    let field = {
+                        name: camIO.name,
+                        type: camIO.$type, 
+                        body: camIO.$body
+                    }
+                    inputOutputs.push(field)
+                }
+                state.push({"IO":inputOutputs})
+            }
+            
+            let camConnector = extensionElements.find(x => x.$type == "camunda:connector")?.$children
+            if(camConnector != undefined) {
+                //connectors.push({type: camConnector[0].$type})
+                for(let cam of camConnector[0].$children) {
+                    let field = {
+                        name: cam.name,
+                        type: cam.$type,
+                        body: cam.$body
+                    }
+                    connectors.push(field)                
+                }
+                state.push({"ConnID": [{type: camConnector[1].$type, body: camConnector[1].$body}]})
+                state.push({"ConnParams": connectors})
+            } 
+        }
+        else {
+            console.log("New type of task")
+            return null;
+        }
+        return state;
+    },
     getExtension(element, type) {
+        // debugger;
         if (!element.extensionElements) {
             return;
         }
+        let extensionType = null;
+        if (type == "bpmn:UserTask") {
+            debugger;
+            extensionType = 'camunda:formData';
+            return element.extensionElements.values.filter((extensionElement) => {
+                return extensionElement.$instanceOf(extensionType);
+            })[0];
+            //Dokumentacija?
+        }
+        // else if(type == "bpmn:ServiceTask") {
+        //     extensionType = 'camunda:properties';
+        //     return element.extensionElements.values.filter((extensionElement) => {
+        //         return extensionElement.$instanceOf(extensionType)[0];
+        //     });
+        // }
+        // else if(type == "bpmn:SendTask") {
+        //     var fields = element.extensionElements.values;
+        //     var data = []
+        //     fields.forEach(element => {
+        //        data.push([element.$type, element.$children]) 
+        //     });
+        //     extensionType = fields
+        //     return element.extensionElements.values.filter((extensionElement) => {
+        //         return extensionElement.$instanceOf(extensionType);
+        //     });
+        // }
+        else {
+            extensionType = 'camunda:formData';
+            return element.extensionElements.values.filter((extensionElement) => {
+                return extensionElement.$instanceOf(extensionType);
+            })[0];
+        }   
 
-        return element.extensionElements.values.filter((extensionElement) => {
-            return extensionElement.$instanceOf(type);
-        })[0];
+
+        //console.log(data)
+        // return element.extensionElements.values.filter((extensionElement) => {
+        //     return extensionElement.$instanceOf(type);
+        // })[0];
     },
+    getDocumentation(element, type) {
+        console.log(element, type)
+    },
+
     setExtension(element, type, value, moddle) {
         if (!element.extensionElements) {
             element.extensionElements = moddle.create('bpmn:ExtensionElements');
@@ -21,6 +226,8 @@ let BpmnXml = {
             }
         }
     },
+
+
 };
 
 let FormItemMetaModel = {
@@ -69,6 +276,26 @@ let FormItemMetaModel = {
         type: 'yes-no-boolean',
         icon: 'mdi-check',
     },
+    'camunda:property': {
+        name: 'property',
+        type: 'Property',
+        icon: 'mdi-text-long'
+    },
+    'camunda:inputParameter': {
+        name: 'property',
+        type: 'Property',
+        icon: 'mdi-text-long'
+    },
+    'camunda:outputParameter': {
+        name: 'property',
+        type: 'Property',
+        icon: 'mdi-text-long'
+    },
+    'camunda:connectorId': {
+        name: 'property',
+        type: 'Property',
+        icon: 'mdi-text-long'
+    }
 };
 
 export { BpmnXml, FormItemMetaModel };
