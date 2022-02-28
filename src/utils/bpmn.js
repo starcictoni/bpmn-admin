@@ -112,6 +112,7 @@ let BpmnXml = {
         //     name: bpmnObject.name
         // }]})
         state.push({"General": {
+            $bpmn: bpmnObject,
             id: bpmnObject.id,
             name: bpmnObject.name
         }})
@@ -122,6 +123,7 @@ let BpmnXml = {
             if(camProperties != undefined) {
                 for(let camProperty of camProperties) {
                     let field = {
+                        $bpmn: bpmnObject,
                         name: camProperty.name,
                         type: camProperty.$type,
                         value: camProperty.value
@@ -135,6 +137,7 @@ let BpmnXml = {
             if(camInputOutput != undefined) {
                 for(let camIO of camInputOutput) {
                     let field = {
+                        $bpmn: bpmnObject,
                         name: camIO.name,
                         type: camIO.$type, 
                         body: camIO.$body
@@ -149,13 +152,14 @@ let BpmnXml = {
                 //connectors.push({type: camConnector[0].$type})
                 for(let cam of camConnector[0].$children) {
                     let field = {
+                        $bpmn: bpmnObject,
                         name: cam.name,
                         type: cam.$type,
                         body: cam.$body
                     }
                     connectors.push(field)                
                 }
-                state.push({"ConnID": [{type: camConnector[1].$type, body: camConnector[1].$body}]})
+                state.push({"ConnID": [{$bpmn: bpmnObject, type: camConnector[1].$type, body: camConnector[1].$body}]})
                 state.push({"ConnParams": connectors})
             } 
         }
@@ -275,27 +279,30 @@ let FormItemMetaModel = {
         name: 'Yes/No',
         type: 'yes-no-boolean',
         icon: 'mdi-check',
-    },
+    }
+};
+
+let SendAndServiceItemMetaModel = {
     'camunda:property': {
-        name: 'property',
+        name: 'Property',
         type: 'Property',
         icon: 'mdi-text-long'
     },
     'camunda:inputParameter': {
-        name: 'property',
+        name: 'Input Parameter',
         type: 'Property',
         icon: 'mdi-text-long'
     },
     'camunda:outputParameter': {
-        name: 'property',
+        name: 'Output Parameter',
         type: 'Property',
         icon: 'mdi-text-long'
     },
     'camunda:connectorId': {
-        name: 'property',
+        name: 'Connector Id',
         type: 'Property',
         icon: 'mdi-text-long'
     }
 };
 
-export { BpmnXml, FormItemMetaModel };
+export { BpmnXml, FormItemMetaModel, SendAndServiceItemMetaModel };

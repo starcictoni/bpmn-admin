@@ -30,11 +30,11 @@
         </v-btn>
 
         <v-dialog v-model="dialogShown1" max-width="600">
-            <new-form-item @send-results="save" :data1="newFormItem" @close="dialogShown1 = false" :context1="context"></new-form-item>
+            <new-form-item @send-results="save" :data1="formItem" @close="dialogShown1 = false" :context1="context"></new-form-item>
         </v-dialog>
 
         <v-dialog v-model="dialogShown" max-width="600">
-            <form-item :data="formItem" @close="dialogShown = false" :context="context"></form-item>
+            <form-item :dataTwo="formItem" @Close="dialogShown = false" :contextTwo="context"></form-item>
         </v-dialog>
     </div>
 </template>
@@ -62,7 +62,7 @@ export default {
             dialogShown: false,
             dialogShown1: false,
             formItem: null,
-            newFormItem: null,
+            //newFormItem: null,
             cs: modeler.get('commandStack'),
             state: [],
         };

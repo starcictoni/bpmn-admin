@@ -2,179 +2,58 @@
   <div v-if="this.data">
     <v-list>
       <div v-if="generalInfo !== null">
-        <v-card
-          elevation="3"
-          tile
-          outlined
-          style="padding-bottom: 3%; margin-bottom: 2%"
-        >
+        <v-card elevation="3" tile outlined class="cardOutter">
           <v-card-subtitle> GENERAL INFO </v-card-subtitle>
-          <v-card elevation="0" tile outlined style="margin: 0px 20px -1% 20px">
-            <!-- <draggable v-model="properties" draggable=".v-list-item" v-bind="{ animation: 200 }"> -->
+          <v-card elevation="0" tile outlined class="cardInner">
             <v-list-item>
               <v-list-item-action>
                 <v-icon>{{ getIconFor() }}</v-icon>
               </v-list-item-action>
               <v-list-item-content>
-                <v-list-item-subtitle>NAME</v-list-item-subtitle>
+                <v-list-item-subtitle>Name</v-list-item-subtitle>
                 <v-list-item-title>{{ generalInfo.name }}</v-list-item-title>
-                <v-list-item-subtitle>ID</v-list-item-subtitle>
+                <v-list-item-subtitle>Id</v-list-item-subtitle>
                 <v-list-item-title>{{ generalInfo.id }} </v-list-item-title>
               </v-list-item-content>
               <v-list-item-action>
-                <v-btn icon>
+                <v-btn icon @click.stop="editExistingItem(generalInfo)">
                   <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                 </v-btn>
               </v-list-item-action>
             </v-list-item>
-            <!-- </draggable> -->
           </v-card>
         </v-card>
       </div>
 
-      <div v-if="properties !== null">
-        <v-card
-          elevation="3"
-          tile
-          outlined
-          style="padding-bottom: 3%; margin-bottom: 2%"
-        >
-          <v-card-subtitle> PROPERTIES </v-card-subtitle>
-          <!-- A bit bigger font -->
-          <v-list v-for="v in properties" :key="v.id">
-            <v-card
-              elevation="0"
-              tile
-              outlined
-              style="margin: 0px 20px -1% 20px"
-            >
-              <draggable
-                v-model="properties"
-                draggable=".v-list-item"
-                v-bind="{ animation: 200 }"
-              >
-                <v-list-item>
-                  <v-list-item-action>
-                    <v-icon>{{ getIconFor(v.type) }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Name</v-list-item-subtitle>
-                    <v-list-item-title v-text="v.name"></v-list-item-title>
-                    <!-- <v-list-item-title v-text="v.type"></v-list-item-title>
-                                                <v-list-item-subtitle>Type</v-list-item-subtitle> -->
-                    <v-list-item-subtitle>Value</v-list-item-subtitle>
-                    <v-list-item-title v-text="v.value"></v-list-item-title>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-btn icon>
-                      <v-icon color="grey lighten-1">mdi-pencil</v-icon>
-                    </v-btn>
-                  </v-list-item-action>
-                </v-list-item>
-              </draggable>
-            </v-card>
-          </v-list>
-        </v-card>
-      </div>
-
-      <div v-if="inputAndOutput !== null">
-        <!-- <draggable v-model="inputAndOutput" draggable=".v-list-item" v-bind="{ animation: 200 }"> -->
-        <v-card
-          elevation="3"
-          tile
-          outlined
-          style="padding-bottom: 3%; margin-bottom: 2%"
-        >
-          <v-card-subtitle> INPUT&OUTPUT </v-card-subtitle>
-          <v-list v-for="v in inputAndOutput" :key="v.id">
-            <v-card
-              elevation="0"
-              tile
-              outlined
-              style="margin: 0px 20px -1% 20px"
-            >
-              <draggable
-                v-model="inputAndOutput"
-                draggable=".v-list-item"
-                v-bind="{ animation: 200 }"
-              >
-                <v-list-item>
-                  <v-list-item-action>
-                    <v-icon>{{ getIconFor(v.type) }}</v-icon>
-                  </v-list-item-action>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Name</v-list-item-subtitle>
-                    <v-list-item-title v-text="v.name"></v-list-item-title>
-                    <!-- <v-list-item-title v-text="v.type"></v-list-item-title>
-                                                <v-list-item-subtitle>Type</v-list-item-subtitle> -->
-                    <v-list-item-subtitle>Body</v-list-item-subtitle>
-                    <v-list-item-title v-text="v.body"></v-list-item-title>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-btn icon>
-                      <v-icon color="grey lighten-1">mdi-pencil</v-icon>
-                    </v-btn>
-                  </v-list-item-action>
-                </v-list-item>
-              </draggable>
-            </v-card>
-          </v-list>
-        </v-card>
-        <!-- </draggable> -->
-      </div>
       <div v-if="connectorId !== null">
-        <v-card
-          elevation="3"
-          tile
-          outlined
-          style="padding-bottom: 3%; margin-bottom: 2%"
-        >
+        <v-card elevation="3" tile outlined class="cardOutter">
           <v-card-subtitle> CONNECTOR ID </v-card-subtitle>
-          <v-list v-for="v in connectorId" :key="v.id">
-            <v-card
-              elevation="0"
-              tile
-              outlined
-              style="margin: 0px 20px -1% 20px"
-            >
-              <!-- <draggable v-model="connectorId" draggable=".v-list-item" v-bind="{ animation: 200 }"> -->
+          <v-list v-for="v in connectorId" :key="v.body">
+            <v-card elevation="0" tile outlined class="cardInner">
               <v-list-item>
                 <v-list-item-action>
                   <v-icon>{{ getIconFor(v.type) }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
-                  <!-- <v-list-item-title v-text="v.type"></v-list-item-title>
-                                                <v-list-item-subtitle>Type</v-list-item-subtitle> -->
                   <v-list-item-subtitle>Body</v-list-item-subtitle>
                   <v-list-item-title v-text="v.body"></v-list-item-title>
                 </v-list-item-content>
                 <v-list-item-action>
-                  <v-btn icon>
+                  <v-btn icon @click.stop="editExistingItem(v)">
                     <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                   </v-btn>
                 </v-list-item-action>
               </v-list-item>
-              <!-- </draggable>  -->
             </v-card>
           </v-list>
         </v-card>
       </div>
 
       <div v-if="connectorParams !== null">
-        <v-card
-          elevation="3"
-          tile
-          outlined
-          style="padding-bottom: 3%; margin-bottom: 2%"
-        >
+        <v-card elevation="3" tile outlined class="cardOutter">
           <v-card-subtitle> CONNECTOR PARAMETERS </v-card-subtitle>
-          <v-list v-for="v in connectorParams" :key="v.id">
-            <v-card
-              elevation="0"
-              tile
-              outlined
-              style="margin: 0px 20px -1% 20px"
-            >
+          <v-list v-for="v in connectorParams" :key="v.name">
+            <v-card elevation="0" tile outlined class="cardInner">
               <draggable
                 v-model="connectorId"
                 draggable=".v-list-item"
@@ -187,13 +66,11 @@
                   <v-list-item-content>
                     <v-list-item-title v-text="v.name"></v-list-item-title>
                     <v-list-item-subtitle>Name</v-list-item-subtitle>
-                    <!-- <v-list-item-title v-text="v.type"></v-list-item-title>
-                                                <v-list-item-subtitle>Type</v-list-item-subtitle> -->
                     <v-list-item-title v-text="v.body"></v-list-item-title>
                     <v-list-item-subtitle>Body</v-list-item-subtitle>
                   </v-list-item-content>
                   <v-list-item-action>
-                    <v-btn icon>
+                    <v-btn icon @click.stop="editExistingItem(v)">
                       <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                     </v-btn>
                   </v-list-item-action>
@@ -201,11 +78,103 @@
               </draggable>
             </v-card>
           </v-list>
+          <v-btn
+            class="buttonAddNew"
+            color="grey darken-4"
+            tile
+            outlined
+            text
+            @click="addNewItem()"
+          >
+            ADD NEW
+          </v-btn>
+        </v-card>
+      </div>
+
+      <div v-if="properties !== null">
+        <v-card elevation="3" tile outlined class="cardOutter">
+          <v-card-subtitle> PROPERTIES </v-card-subtitle>
+          <v-list v-for="v in properties" :key="v.id">
+            <v-card elevation="0" tile outlined class="cardInner">
+              <draggable
+                v-model="properties"
+                draggable=".v-list-item"
+                v-bind="{ animation: 200 }"
+              >
+                <v-list-item>
+                  <v-list-item-action>
+                    <v-icon>{{ getIconFor(v.type) }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Name</v-list-item-subtitle>
+                    <v-list-item-title v-text="v.name"></v-list-item-title>
+                    <v-list-item-subtitle>Value</v-list-item-subtitle>
+                    <v-list-item-title v-text="v.value"></v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-btn icon @click.stop="editExistingItem(v)">
+                      <v-icon color="grey lighten-1">mdi-pencil</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+              </draggable>
+            </v-card>
+          </v-list>
+          <v-btn
+            class="buttonAddNew"
+            color="grey darken-4"
+            tile
+            outlined
+            text
+            @click="add()"
+          >
+            ADD NEW
+          </v-btn>
+        </v-card>
+      </div>
+
+      <div v-if="inputAndOutput !== null">
+        <v-card elevation="3" tile outlined class="cardOutter">
+          <v-card-subtitle> INPUT&OUTPUT </v-card-subtitle>
+          <v-list v-for="v in inputAndOutput" :key="v.name">
+            <v-card elevation="0" tile outlined class="cardInner">
+              <draggable
+                v-model="inputAndOutput"
+                draggable=".v-list-item"
+                v-bind="{ animation: 200 }"
+              >
+                <v-list-item>
+                  <v-list-item-action>
+                    <v-icon>{{ getIconFor(v.type) }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Name</v-list-item-subtitle>
+                    <v-list-item-title v-text="v.name"></v-list-item-title>
+                    <v-list-item-subtitle>Body</v-list-item-subtitle>
+                    <v-list-item-title v-text="v.body"></v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-btn icon @click.stop="editExistingItem(v)">
+                      <v-icon color="grey lighten-1">mdi-pencil</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+              </draggable>
+            </v-card>
+          </v-list>
+          <v-btn
+            class="buttonAddNew"
+            color="grey darken-4"
+            tile
+            outlined
+            text
+            @click="add()"
+          >
+            ADD NEW
+          </v-btn>
         </v-card>
       </div>
     </v-list>
-    
-    <v-btn color="grey darken-4" tile text @click="add()"> ADD NEW </v-btn>
     <v-btn v-if="changed" color="darken-1" text @click="setState()">
       CANCEL
     </v-btn>
@@ -213,26 +182,30 @@
       APPLY
     </v-btn>
 
+    <!-- New -->
     <v-dialog v-model="dialogShown1" max-width="600">
-      <new-form-item
+      <formItem
         @send-results="save"
-        :data1="newFormItem"
         @close="dialogShown1 = false"
-        :context1="context"
-      ></new-form-item>
+        :data="childData"
+        :context="context"
+      ></formItem>
     </v-dialog>
 
+    <!-- Edit  -->
     <v-dialog v-model="dialogShown" max-width="600">
-      <form-item
-        :data="formItem"
-        @close="dialogShown = false"
-        :context="context"
-      ></form-item>
+      <formItem
+        :dataTwo="childData"
+        @Close="close()"
+        :contextTwo="context"
+        :key="componentKey"
+      ></formItem>
     </v-dialog>
   </div>
 </template>
+
 <script>
-import { FormItemMetaModel, BpmnXml } from "@/utils/bpmn";
+import { SendAndServiceItemMetaModel, BpmnXml } from "@/utils/bpmn";
 import draggable from "vuedraggable";
 
 export default {
@@ -241,7 +214,6 @@ export default {
   components: {
     draggable,
     formItem: () => import("@/components/properties/FormItem.vue"),
-    newFormItem: () => import("@/components/properties/NewFormItem.vue"),
   },
   created() {
     this.setState();
@@ -249,12 +221,13 @@ export default {
   data() {
     let modeler = this.context.modeler;
     return {
+      componentKey: 0,
       modeler,
       selectedItem: null,
       dialogShown: false,
       dialogShown1: false,
-      formItem: null,
-      newFormItem: null,
+      childData: null,
+      oldFormData: null,
       cs: modeler.get("commandStack"),
       state: [],
       generalInfo: null,
@@ -266,6 +239,8 @@ export default {
   },
   watch: {
     data() {
+      debugger;
+      this.forceRenderer()
       this.setState();
     },
   },
@@ -278,37 +253,48 @@ export default {
     },
   },
   methods: {
+    forceRenderer() {
+      this.componentKey += 1;
+    },
+    close() {
+      debugger;
+      //this.childData = {... this.oldFormData };
+      this.dialogShown = false;
+    },
+    // close() {
+    //   this.dialogShown = false;
+    //   this.formData = false;
+    // },
     getIconFor(type) {
       if (type === undefined) type = "camunda:property";
-      return FormItemMetaModel[type].icon;
+      return SendAndServiceItemMetaModel[type].icon;
     },
     log(message) {
       console.log(message);
     },
     setState() {
       //Temporary, generalize
+      debugger;
       this.state = BpmnXml.getAllExtensionsForSendOrServiceTask(this.data.bpmn);
       let general = this.state.find((x) => Object.keys(x) == "General");
       if (general !== undefined) this.generalInfo = Object.values(general)[0];
 
       let props = this.state.find((x) => Object.keys(x) == "Props");
-      // debugger;
+
       if (props !== undefined) this.properties = Object.values(props)[0];
 
       let io = this.state.find((x) => Object.keys(x) == "IO");
       if (io !== undefined) this.inputAndOutput = Object.values(io)[0];
-      debugger;
+      // debugger;
       let connId = this.state.find((x) => Object.keys(x) == "ConnID");
       if (connId !== undefined) this.connectorId = Object.values(connId)[0];
 
       let connParams = this.state.find((x) => Object.keys(x) == "ConnParams");
       if (connParams !== undefined)
         this.connectorParams = Object.values(connParams)[0];
-
-      // debugger;
     },
-    add() {
-      this.newFormItem = {
+    addNewItem() {
+      this.formData = {
         id: null,
         label: null,
         type: null,
@@ -317,26 +303,28 @@ export default {
       this.dialogShown1 = true;
     },
 
-    open(formItem) {
+    editExistingItem(bpmnObject) {
       debugger;
-      this.formItem = formItem;
+      this.forceRenderer();
+      //this.oldFormData = { ...bpmnObject };
+      this.childData = { ...bpmnObject };
       this.dialogShown = true;
     },
     save() {
       debugger;
       let temp = {};
-      if (this.newFormItem != null) {
-        if (this.newFormItem.validation == null) {
-          this.newFormItem.validation = false;
+      if (this.childData != null) {
+        if (this.childData.validation == null) {
+          this.childData.validation = false;
         }
         temp = {
-          $bpmn: this.newFormItem,
-          id: this.newFormItem.id,
-          label: this.newFormItem.label,
-          type: this.newFormItem.type,
-          icon: this.getIconFor(this.newFormItem.type),
+          $bpmn: this.childData,
+          id: this.childData.id,
+          label: this.childData.label,
+          type: this.childData.type,
+          icon: this.getIconFor(this.forchildDataData.type),
           validation: {
-            required: this.newFormItem.validation,
+            required: this.childData.validation,
           },
         };
         this.state.push(temp);
@@ -355,6 +343,28 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.v-card__subtitle,
+.v-card__text {
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.375rem;
+  letter-spacing: 0.0071428571em;
+  margin-left: 0.5%;
+}
+
+.buttonAddNew {
+  margin: 1% 0% 0% calc(2% - 1px);
+}
+
+.cardInner {
+  margin: 0% 2% 0% 2%;
+}
+
+.cardOutter {
+  padding-bottom: 2%;
+  margin-bottom: 2%;
+}
+
 .sortable-chosen {
   border: 1px solid gray !important;
 }

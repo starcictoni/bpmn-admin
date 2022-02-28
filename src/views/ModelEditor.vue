@@ -45,7 +45,7 @@ import { BpmnXml } from '@/utils/bpmn';
 import { UpdateBusinessObjectHandler, UpdateBusinessObjectListHandler, MultiCommandHandler } from '@/utils/handlers';
 import VueBpmnModeler from '@/components/BpmnModeler';
 import SendAndService from '@/components/properties/SendAndService.vue'
-import NewFormItemVue from '../components/properties/NewFormItem.vue';
+// import NewFormItemVue from '../components/properties/NewFormItem.vue';
 
 export default {
     name: 'model-editor',
@@ -55,7 +55,7 @@ export default {
         propGeneral: () => import('@/components/properties/General.vue'),
         propForm: () => import('@/components/properties/Form.vue'),
         propSend: SendAndService,
-        propNewForm: NewFormItemVue,
+        // propNewForm: NewFormItemVue,
     },
     data: () => ({
         instance: null,
