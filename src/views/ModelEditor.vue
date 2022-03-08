@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { BpmnXml } from '@/utils/bpmn';
+import { BpmnUI, BpmnXml } from '@/utils/bpmn';
 import { UpdateBusinessObjectHandler, UpdateBusinessObjectListHandler, MultiCommandHandler } from '@/utils/handlers';
 import VueBpmnModeler from '@/components/BpmnModeler';
 import SendAndService from '@/components/properties/SendAndService.vue'
@@ -55,7 +55,6 @@ export default {
         propGeneral: () => import('@/components/properties/General.vue'),
         propForm: () => import('@/components/properties/Form.vue'),
         propSend: SendAndService,
-        // propNewForm: NewFormItemVue,
     },
     data: () => ({
         instance: null,
@@ -96,104 +95,33 @@ export default {
     },
 
     methods: {
-        updatePanels() { //Pokazi panele ispod ovisno o podacima
-            //debugger;
+        updatePanels() {
             let bpmnObject = this.bpmnElement.businessObject;
-            BpmnXml.showPanel(this.panels, bpmnObject.$type); //Shows the correct panel
-            BpmnXml.setLabelOntoPanel(this.panels, bpmnObject.$type);
+            BpmnUI.showPanel(this.panels, bpmnObject.$type);
+            BpmnUI.setLabelOntoPanel(this.panels, bpmnObject.$type);
         },
         setPropertyData() {
             //debugger;
             let bpmnObject = this.bpmnElement.businessObject;
-            let bpmnType = this.bpmnElement.businessObject.$type;
-            if(bpmnType == "bpmn:Collaboration") {
-                console.log("Collaboration")
-                //id
-                //participants[0].$type
-                //participants[0].id
-                //participants[0].name
-            }
-            else if(bpmnType == "bpmn:Lane") {
-                //id
-                //name
-                console.log("Lane")
-            }
-            else if(bpmnType == "bpmn:UserTask") {
-                //id
-                //name
-                //extensionElements
-                //documentation
-                console.log("UserTask")
-            }
-            else if(bpmnType == "bpmn:ServiceTask") {
-                //id
-                //name
-                //extensionElements
-                console.log("ServiceTask")
-            }
-            else if(bpmnType == "bpmn:SendTask") {
-                //id
-                //name
-                //extensionElements
-                console.log("SendTask")
-            }
-            else if(bpmnType == "bpmn:ManualTask") {
-                //id
-                //name
-                console.log("ManualTask")
-            }
-            else if(bpmnType == "bpmn:StartEvent") {
-                //id
-                //name
-                console.log("StartEvent")
-            }
-            else if(bpmnType == "bpmn:EndEvent") {
-                //id
-                //name
-                console.log("EndEvent")
-            }
-            else if(bpmnType == "bpmn:SequenceFlow") {
-                console.log("SequenceFlow")
-                //id 
-                //name
-                if(bpmnObject.conditionExpression != null && bpmnObject.conditionExpression.$type == "bpmn:FormalExpression") {
-                    console.log("FormalExpression")
-                    //bpmnObject.conditionExpression.body = body -> string kao i ime
-                }
-                else {
-                    console.log("BezFormalExpressiona")
-                }
-            }
-            else if(bpmnType == "bpmn:ExclusiveGateway") {
-                //id
-                //name
-                console.log("ExclusiveGateway")
-            }
-            else if(bpmnType == "bpmn:ParallelGateway") {
-                //id
-                console.log("ParallelGateway")
-            }
-            else {
-                console.log("Something else")
-            }
+            //let bpmnType = this.bpmnElement.businessObject.$type; Was used for console checking
 
-            // let basicData = BpmnXml.getPropertyData();
-            // console.log(basicData);
-            let formData = null;
-            if(bpmnType != undefined) {
-                formData = BpmnXml.getExtension(bpmnObject, bpmnType); //ExtensionData je mozda tocnije od form data
-            }
+            //formData je val koja bi se mogla dohvacati direktno u formi
+            // let formData = null;
+            // if(bpmnType != undefined) {
+            //     formData = BpmnXml.getExtension(bpmnObject, bpmnType); //ExtensionData je mozda tocnije od form data
+            // }
+
             //Property data se šalje kao props u komponente, dodan bpmn kako bi se razlikovali tipovi - Mozda samo bpmnObject.$type?
             this.propertyData = {
                 id: bpmnObject.id,
                 name: bpmnObject.name,
                 bpmn: bpmnObject,
             };
-            if (formData) {
+            //if (formData) {
                 window.propertyData = this.propertyData; 
-                this.propertyData.formData = formData; //ExtensionData je mozda tocnije od form data
+                //this.propertyData;//.formData = formData; //ExtensionData je mozda tocnije od form data
 
-            }
+            //}
         },
         undo() {
             this.modeler.get('commandStack').undo();
@@ -209,7 +137,6 @@ export default {
                 delete this.propertyData.formData;
             }
             modeling.updateProperties(this.bpmnElement, this.propertyData);
-
             this.setPropertyData();
         },
         async test() {

@@ -16,7 +16,7 @@
                 <v-list-item-title>{{ generalInfo.id }} </v-list-item-title>
               </v-list-item-content>
               <v-list-item-action>
-                <v-btn icon @click.stop="editExistingItem(generalInfo)">
+                <v-btn icon @click.stop="openEditItem(generalInfo)">
                   <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                 </v-btn>
               </v-list-item-action>
@@ -39,7 +39,7 @@
                   <v-list-item-title v-text="v.body"></v-list-item-title>
                 </v-list-item-content>
                 <v-list-item-action>
-                  <v-btn icon @click.stop="editExistingItem(v)">
+                  <v-btn icon @click.stop="openEditItem(v)">
                     <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                   </v-btn>
                 </v-list-item-action>
@@ -70,7 +70,7 @@
                     <v-list-item-subtitle>Body</v-list-item-subtitle>
                   </v-list-item-content>
                   <v-list-item-action>
-                    <v-btn icon @click.stop="editExistingItem(v)">
+                    <v-btn icon @click.stop="openEditItem(v)">
                       <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                     </v-btn>
                   </v-list-item-action>
@@ -84,7 +84,7 @@
             tile
             outlined
             text
-            @click="addNewItem()"
+            @click="addNewItem(connectorParams)"
           >
             ADD NEW
           </v-btn>
@@ -112,7 +112,7 @@
                     <v-list-item-title v-text="v.value"></v-list-item-title>
                   </v-list-item-content>
                   <v-list-item-action>
-                    <v-btn icon @click.stop="editExistingItem(v)">
+                    <v-btn icon @click.stop="openEditItem(v)">
                       <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                     </v-btn>
                   </v-list-item-action>
@@ -126,7 +126,7 @@
             tile
             outlined
             text
-            @click="add()"
+            @click="addNewItem(properties)"
           >
             ADD NEW
           </v-btn>
@@ -154,7 +154,7 @@
                     <v-list-item-title v-text="v.body"></v-list-item-title>
                   </v-list-item-content>
                   <v-list-item-action>
-                    <v-btn icon @click.stop="editExistingItem(v)">
+                    <v-btn icon @click.stop="openEditItem(v)">
                       <v-icon color="grey lighten-1">mdi-pencil</v-icon>
                     </v-btn>
                   </v-list-item-action>
@@ -168,38 +168,35 @@
             tile
             outlined
             text
-            @click="add()"
+            @click="addNewItem(inputAndOutput)"
           >
             ADD NEW
           </v-btn>
         </v-card>
       </div>
     </v-list>
-    <v-btn v-if="changed" color="darken-1" text @click="setState()">
-      CANCEL
-    </v-btn>
-    <v-btn v-if="changed" color="blue darken-1" text @click="save()">
-      APPLY
-    </v-btn>
-
-    <!-- New -->
-    <v-dialog v-model="dialogShown1" max-width="600">
-      <formItem
-        @send-results="save"
-        @close="dialogShown1 = false"
-        :data="childData"
-        :context="context"
-      ></formItem>
+    
+    <!-- New Item Dialog -->
+    <v-dialog v-model="dialogNew" max-width="600">
+      <newFormItem
+        :dataNew="dialogData"
+        :contextNew="context"
+        :typeNew="businessTypeObject"
+        :key="newComponentKey"
+        @save="save()"
+        @close="closeNewItem()"
+      ></newFormItem>
     </v-dialog>
 
-    <!-- Edit  -->
-    <v-dialog v-model="dialogShown" max-width="600">
-      <formItem
-        :dataTwo="childData"
-        @Close="close()"
-        :contextTwo="context"
-        :key="componentKey"
-      ></formItem>
+    <!-- Edit Item Dialog -->
+    <v-dialog v-model="dialogEdit" max-width="600">
+      <editFormItem
+        :dataEdit="dialogData"
+        :contextEdit="context"
+        :key="editComponentKey"
+        @save="save()"
+        @close="closeEditItem()"
+      ></editFormItem>
     </v-dialog>
   </div>
 </template>
@@ -210,10 +207,11 @@ import draggable from "vuedraggable";
 
 export default {
   name: "properties-sendAndService",
-  props: ["data", "context", "data1", "context1"],
+  props: ["data", "context"],// "data1", "context1"],
   components: {
     draggable,
-    formItem: () => import("@/components/properties/FormItem.vue"),
+    editFormItem: () => import("@/components/properties/EditFormItem.vue"),
+    newFormItem: () => import("@/components/properties/NewFormItem.vue"),
   },
   created() {
     this.setState();
@@ -221,13 +219,14 @@ export default {
   data() {
     let modeler = this.context.modeler;
     return {
-      componentKey: 0,
+      newComponentKey: 0,
+      editComponentKey: 0,
       modeler,
       selectedItem: null,
-      dialogShown: false,
-      dialogShown1: false,
-      childData: null,
-      oldFormData: null,
+      dialogEdit: false,
+      dialogNew: false,
+      dialogData: null,
+      businessTypeObject: null, 
       cs: modeler.get("commandStack"),
       state: [],
       generalInfo: null,
@@ -240,7 +239,6 @@ export default {
   watch: {
     data() {
       debugger;
-      this.forceRenderer()
       this.setState();
     },
   },
@@ -253,78 +251,81 @@ export default {
     },
   },
   methods: {
-    forceRenderer() {
-      this.componentKey += 1;
+    forceNewRenderer() {
+      this.newComponentKey += 1;
     },
-    close() {
+    forceEditRenderer() {
+      this.editComponentKey += 1;
+    },
+    closeNewItem() {
       debugger;
-      //this.childData = {... this.oldFormData };
-      this.dialogShown = false;
+      this.dialogNew = false;
     },
-    // close() {
-    //   this.dialogShown = false;
-    //   this.formData = false;
-    // },
+    closeEditItem() {
+      this.dialogEdit = false;
+    },
+    openEditItem(bpmnObject) {
+      debugger;
+      this.forceEditRenderer();
+      this.dialogData = { ...bpmnObject };
+      this.dialogEdit = true;
+    },
+    addNewItem(bpmnObject) {
+      debugger;
+      this.forceNewRenderer()
+      this.businessTypeObject = bpmnObject[0].$bpmn.$type;
+      this.dialogData = { ...bpmnObject };
+      this.dialogNew = true;
+    },
+    
     getIconFor(type) {
-      if (type === undefined) type = "camunda:property";
+      if (type === undefined) {
+        type = "camunda:property";
+      }
       return SendAndServiceItemMetaModel[type].icon;
     },
-    log(message) {
-      console.log(message);
-    },
     setState() {
-      //Temporary, generalize
-      debugger;
+      //SendAndService
       this.state = BpmnXml.getAllExtensionsForSendOrServiceTask(this.data.bpmn);
+      
       let general = this.state.find((x) => Object.keys(x) == "General");
-      if (general !== undefined) this.generalInfo = Object.values(general)[0];
+      if (general !== undefined) { 
+        this.generalInfo = Object.values(general)[0];
+      }
 
       let props = this.state.find((x) => Object.keys(x) == "Props");
-
-      if (props !== undefined) this.properties = Object.values(props)[0];
+      if (props !== undefined) { 
+        this.properties = Object.values(props)[0];
+      }
 
       let io = this.state.find((x) => Object.keys(x) == "IO");
       if (io !== undefined) this.inputAndOutput = Object.values(io)[0];
-      // debugger;
+
       let connId = this.state.find((x) => Object.keys(x) == "ConnID");
-      if (connId !== undefined) this.connectorId = Object.values(connId)[0];
+      if (connId !== undefined) {this.connectorId = Object.values(connId)[0];
+      }
 
       let connParams = this.state.find((x) => Object.keys(x) == "ConnParams");
-      if (connParams !== undefined)
+      if (connParams !== undefined) {
         this.connectorParams = Object.values(connParams)[0];
-    },
-    addNewItem() {
-      this.formData = {
-        id: null,
-        label: null,
-        type: null,
-        validation: null,
-      };
-      this.dialogShown1 = true;
+      }
     },
 
-    editExistingItem(bpmnObject) {
-      debugger;
-      this.forceRenderer();
-      //this.oldFormData = { ...bpmnObject };
-      this.childData = { ...bpmnObject };
-      this.dialogShown = true;
-    },
     save() {
       debugger;
       let temp = {};
-      if (this.childData != null) {
-        if (this.childData.validation == null) {
-          this.childData.validation = false;
+      if (this.dialogData != null) {
+        if (this.dialogData.validation == null) {
+          this.dialogData.validation = false;
         }
         temp = {
-          $bpmn: this.childData,
-          id: this.childData.id,
-          label: this.childData.label,
-          type: this.childData.type,
+          $bpmn: this.dialogData,
+          id: this.dialogData.id,
+          label: this.dialogData.label,
+          type: this.dialogData.type,
           icon: this.getIconFor(this.forchildDataData.type),
           validation: {
-            required: this.childData.validation,
+            required: this.dialogData.validation,
           },
         };
         this.state.push(temp);

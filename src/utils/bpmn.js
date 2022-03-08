@@ -1,7 +1,8 @@
-let BpmnXml = {
+let BpmnUI = {
     setLabelOntoPanel(panel, bpmnType) {
         let slicedLabels = bpmnType.split(':')[1].match(/[A-Z][a-z]+/g); //ili bpmnType.slice(5)
-        let label = slicedLabels.join(' ');
+        // let label = slicedLabels.join(' ');
+        let label = slicedLabels.join(' ').toUpperCase();
         if(bpmnType == "bpmn:UserTask") {
             panel.form.label = label;
         }
@@ -28,89 +29,16 @@ let BpmnXml = {
         else {
             console.log("New element in the diagram or i've misspelled")
         }
-        // if(bpmnType == "bpmn:Collaboration") {
-        //     console.log("Collaboration")
-        //     //id
-        //     //participants[0].$type
-        //     //participants[0].id
-        //     //participants[0].name
-        // }
-        // else if(bpmnType == "bpmn:Lane") {
-        //     //id
-        //     //name
-        //     console.log("Lane")
-        // }
-        // else if(bpmnType == "bpmn:UserTask") {
-        //     //id
-        //     //name
-        //     //extensionElements
-        //     //documentation
-        //     console.log("UserTask")
-        // }
-        // else if(bpmnType == "bpmn:ServiceTask") {
-        //     //id
-        //     //name
-        //     //extensionElements
-        //     console.log("ServiceTask")
-        // }
-        // else if(bpmnType == "bpmn:SendTask") {
-        //     //id
-        //     //name
-        //     //extensionElements
-        //     console.log("SendTask")
-        // }
-        // else if(bpmnType == "bpmn:ManualTask") {
-        //     //id
-        //     //name
-        //     console.log("ManualTask")
-        // }
-        // else if(bpmnType == "bpmn:StartEvent") {
-        //     //id
-        //     //name
-        //     console.log("StartEvent")
-        // }
-        // else if(bpmnType == "bpmn:EndEvent") {
-        //     //id
-        //     //name
-        //     console.log("EndEvent")
-        // }
-        // else if(bpmnType == "bpmn:SequenceFlow") {
-        //     console.log("SequenceFlow")
-        //     //id 
-        //     //name
-        //     if(bpmnObject?.conditionExpression.$type == "bpmn:FormalExpression") {
-        //         console.log("FormalExpression")
-        //         //bpmnObject.conditionExpression.body = body -> string kao i ime
-        //     }
-        //     else {
-        //         console.log("BezFormalExpressiona")
-        //     }
-        // }
-        // else if(bpmnType == "bpmn:ExclusiveGateway") {
-        //     //id
-        //     //name
-        //     console.log("ExclusiveGateway")
-        // }
-        // else if(bpmnType == "bpmn:ParallelGateway") {
-        //     //id
-        //     console.log("ParallelGateway")
-        // }
-        // else {
-        //     console.log("Something else")
-        // }
     },
-    // getPropertyData(bpmnObject, bpmnElement) {
-    //     console.log(bpmnElement, bpmnObject)
-    // },
+};
+
+let BpmnXml = {
     getAllExtensionsForSendOrServiceTask(bpmnObject) {
         let properties = [];
         let inputOutputs = [];
         let connectors = [];
         let state = [];
-        // state.push({"General Info": [{
-        //     id: bpmnObject.id,
-        //     name: bpmnObject.name
-        // }]})
+
         state.push({"General": {
             $bpmn: bpmnObject,
             id: bpmnObject.id,
@@ -169,8 +97,109 @@ let BpmnXml = {
         }
         return state;
     },
+    getAllExtensionsForUserTask(bpmnObject) {
+        let state = []
+        if(bpmnObject.$type == "bpmn:UserTask") {
+            //Generalni dio
+            state.push({"General": {
+                $bpmn: bpmnObject,
+                id: bpmnObject.id,
+                name: bpmnObject.name
+            }})
+            //Docs
+            if(bpmnObject.documentation != undefined) {
+                let docs = bpmnObject.documentation[0];
+                state.push({"Docs": {
+                    $bpmn: docs,
+                    text: docs.text,
+                    type: docs.$type
+                }})        
+            }
+            if(bpmnObject.extensionElements.values[0] != undefined) {
+                let formFields = bpmnObject.extensionElements.values[0].$children;
+                let formType = bpmnObject.extensionElements.values[0].$type
+                let formData = []
+
+                for(let formField of formFields) {
+                    let fieldGeneral = {                   
+                        $bpmn: formField,
+                        id: formField.id,
+                        label: formField.label,
+                        $type: formField.$type,
+                        type: formField.type
+                    };
+
+                    if(formField.$children != undefined) {
+                        //field validation
+                        let validation = formField.$children.find(x => x.$type === "camunda:validation")
+                        if(validation != undefined) {
+                            var fieldValidation = {
+                                $bpmn: validation,
+                                validationType: validation.$type,
+                                fieldConstraints: []
+                            };
+
+                            if(validation?.$children != undefined) {
+                                let constraints = validation.$children;
+                                for(let constraint of constraints) {
+                                    fieldValidation.fieldConstraints.push({
+                                        $bpmn: constraint,
+                                        constraintType: constraint.$type,
+                                        config: constraint.config,
+                                        name: constraint.name
+                                    });
+                                }
+                            }
+                            else {
+                                fieldValidation.fieldConstraints = null;
+                            }
+                        }
+                        else {
+                            fieldValidation = null;
+                        }
+                        
+                        //field property
+                        let property = formField.$children.find(x => x.$type === "camunda:properties")
+                        if(property != undefined) {
+                            let properties = property.$children;
+                            for(let prop of properties) {
+                                // debugger
+                                var fieldProperties = {
+                                    $bpmn: prop,
+                                    id: prop.id,
+                                    type: prop.$type,
+                                    value: prop.value
+                                }
+                            }
+                        }
+                        else {
+                            fieldProperties = null;
+                        }
+                    }
+                    let validationObject = {
+                        fieldGeneral: fieldGeneral,
+                        fieldValidation: fieldValidation,
+                        fieldProperties: fieldProperties
+                    }
+                    formData.push(validationObject)
+                }
+                //Questionable $bpmn
+                state.push({"FormData": {
+                    $bpmn: formData,
+                    data: formData,
+                    type: formType
+                }})
+            }
+        }
+        else {
+            console.log("Hmmm ", bpmnObject.$type, "?")
+            return null;
+        }
+        return state;
+    },
+
+
     getExtension(element, type) {
-        // debugger;
         if (!element.extensionElements) {
             return;
         }
@@ -181,42 +210,14 @@ let BpmnXml = {
             return element.extensionElements.values.filter((extensionElement) => {
                 return extensionElement.$instanceOf(extensionType);
             })[0];
-            //Dokumentacija?
         }
-        // else if(type == "bpmn:ServiceTask") {
-        //     extensionType = 'camunda:properties';
-        //     return element.extensionElements.values.filter((extensionElement) => {
-        //         return extensionElement.$instanceOf(extensionType)[0];
-        //     });
-        // }
-        // else if(type == "bpmn:SendTask") {
-        //     var fields = element.extensionElements.values;
-        //     var data = []
-        //     fields.forEach(element => {
-        //        data.push([element.$type, element.$children]) 
-        //     });
-        //     extensionType = fields
-        //     return element.extensionElements.values.filter((extensionElement) => {
-        //         return extensionElement.$instanceOf(extensionType);
-        //     });
-        // }
         else {
             extensionType = 'camunda:formData';
             return element.extensionElements.values.filter((extensionElement) => {
                 return extensionElement.$instanceOf(extensionType);
             })[0];
         }   
-
-
-        //console.log(data)
-        // return element.extensionElements.values.filter((extensionElement) => {
-        //     return extensionElement.$instanceOf(type);
-        // })[0];
     },
-    getDocumentation(element, type) {
-        console.log(element, type)
-    },
-
     setExtension(element, type, value, moddle) {
         if (!element.extensionElements) {
             element.extensionElements = moddle.create('bpmn:ExtensionElements');
@@ -279,7 +280,17 @@ let FormItemMetaModel = {
         name: 'Yes/No',
         type: 'yes-no-boolean',
         icon: 'mdi-check',
-    }
+    },
+    'camunda:property': {
+        name: 'Property',
+        type: 'Property',
+        icon: 'mdi-text-long'
+    },
+    'camunda:constraint': {
+        name: 'Property',
+        type: 'Property',
+        icon: 'mdi-text-long'
+    },
 };
 
 let SendAndServiceItemMetaModel = {
@@ -305,4 +316,16 @@ let SendAndServiceItemMetaModel = {
     }
 };
 
-export { BpmnXml, FormItemMetaModel, SendAndServiceItemMetaModel };
+let NewItemConfig = {
+    'camunda:validation': {
+        
+    },
+    'camunda:property': {
+
+    },
+    'camunda:formField': {
+
+    }
+}
+
+export { BpmnUI, BpmnXml, FormItemMetaModel, SendAndServiceItemMetaModel, NewItemConfig };
