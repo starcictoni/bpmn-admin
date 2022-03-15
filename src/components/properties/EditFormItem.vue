@@ -7,14 +7,14 @@
           v-show="id != null"
           outlined
           clearable
-          v-model="id"
+          v-model="dataEdit.id"
           label="Id"
         ></v-text-field>
         <v-text-field
           v-show="name != null"
           outlined
           clearable
-          v-model="name"
+          v-model="state.name"
           label="Name"
         ></v-text-field>
         <v-text-field
@@ -112,8 +112,8 @@ export default {
   methods: {
     setState() {
       debugger;
-      this.state = this.$options.propsData.dataTwo;
-      this.id = this.state?.id;
+      this.state = this.dataEdit
+      this.id = this.dataEdit?.id;
       this.label = this.state?.label;
       this.name = this.state?.name;
       this.body = this.state?.body;

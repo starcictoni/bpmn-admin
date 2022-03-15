@@ -26,10 +26,10 @@
       </v-card>
     </v-card>
     <!-- Edit field -->
-    <v-dialog v-model="dialogShown" max-width="600">
+    <v-dialog v-model="dialogEdit" max-width="600">
       <editFormItem
-        :dataTwo="childData"
-        :contextTwo="context"
+        :dataEdit="dialogData"
+        :contextEdit="context"
         :key="componentKey"
         @close="closeEditItem()"
       ></editFormItem>
@@ -38,7 +38,8 @@
 </template>
 
 <script>
-import { FormItemMetaModel } from "@/utils/bpmn.js";
+import { FormItemMetaModel  } from "@/utils/bpmn.js";
+// BpmnXml
 export default {
   name: "properties-general",
   props: ["data", "context"],
@@ -53,9 +54,10 @@ export default {
     return {
       componentKey: 0,
       modeler: modeler,
-      dialogShown: false,
+      dialogEdit: false,
+      dialogData: null,
       showBody: false,
-      childData: null,
+
       cs: modeler.get("commandStack"),
       state: {
         id: null,
@@ -117,9 +119,10 @@ export default {
     },
     openEditItem(bpmnObject) {
       debugger;
-      this.forceRenderer();
-      this.childData = { ...bpmnObject };
-      this.dialogShown = true;
+      debugger;
+      this.forceEditRenderer();
+      this.dialogData = { ...bpmnObject };
+      this.dialogEdit = true;
     },
     //Forces rerendering of the component
     forceRenderer() {
@@ -130,6 +133,7 @@ export default {
       return FormItemMetaModel[type].icon;
     },
     setState() {
+      //this.state = BpmnXml.getData(this.data.bpmn)
       let bpmnType = this.data.bpmn.$type || undefined;
       this.showBody = false;
       for (let att in this.state) {

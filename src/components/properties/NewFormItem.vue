@@ -111,10 +111,24 @@ export default {
   },
   methods: {
     setState() {
+      switch(this.state) {
+        case 'camunda:formField':
+          break;
+        case 'camunda:validation': //There is no validation, fix logic, it should be -> camunda:constraint
+          break;
+        // case 'camunda:property':
+        //   break;
+        // case 'camunda:':
+        //   break;
+        // case 'camunda:':
+        //   break;
+        // case 'camunda:':
+        //   break;
+      }
       debugger;
       this.state = this.dataNew;
       let typeTwo = this.typeNew;
-      console.log(typeTwo)
+      console.log(typeTwo);
       this.id = this.state?.id;
       this.label = this.state?.label;
       this.name = this.state?.name;

@@ -273,7 +273,13 @@ export default {
     addNewItem(bpmnObject) {
       debugger;
       this.forceNewRenderer()
-      this.businessTypeObject = bpmnObject[0].$bpmn.$type;
+      if (Array.isArray(bpmnObject)) {
+        this.businessTypeObject = bpmnObject[0].type
+      } 
+      else {
+        this.businessTypeObject.type
+      }
+      this.businessTypeObject = bpmnObject[0].type;
       this.dialogData = { ...bpmnObject };
       this.dialogNew = true;
     },
@@ -285,6 +291,7 @@ export default {
       return SendAndServiceItemMetaModel[type].icon;
     },
     setState() {
+      //this.state = BpmnXml.getData(this.data.bpmn)
       //SendAndService
       this.state = BpmnXml.getAllExtensionsForSendOrServiceTask(this.data.bpmn);
       

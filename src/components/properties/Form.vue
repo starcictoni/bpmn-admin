@@ -282,6 +282,7 @@ export default {
       this.dialogNew = true;
     },
     setState() {
+      this.state = BpmnXml.getData(this.data.bpmn)
       //UserTask
       this.state = BpmnXml.getAllExtensionsForUserTask(this.data.bpmn);
 
@@ -340,18 +341,18 @@ export default {
     save() {
       debugger;
       let temp = {};
-      if (this.newFormItem != null) {
-        if (this.newFormItem.validation == null) {
-          this.newFormItem.validation = false;
-        }
+      if (this.dialogData != null) {
+        // if (this.newFormItem.validation == null) {
+        //   this.newFormItem.validation = false;
+        // }
         temp = {
-          $bpmn: this.newFormItem,
-          id: this.newFormItem.id,
-          label: this.newFormItem.label,
-          type: this.newFormItem.type,
-          icon: this.getIconFor(this.newFormItem.type),
+          $bpmn: this.dialogData,
+          id: this.dialogData.id,
+          label: this.dialogData.label,
+          type: this.dialogData.type,
+          icon: this.getIconFor(this.dialogData.type),
           validation: {
-            required: this.newFormItem.validation,
+            required: this.dialogData.validation,
           },
         };
         this.state.push(temp);
@@ -361,7 +362,7 @@ export default {
       let cs = this.modeler.get("commandStack");
       cs.execute("bpmn-list-update", {
         element: this.context.bpmnElement,
-        currentObject: this.data.formData,
+        currentObject: this.dialogData,//this.data.formData,
         propertyName: "$children",
         updatedObjectList: values,
       });
