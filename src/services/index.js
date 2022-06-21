@@ -3,7 +3,7 @@ import axios from 'axios';
 // instanca axios-a za potrebe Fipugram backenda
 let Service = axios.create({
     baseURL: process.env.VUE_APP_BPMN_SERVER,
-    timeout: 1000,
+    timeout: 5000,
 });
 
 let Model = {
@@ -29,6 +29,56 @@ let Model = {
     },
 };
 
+let WebService = {
+    async get() {
+        try {
+            let result = await Service.get(`/service`);
+            return result.data;
+        }
+        catch (e) {
+            console.assert(e)
+            return null;
+        }
+    },
+    async getServiceMeta(url) {
+        try {
+            let serviceUrl = `/service/meta/${encodeURIComponent(url)}`;
+            let result = await Service.get(serviceUrl)
+            if(result.length == 0) return [];
+            return result.data;
+        }
+        catch (e) {
+            console.assert(e);
+            return null;
+        }
+    },
+    async getHealth() {
+        try {
+            let result = await Service.get(`/service/status`);
+            return result.data;
+        }
+        catch (e) {
+            console.assert(e)
+            return null;
+        }
+    },
+    async sendData(newData, oldData) {
+        debugger;
+        const resp = Service.post(`/service`, {
+            new: newData,
+            old: oldData
+        }).then(function (response) {
+            console.log(response)
+            return response.data;
+        }).catch(function (error) {
+            console.log(error)            
+            return error;
+        })
+        return resp
+    }
+
+}
+
 let ProcessInstance = {
     async get(id) {
         try {
@@ -52,4 +102,4 @@ let ProcessInstance = {
     },
 };
 
-export { Service, ProcessInstance, Model };
+export { Service, ProcessInstance, Model, WebService };

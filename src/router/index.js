@@ -1,9 +1,11 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Home from '../views/Home.vue';
+import Environment from '../views/Environment.vue'
 import SearchInstances from '../views/SearchInstances.vue';
 import ModelEditor from '../views/ModelEditor.vue';
 import ProcessInstance from '../views/ProcessInstance.vue';
+// import Service from '../views/ProcessInstance.vue';
 import Models from '../views/Models.vue';
 
 Vue.use(VueRouter);
@@ -13,6 +15,11 @@ const routes = [
         path: '/',
         name: 'home',
         component: Home,
+    },
+    {
+        path: '/environment',
+        name: 'environment',
+        component: Environment,
     },
     {
         path: '/models',

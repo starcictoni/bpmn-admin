@@ -1,3 +1,48 @@
+let BpmnUI = {
+    setLabelOntoPanel(panel, bpmnType) {
+        let slicedLabels = bpmnType.split(':')[1].match(/[A-Z][a-z]+/g); //ili bpmnType.slice(5)
+        // let label = slicedLabels.join(' ');
+        let label = slicedLabels.join(' ');//.toUpperCase();
+        if(bpmnType == "bpmn:UserTask") {
+            panel.form.label = label;
+        }
+        else if(bpmnType == "bpmn:ServiceTask" || bpmnType == "bpmn:SendTask") {
+            panel.service.label = label;
+        }
+        else {
+            label = 'General';
+            panel.general.label = label;
+        }
+
+    },
+    showPanel(panel, bpmnType) {
+        switch (bpmnType) {
+            case "bpmn:Collaboration": 
+            case "bpmn:Lane":
+            case "bpmn:ManualTask":
+            case "bpmn:StartEvent":
+            case "bpmn:EndEvent":
+            case "bpmn:ExclusiveGateway":
+            case "bpmn:ParallelGateway":
+            case "bpmn:SequenceFlow":
+            case "bpmn:Participant":
+                panel.general.visible = true;
+                break;
+            case "bpmn:ServiceTask":
+            case "bpmn:SendTask":
+                panel.general.visible = true;
+                panel.service.visible = true;
+                break;
+            case "bpmn:UserTask":
+                panel.general.visible = true;
+                panel.form.visible = true;
+                break;
+            default:
+                break;
+        }
+    },
+};
+
 let BpmnXml = {
     getExtension(element, type) {
         if (!element.extensionElements) {
@@ -22,6 +67,29 @@ let BpmnXml = {
         }
     },
 };
+let ServiceItemMetaModel = {
+    'camunda:property': {
+        name: 'Property',
+        type: 'Short text',
+        icon: 'mdi-text-long'
+    },
+    'camunda:inputParameter': {
+        name: 'Input Parameter',
+        type: 'Short text',
+        icon: 'mdi-arrow-collapse-right'
+    },
+    'camunda:outputParameter': {
+        name: 'Output Parameter',
+        type: 'Short text',
+        icon: 'mdi-arrow-collapse-left'
+    },
+    'camunda:connectorId': {
+        name: 'Connector Id',
+        type: 'Short text',
+        icon: 'mdi-application-brackets-outline'
+    }
+};
+
 
 let FormItemMetaModel = {
     string: {
@@ -31,7 +99,7 @@ let FormItemMetaModel = {
     },
     'rich-text': {
         type: 'rich-text',
-        name: 'Text',
+        name: 'Rich Text',
         icon: 'mdi-text-long',
     },
     integer: {
@@ -71,4 +139,4 @@ let FormItemMetaModel = {
     },
 };
 
-export { BpmnXml, FormItemMetaModel };
+export { BpmnUI, BpmnXml, FormItemMetaModel, ServiceItemMetaModel };
