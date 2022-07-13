@@ -2,13 +2,12 @@
 	<!-- App.vue -->
 
 	<v-app>
-		<v-navigation-drawer app floating mini-variant permanent expand-on-hover>
+		<v-navigation-drawer app floating permanent mini-variant expand-on-hover>
 			<v-list>
 				<v-list-item class="pl-2" two-line>
 					<v-list-item-avatar>
 						<img src="https://randomuser.me/api/portraits/lego/6.jpg" />
 					</v-list-item-avatar>
-
 					<v-list-item-content>
 						<v-list-item-title>Administrator</v-list-item-title>
 						<v-list-item-subtitle>admin@unipu.hr</v-list-item-subtitle>
@@ -16,7 +15,7 @@
 				</v-list-item>
 				<!-- <v-list-item class="px-2">
                     <v-list-item-avatar>
-                        <v-img src="https://randomuser.me/api/portraits/lego/5.jpg"></v-img>
+                        <v-img src="https://randomuser.me/api/portraits/lego/5.jpg"></v-img >
                     </v-list-item-avatar>
                 </v-list-item>
 
@@ -28,8 +27,14 @@
                         <v-list-item-subtitle>admin@unipu.hr</v-list-item-subtitle>
                     </v-list-item-content>
                 </v-list-item> -->
+				<!-- <template v-slot:append>
+					<div class="pa-2">
+						<v-btn block>
+							Logout
+						</v-btn>
+					</div>
+				</template> -->
 			</v-list>
-
 			<v-divider></v-divider>
 
 			<v-list nav dense>
@@ -45,6 +50,7 @@
 					</v-list-item-icon>
 					<v-list-item-title>Running instances</v-list-item-title>
 				</v-list-item>
+
 				<v-list-item link to="/environment">
 					<v-list-item-icon>
 						<v-icon>mdi-star</v-icon>
@@ -52,6 +58,13 @@
 					<v-list-item-title>Environment</v-list-item-title>
 				</v-list-item>
 			</v-list>
+			<template v-slot:append>
+				<v-list-item>
+					<v-list-item-action>
+						<v-checkbox @change="changeTheme()"></v-checkbox>
+					</v-list-item-action>
+				</v-list-item>
+			</template>
 		</v-navigation-drawer>
 
 		<!-- <v-app-bar app>
@@ -81,6 +94,12 @@ export default {
 	components: {},
 	data() {
 		return {};
+	},
+	methods: {
+		changeTheme() {
+			this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+			localStorage.setItem("theme", this.$vuetify.theme.dark ? "dark" : "light");
+		},
 	},
 	beforeCreate() {},
 	created() {},
