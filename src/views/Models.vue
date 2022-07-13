@@ -52,17 +52,10 @@
 							:expanded.sync="expanded"
 							:items-per-page="5"
 							@item-expanded="expandClickHandler"
-							:footer-props="{
-								showFirstLastPage: true,
-								firstIcon: 'mdi-chevron-left',
-								lastIcon: 'mdi-chevron-right',
-								prevIcon: 'mdi-minus',
-								nextIcon: 'mdi-plus',
-								'items-per-page-text': 'Processes per page',
-							}"
-							:header-props="{
-								sortIcon: 'mdi-sort',
-							}"
+							:footer-props="footerProps"
+							:header-props="headerProps"
+							sort-by="number_of_versions"
+							:sort-desc="true"
 						>
 							<!-- Expand -->
 							<template v-slot:expanded-item="{ headers, item }">
@@ -113,14 +106,10 @@
 												:headers="expandTableHeaders"
 												:items="expandTableData"
 												:items-per-page="5"
-												:footer-props="{
-													showFirstLastPage: true,
-													firstIcon: 'mdi-chevron-left',
-													lastIcon: 'mdi-chevron-right',
-													prevIcon: 'mdi-minus',
-													nextIcon: 'mdi-plus',
-													'items-per-page-text': 'Versions per page',
-												}"
+												:footer-props="footerProps"
+												:header-props="headerProps"
+												sort-by="process_version_number"
+												:sort-desc="false"
 											>
 												<!-- Header tooltip -->
 												<template v-for="(h, idx) in expandTableHeaders" v-slot:[`header.${h.value}`]="{}">
@@ -217,7 +206,7 @@
 							<template #[`item.actions`]="{ item }">
 								<v-tooltip slot="append" top>
 									<template #activator="{ on }">
-										<v-icon :disabled="item.is_active == 'Yes'" dense v-on="on" slot="activator" @click="showActivationDialog(item, mainTableData)">
+										<v-icon :disabled="item.is_active == 'Yes'" dense v-on="on" slot="activator" @click="showActivationDialog(item)">
 											mdi-check-bold
 										</v-icon>
 									</template>
@@ -225,13 +214,12 @@
 								</v-tooltip>
 								<v-tooltip slot="append" top>
 									<template #activator="{ on }">
-										<v-icon :disabled="item.is_active == 'No'" dense v-on="on" slot="activator" @click="showDeactivationDialog(item, mainTableData)">
+										<v-icon :disabled="item.is_active == 'No'" dense v-on="on" slot="activator" @click="showDeactivationDialog(item)">
 											mdi-close-thick
 										</v-icon>
 									</template>
 									<span>Deactivate</span>
 								</v-tooltip>
-
 								<v-tooltip slot="append" top>
 									<template #activator="{ on }">
 										<v-icon dense v-on="on" slot="activator" @click="showEditDialog(item)">
@@ -240,7 +228,6 @@
 									</template>
 									<span>Edit</span>
 								</v-tooltip>
-
 								<v-tooltip v-if="item.is_active" slot="append" top>
 									<template #activator="{ on }">
 										<v-icon dense v-on="on" slot="activator" @click="showDeletionDialog(item)">
@@ -249,7 +236,6 @@
 									</template>
 									<span>Delete</span>
 								</v-tooltip>
-
 								<v-tooltip slot="append" top>
 									<template #activator="{ on }">
 										<v-icon dense v-on="on" slot="activator" @click="exportPdf(item)">
@@ -258,7 +244,6 @@
 									</template>
 									<span>Export PDF</span>
 								</v-tooltip>
-
 								<v-tooltip slot="append" top>
 									<template #activator="{ on }">
 										<v-icon dense v-on="on" slot="activator" @click="exportFile(item)">
@@ -278,13 +263,21 @@
 						<v-dialog v-model="deactivateDialog" persistent max-width="660">
 							<v-card class="dialog-card-padding">
 								<v-card-title class="dialog-card-title">DEACTIVATION</v-card-title>
-								<v-card-text class="dialog-card-text">Are you sure you want to deactivate this item?</v-card-text>
+								<!-- Notifikacija -->
+								<v-card-text class="dialog-card-text"> <div v-text="deactivateText"></div></v-card-text>
 								<v-card-actions class="dialog-card-action">
 									<v-spacer></v-spacer>
 									<v-btn class="black--text" large depressed tile color="white" @click="deactivateDialog = false">
 										CANCEL
 									</v-btn>
-									<v-btn class="white--text" large depressed tile color="red darken-3" @click="deactivateItem(item, items, expanded)">
+									<v-btn
+										class="white--text"
+										large
+										depressed
+										tile
+										color="red darken-3"
+										@click="deactivateItem(deactivationItem, expanded, mainTableData, expandTableData)"
+									>
 										DEACTIVATE
 									</v-btn>
 								</v-card-actions>
@@ -296,16 +289,54 @@
 				<!-- activate -->
 				<template>
 					<v-row justify="center">
-						<v-dialog v-model="activateDialog" persistent max-width="660">
+						<v-dialog v-model="activateDialog" persistent max-width="900">
 							<v-card class="dialog-card-padding">
 								<v-card-title class="dialog-card-title">ACTIVATION</v-card-title>
-								<v-card-text class="dialog-card-text">Are you sure you want to activate this item?</v-card-text>
+								<!-- Notifikacija -->
+								<v-card-text>
+									<div class="dialog-card-text" v-text="activateText"></div>
+									<v-data-table
+										ref="activeDataTable"
+										v-model="selected"
+										:single-select="true"
+										:show-select="true"
+										item-key="process_version_key"
+										outlined
+										loading-text="Loading..."
+										:loading="isActivateDataTableLoading"
+										:search="activateSearch"
+										:headers="activateTableHeaders"
+										:items="activateTableData"
+										:items-per-page="5"
+										:footer-props="footerProps"
+										:header-props="headerProps"
+										sort-by="process_version_number"
+									>
+										<!-- Header tooltip -->
+										<template v-for="(h, idx) in activateTableHeaders" v-slot:[`header.${h.value}`]="{}">
+											<v-tooltip top :key="idx">
+												<template v-slot:activator="{ on }">
+													<span v-on="on">{{ h.text }}</span>
+												</template>
+												<span>{{ h.explanation }}</span>
+											</v-tooltip>
+										</template>
+									</v-data-table>
+								</v-card-text>
 								<v-card-actions class="dialog-card-action">
 									<v-spacer></v-spacer>
-									<v-btn class="black--text" large depressed tile color="white" @click="activateDialog = false">
+									<v-btn class="black--text" large depressed tile color="white" @click="activateCancel()">
 										CANCEL
 									</v-btn>
-									<v-btn class="white--text" large depressed tile color="green darken-3" @click="activateItem(item, items, expanded)">
+									<v-btn
+										class="white--text"
+										:disabled="selected.length == 0"
+										large
+										depressed
+										tile
+										color="green darken-3"
+										@click="activateItem(selected, expanded, mainTableData, expandTableData)"
+									>
 										ACTIVATE
 									</v-btn>
 								</v-card-actions>
@@ -347,7 +378,7 @@
 									<v-btn class="black--text" large depressed tile color="white" @click="activateDialog = false">
 										CANCEL
 									</v-btn>
-									<v-btn class="white--text" large depressed tile color="green darken-3" @click="activateItem()">
+									<v-btn class="white--text" large depressed tile color="green darken-3" @click="temporary()">
 										ACTIVATE
 									</v-btn>
 								</v-card-actions>
@@ -368,7 +399,7 @@
 									<v-btn class="black--text" large depressed tile color="white" @click="activateDialog = false">
 										CANCEL
 									</v-btn>
-									<v-btn class="white--text" large depressed tile color="green darken-3" @click="activateItem()">
+									<v-btn class="white--text" large depressed tile color="green darken-3" @click="temporary()">
 										ACTIVATE
 									</v-btn>
 								</v-card-actions>
@@ -389,7 +420,7 @@
 									<v-btn class="black--text" large depressed tile color="white" @click="activateDialog = false">
 										CANCEL
 									</v-btn>
-									<v-btn class="white--text" large depressed tile color="green darken-3" @click="activateItem()">
+									<v-btn class="white--text" large depressed tile color="green darken-3" @click="temporary()">
 										ACTIVATE
 									</v-btn>
 								</v-card-actions>
@@ -465,7 +496,8 @@
 </template>
 
 <script>
-import { Model, ProcessVersion } from "@/services";
+import { ProcessDefinition, ProcessVersion } from "@/services";
+import { HeaderConfig, FooterConfig } from "../utils/config.js";
 import * as common from "../utils/common.js";
 import BpmnViewer from "bpmn-js/dist/bpmn-viewer.production.min.js";
 import "bpmn-js/dist/assets/diagram-js.css";
@@ -475,8 +507,17 @@ export default {
 	name: "Models",
 	data() {
 		return {
-			item: null,
-			items: null,
+			//Activation dialog
+			activateText: null,
+			isActivateDataTableLoading: true,
+			activateSearch: null,
+			activateTableHeaders: HeaderConfig.activateTableHeaders,
+			activateTableData: [],
+			isActivateBtnDisabled: true,
+			selected: [], //state of selected rows
+			//temp data for dialogs
+			deactivateText: null,
+			deactivationItem: null,
 			//Dialogs
 			activateDialog: false,
 			deactivateDialog: false,
@@ -489,45 +530,16 @@ export default {
 			mainSearch: null,
 			mainTableData: [],
 			isMainTableLoading: true,
-			mainTableHeaders: [
-				{ text: "Process Name", value: "process_definition_name", explanation: "Process definition name", divider: true, align: "left" },
-				{ text: "Process Key", value: "process_definition_key", explanation: "Internal process definition UUID", divider: true, align: "left" },
-				{ text: "Filename", value: "file_name", explanation: "Filename", divider: true, align: "left" },
-				{ text: "Active", value: "is_active", explanation: "Is the process deployed?", sortable: false, divider: true, align: "left" },
-				{
-					text: "Active Version",
-					value: "active_version_name",
-					explanation: "Deployed version name",
-					sortable: false,
-					divider: true,
-					align: "left",
-				},
-				{ text: "Active Version Nr.", value: "active_version_number", explanation: "Deployed version nr.", divider: true, align: "left" },
-				{ text: "Versions", value: "number_of_versions", explanation: "Number of versions", divider: true, align: "left" },
-				{ text: "Created", value: "created", explanation: "Created timestamp", divider: true, align: "left" },
-				{ text: "Actions", value: "actions", explanation: "Edit process definition actions", sortable: false, align: "left" },
-			],
+			mainTableHeaders: HeaderConfig.mainTableHeaders,
 			//Expand table
 			expandSearch: null,
 			expandTableData: [],
 			isExpandTableDataLoading: true,
-			expandTableHeaders: [
-				{ text: "Version Nr.", value: "process_version_number", explanation: "Deployed version number", divider: true, align: "left" },
-				{ text: "Process Version Name", value: "process_version_name", explanation: "Version name", divider: true, align: "left" },
-				{ text: "Filename", value: "file_name", explanation: "Filename", divider: true, align: "left" },
-				{ text: "Process Version Key", value: "process_version_key", explanation: "Internal process UUID", divider: true, align: "left" },
-				{ text: "Created", value: "created", explanation: "Created timestamp", divider: true, align: "left" },
-				{
-					text: "Last Modified",
-					value: "last_modified_date",
-					explanation: "Last modified date",
-					divider: true,
-					align: "left",
-				},
-				{ text: "Active", value: "is_active", explanation: "Is the version deployed?", divider: true, align: "left" },
-				{ text: "Actions", value: "actions", explanation: "Edit process version actions", sortable: false, divider: true, align: "left" },
-			],
-
+			expandTableHeaders: HeaderConfig.expandTableHeaders,
+			//v-data-table-footer
+			footerProps: FooterConfig.footerProps,
+			//v-data-table-header
+			headerProps: HeaderConfig.headerProps,
 			//Importer
 			BpmnViewer: null,
 			options: {
@@ -557,70 +569,79 @@ export default {
 		bpmnImportFile: function(newInputFile) {
 			this.handleFileInput(newInputFile);
 		},
-		mainTableData: function() {
-			debugger;
-		},
 	},
 	async mounted() {
 		this.isMainTableLoading = true;
-		let processes = await Model.getProcessDefinitions();
+		let processes = await ProcessDefinition.getProcessDefinitions();
 		this.mainTableData = common.reMapDataTableValues(processes);
 		this.isMainTableLoading = false;
 	},
 	methods: {
-		//Metoda za check je li item definicija ili verzija
-
-		showDeactivationDialog(item, items) {
+		showDeactivationDialog(row) {
 			this.deactivateDialog = true;
-			this.item = item;
-			this.items = items;
+			this.deactivateText = common.showCorrespondingDeactivateText(row);
+			this.deactivationItem = row;
 		},
-
-		async deactivateItem(item, items, expanded) {
-			if (common.isItemProcessDefinition(item)) {
-				expanded.splice(0);
-				item = await Model.deactivateProcessDefinition(item.process_definition_id);
-				let idx = items.findIndex((x) => x.process_definition_id == item.process_definition_id);
-				items.splice(idx, 1, item);
-				//tu baca invalid date
-				items = common.reMapDataTableValues(items);
+		async deactivateItem(row, expanded, mainTableData, expandTableData) {
+			if (expanded.length > 0) {
+				let response = await ProcessVersion.deactivateProcessVersion(row.process_definition_id, row.process_version_id);
+				let processDefinition = response.process_definition;
+				let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition_id);
+				mainTableData.splice(pdIdx, 1, processDefinition);
+				mainTableData = common.reMapDataTableValues(mainTableData);
+				let processVersion = response.process_version;
+				let pvIdx = expandTableData.findIndex((x) => x.process_version_id == processVersion.process_version_id);
+				expandTableData.splice(pvIdx, 1, processVersion);
+				expandTableData = common.reMapDataTableValues(expandTableData);
 			} else {
-				item = await ProcessVersion.deactivateProcessVersion(item.process_definition_id, item.process_version_id);
+				let processDefinition = await ProcessDefinition.deactivateProcessDefinition(row.process_definition_id);
+				let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition_id);
+				mainTableData.splice(pdIdx, 1, processDefinition);
+				mainTableData = common.reMapDataTableValues(mainTableData);
 			}
 			this.deactivateDialog = false;
+			this.deactivationItem = null;
 		},
 
-		showActivationDialog(item, items) {
-			this.activateDialog = true;
-			this.item = item;
-			this.items = items;
-		},
-		async activateItem(item, items, expanded) {
-			//Definicija
-			//1. Ako ima vise verzija
-			//2. Ako je samo jedna
-			debugger;
-			expanded.splice(0);
-
-			item = await Model.activateProcessDefinition(item.process_definition_id);
-			let idx = items.findIndex((x) => x.process_definition_id == item.process_definition_id);
-			items.splice(idx, 1, item);
-			items = common.reMapDataTableValues(items);
-			//Verzija
-			//
-			debugger;
-			if (common.isItemProcessDefinition(item)) {
-				console.log("1", item);
-			}
-			console.log("2", items);
+		activateCancel() {
+			this.activateTableData.splice(0);
+			this.selected.splice(0);
 			this.activateDialog = false;
+		},
+		async showActivationDialog(row) {
+			this.activateDialog = true;
+			this.isActivateDataTableLoading = false;
+			this.activateText = common.showCorrespondingActivateText(row);
+			if (common.isItemProcessDefinition(row)) {
+				let versions = await ProcessVersion.getProcessVersions(row.process_definition_id);
+				this.activateTableData = common.reMapDataTableValues(versions);
+			} else {
+				this.activateTableData.splice(0, 0, row);
+			}
+			this.isActivateDataTableLoading = false;
+		},
+
+		async activateItem(row, expanded, mainTableData, expandTableData) {
+			let response = await ProcessVersion.activateProcessVersion(row[0].process_definition_id, row[0].process_version_id);
+			debugger;
+			let processDefinition = response.process_definition;
+			let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition_id);
+			mainTableData.splice(pdIdx, 1, processDefinition);
+			mainTableData = common.reMapDataTableValues(mainTableData);
+			if (expanded.length > 0) {
+				let processVersion = response.process_version;
+				let pvIdx = expandTableData.findIndex((x) => x.process_version_id == processVersion.process_version_id);
+				expandTableData.splice(pvIdx, 1, processVersion);
+				debugger;
+				expandTableData = common.reMapDataTableValues(expandTableData);
+			}
+			this.activateCancel();
 		},
 
 		showDeletionDialog(item) {
 			this.deleteDialog = true;
 			this.item = item;
 		},
-
 		editItem(item) {
 			debugger;
 			console.log(item);

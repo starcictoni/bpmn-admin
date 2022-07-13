@@ -34,3 +34,26 @@ export function reMapDataTableValues(table) {
 export function isItemProcessDefinition(item) {
     return item.process_version_id === undefined ? true : false;
 }
+
+export function showCorrespondingDeactivateText(item) {
+    if(item == null) return null;
+    let text = "";
+    if(isItemProcessDefinition(item)) {
+        text = "Are you sure that you want to deactivate this Process definition?"
+    } else {
+        text = "Are you sure that you want to deactivate this Process version?"
+    }
+    return text;
+}
+
+export function showCorrespondingActivateText(item) {
+    if(item == null) return null;
+    let text = "";
+    if(isItemProcessDefinition(item)) {
+        if(item.versions.length == 1) text = "Are you sure you want to activate this Process definition?"
+        if(item.versions.length > 1) text = "Please, select a version that you want to activate with Process definition."
+    } else {
+        text = "Are you sure you want to activate this Process version?"
+    }
+    return text;
+}

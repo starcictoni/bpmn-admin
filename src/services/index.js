@@ -6,7 +6,7 @@ let Service = axios.create({
     timeout: 5000,
 });
 
-let Model = {
+let ProcessDefinition = {
     async getProcessDefinitions() {
         try {
             let result = await Service.get('/process-definition');
@@ -29,7 +29,6 @@ let Model = {
             if(result?.data == null) {
                 return {};
             }
-            debugger
             return JSON.parse(result.data)
         }
         catch(e) {
@@ -79,7 +78,10 @@ let Model = {
 let ProcessVersion = {
     async getProcessVersions(processDefinitionId) {
         try {
-            let result = await Service.get(`/process-version/${processDefinitionId}`)
+            let params = {
+                "process_definition_id": processDefinitionId
+            }
+            let result = await Service.get('/process-version', { params: params })
             if(result?.data.length == 0) {
                 return [];
             } 
@@ -89,7 +91,41 @@ let ProcessVersion = {
             console.assert(e);
             return null;
         }
-    }
+    },
+    async activateProcessVersion(processDefinitionId, processVersionId) {
+        try {
+            let data = {
+                "process_definition_id": processDefinitionId,
+                "process_version_id": processVersionId
+            }
+            let result = await Service.patch('/process-version/activate', data);
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch(e) {
+            console.log(e)
+            return {};
+        }
+    },
+    async deactivateProcessVersion(processDefinitionId, processVersionId) {
+        try {
+            let data = {
+                "process_definition_id": processDefinitionId,
+                "process_version_id": processVersionId
+            }
+            let result = await Service.patch('/process-version/deactivate', data);
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch(e) {
+            console.log(e)
+            return {};
+        }
+    },    
 }
 
 let WebService = {
@@ -126,7 +162,6 @@ let WebService = {
         }
     },
     async sendData(newData, oldData) {
-        debugger;
         const resp = Service.post(`/service`, {
             new: newData,
             old: oldData
@@ -165,4 +200,4 @@ let ProcessInstance = {
     },
 };
 
-export { Service, ProcessInstance, Model, WebService, ProcessVersion };
+export { Service, ProcessInstance, ProcessDefinition, WebService, ProcessVersion };
