@@ -4,25 +4,22 @@
 			<v-col cols="12">
 				<v-card class="card-padding" tile outlined>
 					<v-card-title class="card-header-margin">
-						<div class="card-title">
-							PROCESS DEFINITIONS
-						</div>
+						<v-tooltip slot="append" bottom>
+							<template #activator="{ on }">
+								<div v-on="on" class="card-title">
+									PROCESS DEFINITIONS
+								</div>
+							</template>
+							<span>Some long long long long long information about process definition.</span>
+						</v-tooltip>
 						<div class="card-header-action">
-							<v-tooltip slot="append" bottom>
+							<v-tooltip slot="append" right>
 								<template #activator="{ on }">
-									<v-btn v-on="on" icon color="yellow accent-3">
+									<v-btn @click="$router.push({ name: 'model-editor', params: { id: '-1' } })" v-on="on" icon color="yellow accent-3">
 										<v-icon large>mdi-plus-box</v-icon>
 									</v-btn>
 								</template>
-								<span>Add new process definition</span>
-							</v-tooltip>
-							<v-tooltip slot="append" bottom>
-								<template #activator="{ on }">
-									<v-btn v-on="on" icon color="amber accent-3">
-										<v-icon large>mdi-import</v-icon>
-									</v-btn>
-								</template>
-								<span>Import new process definition</span>
+								<span>Add a new process defintion.</span>
 							</v-tooltip>
 						</div>
 						<v-spacer></v-spacer>
@@ -42,7 +39,7 @@
 							ref="mainDataTable"
 							:single-expand="true"
 							:show-expand="true"
-							item-key="process_definition_key"
+							item-key="process_definition_id"
 							outlined
 							loading-text="Loading..."
 							:loading="isMainTableLoading"
@@ -50,7 +47,7 @@
 							:headers="mainTableHeaders"
 							:items="mainTableData"
 							:expanded.sync="expanded"
-							:items-per-page="5"
+							:items-per-page="10"
 							@item-expanded="expandClickHandler"
 							:footer-props="footerProps"
 							:header-props="headerProps"
@@ -69,18 +66,10 @@
 												<v-tooltip slot="append" right>
 													<template #activator="{ on }">
 														<v-btn v-on="on" icon color="yellow accent-4">
-															<v-icon large>mdi-plus-box</v-icon>
+															<v-icon large @click="showNewVersionDialog(item)">mdi-plus-box</v-icon>
 														</v-btn>
 													</template>
 													<span>Add new process version</span>
-												</v-tooltip>
-												<v-tooltip slot="append" bottom>
-													<template #activator="{ on }">
-														<v-btn v-on="on" icon color="red accent-4">
-															<v-icon large>mdi-import</v-icon>
-														</v-btn>
-													</template>
-													<span>Import new process version</span>
 												</v-tooltip>
 											</div>
 											<v-spacer></v-spacer>
@@ -120,14 +109,12 @@
 														<span>{{ h.explanation }}</span>
 													</v-tooltip>
 												</template>
-
 												<!-- Link -->
 												<template #[`item.file_name`]="{ item }">
-													<router-link :to="{ name: 'model-editor', params: { id: item.file_name } }">
+													<router-link :to="{ name: 'model-editor', params: { id: item.process_version_id, obj: item } }">
 														{{ item.file_name }}
 													</router-link>
 												</template>
-
 												<!-- Actions -->
 												<template #[`item.actions`]="{ item }">
 													<v-tooltip slot="append" top>
@@ -148,7 +135,7 @@
 													</v-tooltip>
 													<v-tooltip v-if="item.is_active" slot="append" top>
 														<template #activator="{ on }">
-															<v-icon dense v-on="on" slot="activator" @click.stop="editItem(item)">
+															<v-icon dense v-on="on" slot="activator" @click.stop="showEditDialog(item)">
 																mdi-pencil
 															</v-icon>
 														</template>
@@ -156,7 +143,7 @@
 													</v-tooltip>
 													<v-tooltip v-if="item.is_active" slot="append" top>
 														<template #activator="{ on }">
-															<v-icon dense v-on="on" slot="activator" @click.stop="deleteItem(item)">
+															<v-icon dense v-on="on" slot="activator" @click.stop="showDeletionDialog(item)">
 																mdi-trash-can
 															</v-icon>
 														</template>
@@ -164,19 +151,11 @@
 													</v-tooltip>
 													<v-tooltip slot="append" top>
 														<template #activator="{ on }">
-															<v-icon dense v-on="on" slot="activator" @click="exportItemToPdf(item)">
-																mdi-file-pdf-box
-															</v-icon>
-														</template>
-														<span>Export PDF</span>
-													</v-tooltip>
-													<v-tooltip slot="append" top>
-														<template #activator="{ on }">
-															<v-icon dense v-on="on" slot="activator" @click="exportItemToFile(item)">
+															<v-icon dense v-on="on" slot="activator" @click="exportItem(item)">
 																mdi-file
 															</v-icon>
 														</template>
-														<span>Export File</span>
+														<span>Export</span>
 													</v-tooltip>
 												</template>
 											</v-data-table>
@@ -197,7 +176,7 @@
 
 							<!-- Link -->
 							<template #[`item.file_name`]="{ item }">
-								<router-link :to="{ name: 'model-editor', params: { id: item.file_name } }">
+								<router-link :to="{ name: 'model-editor', params: { id: item.process_definition_id, obj: item } }">
 									{{ item.file_name }}
 								</router-link>
 							</template>
@@ -238,19 +217,11 @@
 								</v-tooltip>
 								<v-tooltip slot="append" top>
 									<template #activator="{ on }">
-										<v-icon dense v-on="on" slot="activator" @click="exportPdf(item)">
-											mdi-file-pdf-box
-										</v-icon>
-									</template>
-									<span>Export PDF</span>
-								</v-tooltip>
-								<v-tooltip slot="append" top>
-									<template #activator="{ on }">
-										<v-icon dense v-on="on" slot="activator" @click="exportFile(item)">
+										<v-icon dense v-on="on" slot="activator" @click="exportItem(item)">
 											mdi-file
 										</v-icon>
 									</template>
-									<span>Export File</span>
+									<span>Export</span>
 								</v-tooltip>
 							</template>
 						</v-data-table>
@@ -263,8 +234,25 @@
 						<v-dialog v-model="deactivateDialog" persistent max-width="660">
 							<v-card class="dialog-card-padding">
 								<v-card-title class="dialog-card-title">DEACTIVATION</v-card-title>
-								<!-- Notifikacija -->
-								<v-card-text class="dialog-card-text"> <div v-text="deactivateText"></div></v-card-text>
+
+								<v-card-text>
+									<div v-text="deactivateText"></div>
+									<!-- Notifikacija -->
+									<v-banner
+										class="banner"
+										v-model="showBanner"
+										sticky
+										:icon="bannerIcon"
+										:icon-color="bannerIconColor"
+										single-line
+										:color="bannerColor"
+										tile
+										><div class="banner-text" v-text="bannerText"></div>
+										<template v-slot:actions>
+											<v-btn icon color="white" @click="showBanner = false"><v-icon>mdi-close</v-icon></v-btn>
+										</template></v-banner
+									>
+								</v-card-text>
 								<v-card-actions class="dialog-card-action">
 									<v-spacer></v-spacer>
 									<v-btn class="black--text" large depressed tile color="white" @click="deactivateDialog = false">
@@ -295,12 +283,26 @@
 								<!-- Notifikacija -->
 								<v-card-text>
 									<div class="dialog-card-text" v-text="activateText"></div>
+									<v-banner
+										class="banner"
+										v-model="showBanner"
+										sticky
+										:icon="bannerIcon"
+										:icon-color="bannerIconColor"
+										single-line
+										:color="bannerColor"
+										tile
+										><div class="banner-text" v-text="bannerText"></div>
+										<template v-slot:actions>
+											<v-btn icon color="white" @click="showBanner = false"><v-icon>mdi-close</v-icon></v-btn>
+										</template></v-banner
+									>
 									<v-data-table
 										ref="activeDataTable"
 										v-model="selected"
 										:single-select="true"
 										:show-select="true"
-										item-key="process_version_key"
+										item-key="process_version_id"
 										outlined
 										loading-text="Loading..."
 										:loading="isActivateDataTableLoading"
@@ -345,6 +347,54 @@
 					</v-row>
 				</template>
 
+				<!-- edit  -->
+				<template>
+					<v-row justify="center">
+						<v-dialog v-model="editDialog" persistent max-width="600">
+							<v-card class="dialog-card-padding">
+								<v-card-title class="dialog-card-title">EDIT INFO</v-card-title>
+								<v-card-text class="dialog-card-body">
+									<v-form ref="editDialogFormInput">
+										<v-text-field
+											class="input-remove-border"
+											:rules="[rules.notEmpty]"
+											label="Name"
+											outlined
+											clearable
+											v-model="editInput.name"
+										></v-text-field>
+										<v-text-field
+											class="input-remove-border"
+											label="Filename"
+											:rules="[rules.extension, rules.notEmpty]"
+											outlined
+											clearable
+											v-model="editInput.filename"
+										></v-text-field>
+									</v-form>
+								</v-card-text>
+								<v-card-actions class="dialog-card-action">
+									<v-spacer></v-spacer>
+									<v-btn class="black--text" large depressed tile color="white" @click="editDialog = false">
+										CANCEL
+									</v-btn>
+									<v-btn
+										class="white--text"
+										:disabled="isSaveEditButtonDisabled"
+										large
+										depressed
+										tile
+										color="teal darken-1"
+										@click="editItem(editInput, mainTableData, expandTableData)"
+									>
+										SAVE
+									</v-btn>
+								</v-card-actions>
+							</v-card>
+						</v-dialog>
+					</v-row>
+				</template>
+
 				<!-- delete -->
 				<template>
 					<v-row justify="center">
@@ -357,50 +407,15 @@
 									<v-btn class="black--text" large depressed tile color="white" @click="deleteDialog = false">
 										CANCEL
 									</v-btn>
-									<v-btn class="white--text" large depressed tile color="red darken-3" @click="deleteItem()">
+									<v-btn
+										class="white--text"
+										large
+										depressed
+										tile
+										color="red darken-3"
+										@click="deleteItem(deletionItem, mainTableData, expandTableData)"
+									>
 										DELETE
-									</v-btn>
-								</v-card-actions>
-							</v-card>
-						</v-dialog>
-					</v-row>
-				</template>
-
-				<!-- edit  -->
-				<template>
-					<v-row justify="center">
-						<v-dialog v-model="editDialog" persistent max-width="660">
-							<v-card class="dialog-card-padding">
-								<v-card-title class="dialog-card-title">EDIT</v-card-title>
-								<v-card-text class="dialog-card-text">Are you sure you want to activate this item?</v-card-text>
-								<v-card-actions class="dialog-card-action">
-									<v-spacer></v-spacer>
-									<v-btn class="black--text" large depressed tile color="white" @click="activateDialog = false">
-										CANCEL
-									</v-btn>
-									<v-btn class="white--text" large depressed tile color="green darken-3" @click="temporary()">
-										ACTIVATE
-									</v-btn>
-								</v-card-actions>
-							</v-card>
-						</v-dialog>
-					</v-row>
-				</template>
-
-				<!-- new process definition addNewProcessDialog -->
-				<template>
-					<v-row justify="center">
-						<v-dialog v-model="addNewProcessDialog" persistent max-width="660">
-							<v-card class="dialog-card-padding">
-								<v-card-title class="dialog-card-title">NEW PROCESS DEFINITION</v-card-title>
-								<v-card-text class="dialog-card-text">Are you sure you want to activate this item?</v-card-text>
-								<v-card-actions class="dialog-card-action">
-									<v-spacer></v-spacer>
-									<v-btn class="black--text" large depressed tile color="white" @click="activateDialog = false">
-										CANCEL
-									</v-btn>
-									<v-btn class="white--text" large depressed tile color="green darken-3" @click="temporary()">
-										ACTIVATE
 									</v-btn>
 								</v-card-actions>
 							</v-card>
@@ -411,18 +426,124 @@
 				<!-- new process version -->
 				<template>
 					<v-row justify="center">
-						<v-dialog v-model="addNewVersionDialog" persistent max-width="660">
+						<v-dialog ref="versionDialog" v-model="newVersionDialog" persistent :max-width="versionDialogMaxWidth">
 							<v-card class="dialog-card-padding">
 								<v-card-title class="dialog-card-title">NEW PROCESS VERSION</v-card-title>
-								<v-card-text class="dialog-card-text">Are you sure you want to activate this item?</v-card-text>
-								<v-card-actions class="dialog-card-action">
+								<v-card-text>
+									<div v-if="!isVersionDataTableVisible" class="dialog-card-text">Please, pick an option.</div>
+									<div class="card-padding" v-if="isVersionDataTableVisible">
+										<v-text-field
+											v-model="versionTableSearch"
+											class="input-remove-border-sans-serif form-search-bottom-margin"
+											outlined
+											dense
+											prepend-inner-icon="mdi-magnify"
+											placeholder=" Search"
+											single-line
+											hide-details
+										></v-text-field>
+
+										<v-data-table
+											ref="versionTableData"
+											v-model="selected"
+											:single-select="true"
+											:show-select="true"
+											item-key="process_version_id"
+											tile
+											outlined
+											loading-text="Loading..."
+											:search="versionTableSearch"
+											:loading="isVersionTableDataLoading"
+											:headers="versionTableHeaders"
+											:items="versionTableData"
+											:items-per-page="5"
+											:footer-props="footerProps"
+											:header-props="headerProps"
+											sort-by="process_version_number"
+											:sort-desc="false"
+										>
+											<!-- Header tooltip -->
+											<template v-for="(h, idx) in versionTableHeaders" v-slot:[`header.${h.value}`]="{}">
+												<v-tooltip top :key="idx">
+													<template v-slot:activator="{ on }">
+														<span v-on="on">{{ h.text }}</span>
+													</template>
+													<span>{{ h.explanation }}</span>
+												</v-tooltip>
+											</template>
+										</v-data-table>
+									</div>
+								</v-card-text>
+								<v-card-actions v-if="isVersionDataTableVisible" class="dialog-card-action">
 									<v-spacer></v-spacer>
-									<v-btn class="black--text" large depressed tile color="white" @click="activateDialog = false">
-										CANCEL
+									<v-btn class="black--text" large depressed tile color="white" @click="goBackToVersionDialog()">
+										BACK
 									</v-btn>
-									<v-btn class="white--text" large depressed tile color="green darken-3" @click="temporary()">
-										ACTIVATE
+									<v-btn
+										@click="$router.push({ name: 'model-editor', params: { id: selected[0].process_version_id, obj: selected[0] } })"
+										class="white--text form-btn-margin"
+										large
+										:disabled="selected.length < 1"
+										depressed
+										tile
+										color="blue lighten-1"
+										>NEW VERSION</v-btn
+									>
+								</v-card-actions>
+								<v-card-actions v-if="!isVersionDataTableVisible" class="dialog-card-action">
+									<v-btn class="black--text" large depressed tile color="white" @click="closeNewVersionDialog()">
+										BACK
 									</v-btn>
+									<v-spacer></v-spacer>
+									<v-tooltip slot="append" top>
+										<template #activator="{ on }">
+											<v-btn
+												@click="$router.push({ name: 'model-editor', params: { id: '-1' } })"
+												class="white--text form-btn-margin"
+												v-on="on"
+												large
+												depressed
+												tile
+												color="blue lighten-3"
+												>NEW VERSION</v-btn
+											>
+										</template>
+										<span>The default diagram will taken as a template.</span>
+									</v-tooltip>
+
+									<v-tooltip slot="append" top>
+										<template #activator="{ on }">
+											<v-btn
+												@click="$router.push({ name: 'model-editor', params: { id: versionItem.active_version_id, obj: versionItem } })"
+												class="white--text form-btn-margin"
+												:disabled="isDisabledActiveVersionBtn"
+												v-on="on"
+												large
+												depressed
+												tile
+												color="blue lighten-1"
+												>ACTIVE VERSION</v-btn
+											>
+										</template>
+										<span>The active version will taken as a template.</span>
+									</v-tooltip>
+
+									<v-tooltip slot="append" top>
+										<template #activator="{ on }">
+											<v-btn
+												@click="showVersionDataTable(versionItem)"
+												v-on="on"
+												class="white--text form-btn-margin-right"
+												:disabled="isDisabledMultipleVersionsBtn"
+												large
+												depressed
+												tile
+												color="blue darken-3"
+												>PICK A VERSION</v-btn
+											>
+										</template>
+										<span>The version you choose will be taken as a template.</span>
+									</v-tooltip>
 								</v-card-actions>
 							</v-card>
 						</v-dialog>
@@ -478,6 +599,7 @@
 						<div class="form-item-file-general" v-if="isFileImported">
 							<v-text-field class="input-remove-border" label="Process Name" dense outlined tile v-model="importedName"></v-text-field>
 							<v-text-field class="input-remove-border" label="File Name" dense outlined v-model="importedFileName"></v-text-field>
+							<v-checkbox v-model="importedActivate" color="primary" label="RED"> </v-checkbox>
 							<v-text-field
 								class="input-remove-border"
 								label="Last Modified Date"
@@ -507,6 +629,47 @@ export default {
 	name: "Models",
 	data() {
 		return {
+			//AddVersion
+			versionDialogMaxWidth: 660,
+			versionItem: null,
+			versionTableSearch: null,
+			isVersionTableDataLoading: true,
+			versionTableHeaders: HeaderConfig.activateTableHeaders, //change if needed
+			versionTableData: null,
+
+			isVersionDataTableVisible: false,
+			isDisabledActiveVersionBtn: true,
+			isDisabledMultipleVersionsBtn: true,
+			//AddDefinition
+			exportFile: null,
+			//Delete
+			isDeleteLoading: true,
+			deletionItem: null,
+			deleteText: null,
+			//Edit
+			editText: null, //TODO
+			isEditLoading: true, //not used, TODO: add loading to edit
+			editInput: {
+				type: null,
+				id: null,
+				name: null,
+				filename: null,
+			},
+			defaultEditInput: null,
+			rules: {
+				notEmpty: (field) => {
+					return common.isInputValid(field) || "Cannot be empty.";
+				},
+				extension: (filename) => {
+					return common.isExtensionValid(filename) || "Invalid file extension name.";
+				},
+			},
+			//Banner
+			showBanner: true,
+			bannerIcon: "mdi-lock", //null,
+			bannerIconColor: "white", //null,
+			bannerColor: "red", //null,
+			bannerText: "Some random text", //null,
 			//Activation dialog
 			activateText: null,
 			isActivateDataTableLoading: true,
@@ -523,8 +686,8 @@ export default {
 			deactivateDialog: false,
 			editDialog: false,
 			deleteDialog: false,
-			addNewProcessDialog: false,
-			addNewVersionDialog: false,
+			newDefinitionDialog: false,
+			newVersionDialog: false,
 			//Main table
 			expanded: [], //state of expanded rows
 			mainSearch: null,
@@ -552,6 +715,7 @@ export default {
 			importedFileName: null,
 			importedFileSize: null,
 			importedFileLastModifiedDate: null,
+			importedActivate: false,
 			//file input
 			fileElementError: false,
 			fileElementErrorMessages: [],
@@ -565,7 +729,19 @@ export default {
 			isImportButtonDisabled: false,
 		};
 	},
+	computed: {
+		isSaveEditButtonDisabled() {
+			if (this.defaultEditInput == null) return;
+			if (JSON.stringify(this.editInput) == this.defaultEditInput) return true;
+			let isFormValid = !this.$refs.editDialogFormInput.inputs.every((x) => x.valid == true);
+			return isFormValid;
+		},
+	},
 	watch: {
+		selected: function(val) {
+			console.log(val);
+			debugger;
+		},
 		bpmnImportFile: function(newInputFile) {
 			this.handleFileInput(newInputFile);
 		},
@@ -577,6 +753,134 @@ export default {
 		this.isMainTableLoading = false;
 	},
 	methods: {
+		goBackToVersionDialog() {
+			this.isVersionDataTableVisible = false;
+			this.versionDialogMaxWidth = "660";
+		},
+		closeNewVersionDialog() {
+			this.versionDialogMaxWidth = "660";
+			this.isVersionDataTableVisible = false;
+			this.isVersionTableDataLoading = true;
+		},
+		async showVersionDataTable(item) {
+			this.versionDialogMaxWidth = "660";
+			this.isVersionDataTableVisible = false;
+			this.isVersionTableDataLoading = true;
+			this.versionTableData = await ProcessVersion.getProcessVersions(item.process_definition_id);
+			this.versionTableData = common.reMapDataTableValues(this.versionTableData);
+			debugger;
+			this.versionDialogMaxWidth = "960";
+			console.log(this.$refs.versionDialog);
+			console.log(this.versionDialogMaxWidth);
+			this.isVersionTableDataLoading = false;
+			this.isVersionDataTableVisible = true;
+			console.log(item);
+		},
+		showNewVersionDialog(item) {
+			this.isDisabledActiveVersionBtn = true;
+			this.isDisabledMultipleVersionsBtn = true;
+			this.isVersionDataTableVisible = false;
+			debugger;
+			this.versionItem = item;
+			this.newVersionDialog = true;
+			if (item?.versions.length > 0) this.isDisabledMultipleVersionsBtn = false;
+			if (item?.active_version_id != null) {
+				this.isDisabledActiveVersionBtn = false;
+			}
+		},
+		showNewDefinitionDialog() {
+			this.newDefinitionDialog = true;
+		},
+
+		exportItem(item) {
+			let binaryFile = new Blob([item.xml_definition], { type: "text/bpmn" });
+			let a = document.createElement("a");
+			if (common.isItemProcessDefinition(item)) {
+				a.download = item.process_definition_name + ".bpmn";
+			} else {
+				a.download = item.process_version_name + ".bpmn";
+			}
+			a.href = window.URL.createObjectURL(binaryFile);
+			a.click();
+		},
+		showDeletionDialog(item) {
+			this.deleteDialog = true;
+			this.deletionItem = item;
+		},
+		async deleteItem(deletionItem, mainTableData, expandTableData) {
+			debugger;
+			if (common.isItemProcessDefinition(deletionItem)) {
+				let processDefinition = await ProcessDefinition.deleteProcessDefinition(deletionItem.process_definition_id);
+				let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition);
+				mainTableData.splice(pdIdx, 1);
+				mainTableData = common.reMapDataTableValues(mainTableData);
+			} else {
+				let response = await ProcessVersion.deleteProcessVersion(deletionItem.process_version_id);
+				if (response.process_definition == null) {
+					let processVersionId = response.process_version;
+					let pvIdx = expandTableData.findIndex((x) => x.process_version_id == processVersionId);
+					expandTableData.splice(pvIdx, 1);
+					expandTableData = common.reMapDataTableValues(expandTableData);
+				} else if (response.process_definition != null && typeof response.process_definition == "object") {
+					let processDefinition = response.process_definition;
+					let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition_id);
+					mainTableData.splice(pdIdx, 1, processDefinition);
+					mainTableData = common.reMapDataTableValues(mainTableData);
+
+					let processVersion = response.process_version;
+					let pvIdx = expandTableData.findIndex((x) => x.process_version_id == processVersion.process_version_id);
+					expandTableData.splice(pvIdx, 1);
+					expandTableData = common.reMapDataTableValues(expandTableData);
+				} else {
+					let processVersion = response.process_version;
+					let pvIdx = expandTableData.findIndex((x) => x.process_version_id == processVersion.process_version_id);
+					expandTableData.splice(pvIdx, 1);
+					expandTableData = common.reMapDataTableValues(expandTableData);
+
+					let processDefinition = response.process_definition;
+					let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition_id);
+					mainTableData.splice(pdIdx, 1);
+					mainTableData = common.reMapDataTableValues(mainTableData);
+				}
+			}
+			this.isDeleteLoading = false;
+			this.deleteDialog = false;
+		},
+		showEditDialog(row) {
+			this.editDialog = true;
+			if (common.isItemProcessDefinition(row)) {
+				this.editInput.id = row.process_definition_id;
+				this.editInput.name = row.process_definition_name;
+			} else {
+				this.editInput.id = row.process_version_id;
+				this.editInput.name = row.process_version_name;
+			}
+			this.editInput.type = row;
+			this.editInput.filename = row.file_name;
+			this.defaultEditInput = JSON.stringify(this.editInput);
+		},
+		async editItem(editInput, mainTableData, expandTableData) {
+			if (common.isItemProcessDefinition(editInput.type)) {
+				let processDefinition = await ProcessDefinition.updateProcessDefinitionInformation(editInput.id, editInput.name, editInput.filename);
+				let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition_id);
+				mainTableData.splice(pdIdx, 1, processDefinition);
+				mainTableData = common.reMapDataTableValues(mainTableData);
+			} else {
+				let response = await ProcessVersion.updateProcessVersionInformation(editInput.id, editInput.name, editInput.filename);
+				if (response.process_definition != null) {
+					let processDefinition = response.process_definition;
+					let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition_id);
+					mainTableData.splice(pdIdx, 1, processDefinition);
+					mainTableData = common.reMapDataTableValues(mainTableData);
+				}
+				let processVersion = response.process_version;
+				let pvIdx = expandTableData.findIndex((x) => x.process_version_id == processVersion.process_version_id);
+				expandTableData.splice(pvIdx, 1, processVersion);
+				expandTableData = common.reMapDataTableValues(expandTableData);
+			}
+			this.editDialog = false;
+		},
+
 		showDeactivationDialog(row) {
 			this.deactivateDialog = true;
 			this.deactivateText = common.showCorrespondingDeactivateText(row);
@@ -602,7 +906,6 @@ export default {
 			this.deactivateDialog = false;
 			this.deactivationItem = null;
 		},
-
 		activateCancel() {
 			this.activateTableData.splice(0);
 			this.selected.splice(0);
@@ -620,37 +923,23 @@ export default {
 			}
 			this.isActivateDataTableLoading = false;
 		},
-
 		async activateItem(row, expanded, mainTableData, expandTableData) {
 			let response = await ProcessVersion.activateProcessVersion(row[0].process_definition_id, row[0].process_version_id);
-			debugger;
 			let processDefinition = response.process_definition;
 			let pdIdx = mainTableData.findIndex((x) => x.process_definition_id == processDefinition.process_definition_id);
 			mainTableData.splice(pdIdx, 1, processDefinition);
 			mainTableData = common.reMapDataTableValues(mainTableData);
 			if (expanded.length > 0) {
-				let processVersion = response.process_version;
-				let pvIdx = expandTableData.findIndex((x) => x.process_version_id == processVersion.process_version_id);
-				expandTableData.splice(pvIdx, 1, processVersion);
-				debugger;
-				expandTableData = common.reMapDataTableValues(expandTableData);
+				response.process_version.forEach((element) => {
+					let processVersion = element;
+					let pvIdx = expandTableData.findIndex((x) => x.process_version_id == processVersion.process_version_id);
+					expandTableData.splice(pvIdx, 1, processVersion);
+					expandTableData = common.reMapDataTableValues(expandTableData);
+				});
 			}
 			this.activateCancel();
 		},
 
-		showDeletionDialog(item) {
-			this.deleteDialog = true;
-			this.item = item;
-		},
-		editItem(item) {
-			debugger;
-			console.log(item);
-		},
-		deleteItem(item) {
-			this.deactivateAndDeleteDialog = true;
-			debugger;
-			console.log(item);
-		},
 		exportItemToPdf(item) {
 			debugger;
 			console.log(item);
@@ -792,10 +1081,13 @@ export default {
 	margin-left: 2%;
 	margin-right: 2%;
 	margin-top: 2%;
+	margin-bottom: 1%;
 	background: linear-gradient(rgba(142, 200, 200, 0.15), rgba(0, 0, 0, 0.11));
 	border-radius: 0px !important;
 }
-
+.dialog-card-body {
+	margin-top: 4%;
+}
 /* :not(.expand-table-border) {
 	background: linear-gradient(rgba(0, 0, 0, 0.001), rgba(0, 0, 0, 0.005));
 } */
@@ -843,20 +1135,42 @@ export default {
 .card-header-action {
 	margin-left: 0.5%;
 }
+.input-remove-border {
+	border-radius: 0px !important;
+}
 
 .input-remove-border-sans-serif {
 	border-radius: 0px !important;
 	font-size: 15px !important;
-	font-weight: 600;
+	font-weight: 400;
 	font-family: Helvetica, Arial, sans-serif;
 	letter-spacing: 0px;
 }
-
 .items {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
 }
+.banner {
+	margin: 2% 0% 0% 0%;
+}
+.banner-text {
+	font-size: 17px !important;
+	font-weight: 500 !important;
+	font-family: Helvetica, Arial, sans-serif;
+	letter-spacing: 0px;
+	color: white;
+}
+
+.form-btn-margin {
+	margin-left: 1%;
+	margin-right: 1%;
+}
+
+.form-btn-margin-right {
+	margin-left: 1%;
+}
+
 .form-item-file-input {
 	margin-left: 1%;
 	margin-right: 1%;
@@ -870,6 +1184,9 @@ export default {
 	margin-right: 1%;
 	flex-grow: 1;
 	min-height: 40px;
+}
+.form-search-bottom-margin {
+	margin-bottom: 5% !important;
 }
 .card-header-margin {
 	margin-bottom: 2%;

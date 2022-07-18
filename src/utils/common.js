@@ -57,3 +57,31 @@ export function showCorrespondingActivateText(item) {
     }
     return text;
 }
+
+export function isExtensionValid(filename) {
+    if(filename == null) return true;
+    var fileExtension = filename.split('.').pop();
+    if(fileExtension == 'bpmn' || fileExtension == 'xml') return true; 
+    return false;
+}
+
+export function isInputValid(input) {
+    if(input == null) return false;
+    input = input.trim()
+    if(input == "") return false;
+    return true;
+}
+
+export function showCorrespondingBanner(item) {
+    if(item == null) return null;
+    //aktivacija
+    //verzija - Ako aktiviras ovo, druga verzija ce se deaktivirati
+    //deaktivacija
+    //definicija - Ako deaktiviras ovo, onda ces deaktivirati i njihove verzije
+    //verzija - Ako deaktiviras ovu verziju, onda ces deaktivirati i definiciju
+
+    // v-model="showBanner"
+    // :icon="bannerIcon"
+    // :icon-color="bannerIconColor"
+    // :color="bannerColor"
+}

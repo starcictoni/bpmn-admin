@@ -13,7 +13,14 @@
 		</v-row>
 		<v-row>
 			<v-col cols="9">
-				<vue-bpmn-modeler ref="bpmn" :url="modelUrl" :options="options" v-on:shown="onShown"></vue-bpmn-modeler
+				<vue-bpmn-modeler
+					ref="bpmn"
+					:processId="processId"
+					:url="modelUrl"
+					:process="process"
+					:options="options"
+					v-on:shown="onShown"
+				></vue-bpmn-modeler
 			></v-col>
 			<v-col cols="3">
 				<div v-if="this.bpmnElement != null">
@@ -24,12 +31,7 @@
 									{{ p.label.toUpperCase() }}
 								</v-expansion-panel-header>
 								<v-expansion-panel-content>
-									<component
-										:is="p.module"
-										:key="propertyData.id"
-										:data="propertyData"
-										:context="{ modeler, bpmnElement }"
-									></component>
+									<component :is="p.module" :key="propertyData.id" :data="propertyData" :context="{ modeler, bpmnElement }"></component>
 								</v-expansion-panel-content>
 							</div>
 						</v-expansion-panel>
@@ -76,7 +78,7 @@ import VueBpmnModeler from "@/components/BpmnModeler";
 
 export default {
 	name: "model-editor",
-	props: ["id"],
+	props: ["id", "obj"],
 	components: {
 		VueBpmnModeler,
 		propGeneral: () => import("@/components/properties/General.vue"),
@@ -85,8 +87,10 @@ export default {
 	},
 	data() {
 		return {
+			processId: null,
 			modelUrl: null,
 			modeler: null,
+			process: null,
 			options: {
 				height: 850,
 			},
@@ -113,19 +117,17 @@ export default {
 			},
 		};
 	},
-	// updated() {
-	// 	this.getHeight();
-	// },
-	async mounted() {
-		this.model_path = this.id;
-		this.modelUrl = process.env.VUE_APP_BPMN_SERVER + "/model/" + this.model_path;
+	//was async
+	mounted() {
+		debugger;
+		this.processId = this.id;
+		this.process = this.obj;
+		this.modelUrl = process.env.VUE_APP_BPMN_SERVER + "/models/" + this.id;
 	},
-
 	methods: {
 		getHeight() {
 			let containerHeight = this.$refs.bpmn.$refs.container.clientHeight;
 			let headerHeight = this.$refs.headerColumn.clientHeight;
-
 			this.$refs.bpmn.$refs.container.style.height = containerHeight - headerHeight + "px";
 		},
 		updatePanels() {
@@ -135,7 +137,6 @@ export default {
 		},
 		setPropertyData() {
 			if (!this.bpmnElement) return;
-
 			let bpmnObject = this.bpmnElement.businessObject;
 			this.propertyData = {
 				id: bpmnObject.id,
