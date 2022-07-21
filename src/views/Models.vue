@@ -1,6 +1,86 @@
 <template>
 	<v-container class="align-start" fluid fill-height>
 		<v-row>
+			<v-col class cols="12">
+				<v-card class="card-padding" tile outlined>
+					<v-row>
+						<v-col class="pb-0" cols="12">
+							<v-card-title>
+								<div class="card-title">
+									PROCESS DEFINITION IMPORT
+								</div>
+							</v-card-title>
+							<v-card-text class="card-text">
+								<div class="items">
+									<div class="form-item-file-input">
+										<v-file-input
+											class="form-item-file-input-margin input-remove-border"
+											ref="bpmnInput"
+											v-model="bpmnImportFile"
+											prepend-icon=""
+											prepend-inner-icon="mdi-paperclip"
+											type="file"
+											clearable
+											outlined
+											dense
+											show-size
+											label="Select a BPMN model"
+											:error="fileElementError"
+											:error-messages="fileElementErrorMessages"
+											:disabled="fileElementDisabled"
+											:hint="fileElementHint"
+											:loading="fileElementLoading"
+											:success="fileElementSuccess"
+											:success-messages="fileElementSuccessMessages"
+											@click:clear="handleClearFileInput()"
+										>
+										</v-file-input>
+									</div>
+									<div v-if="!isFileImported">
+										<v-btn class="form-item-btn-import" outlined tile :disabled="isImportButtonDisabled" @click="importBPMN()">Import</v-btn>
+									</div>
+								</div>
+							</v-card-text>
+						</v-col>
+
+						<v-col class="pt-0" v-show="isFileImported" cols="4">
+							<v-card elevation="0" class="import-card-padding" tile>
+								<v-card-title>
+									<div class="card-title">
+										INFO
+									</div>
+								</v-card-title>
+								<v-card-text class="card-text">
+									<div class="form-item-file-general" v-if="isFileImported">
+										<v-text-field class="input-remove-border" label="Process Name" dense outlined tile v-model="importedName"></v-text-field>
+										<v-text-field class="input-remove-border" label="File Name" dense outlined v-model="importedFileName"></v-text-field>
+										<v-checkbox v-model="importedActivate" color="primary" label="Active"> </v-checkbox>
+									</div>
+								</v-card-text>
+								<v-card-actions class="process-import-info">
+									<v-spacer></v-spacer>
+									<v-btn class="process-import-info-cancel" @click="handleClearFileInput()" large outlined tile>Cancel</v-btn>
+									<v-btn class="process-import-info-save" @click="saveImport()" large outlined tile>Save</v-btn>
+									<!-- <v-btn class="process-import-info-continue" large outlined tile>Save&Continue</v-btn> -->
+								</v-card-actions>
+							</v-card>
+						</v-col>
+						<v-col class="pt-0" v-show="interception" cols="8">
+							<v-card elevation="0" class="import-card-padding" tile>
+								<v-card-title>
+									<div class="card-title">
+										PREVIEW
+									</div>
+								</v-card-title>
+								<v-card-text class="card-text">
+									<div ref="container" class="vue-bpmn-modeler-container"></div>
+								</v-card-text>
+							</v-card>
+						</v-col>
+					</v-row>
+				</v-card>
+			</v-col>
+
 			<v-col cols="12">
 				<v-card class="card-padding" tile outlined>
 					<v-card-title class="card-header-margin">
@@ -550,69 +630,6 @@
 					</v-row>
 				</template>
 			</v-col>
-
-			<v-col cols="12">
-				<v-card class="card-padding" tile outlined>
-					<v-card-title>
-						<div class="card-title">
-							PROCESS IMPORT
-						</div>
-					</v-card-title>
-					<v-card-text class="card-text">
-						<div class="items">
-							<v-file-input
-								class="form-item-file-input input-remove-border"
-								ref="bpmnInput"
-								v-model="bpmnImportFile"
-								prepend-icon=""
-								prepend-inner-icon="mdi-paperclip"
-								type="file"
-								clearable
-								outlined
-								dense
-								show-size
-								label="Select a BPMN model"
-								:error="fileElementError"
-								:error-messages="fileElementErrorMessages"
-								:disabled="fileElementDisabled"
-								:hint="fileElementHint"
-								:loading="fileElementLoading"
-								:success="fileElementSuccess"
-								:success-messages="fileElementSuccessMessages"
-								@click:clear="handleClearFileInput()"
-							>
-							</v-file-input>
-							<div v-if="!isFileImported">
-								<v-btn class="form-item-btn-import" outlined tile :disabled="isImportButtonDisabled" @click="importBPMN()">Import</v-btn>
-							</div>
-							<div v-if="isFileImported">
-								<!-- Show buttons only when the process is imported -->
-								<!-- For testing purposes -->
-							</div>
-							<v-btn class="form-item-btn-import" outlined tile>Save & Continue Editing</v-btn>
-							<v-btn class="form-item-btn-import" outlined tile>Save</v-btn>
-
-							<v-btn class="form-item-btn-import" outlined tile>Export - Not here</v-btn>
-							<!-- Move to the editor component -->
-							<v-btn class="form-item-btn-import" outlined tile>Save As New Version - Not here</v-btn>
-						</div>
-						<div class="form-item-file-general" v-if="isFileImported">
-							<v-text-field class="input-remove-border" label="Process Name" dense outlined tile v-model="importedName"></v-text-field>
-							<v-text-field class="input-remove-border" label="File Name" dense outlined v-model="importedFileName"></v-text-field>
-							<v-checkbox v-model="importedActivate" color="primary" label="RED"> </v-checkbox>
-							<v-text-field
-								class="input-remove-border"
-								label="Last Modified Date"
-								disabled
-								dense
-								outlined
-								v-model="importedFileLastModifiedDate"
-							></v-text-field>
-						</div>
-						<div ref="container" class="vue-bpmn-modeler-container"></div>
-					</v-card-text>
-				</v-card>
-			</v-col>
 		</v-row>
 	</v-container>
 </template>
@@ -629,14 +646,39 @@ export default {
 	name: "Models",
 	data() {
 		return {
+			interception: false,
+			BpmnViewer: null,
+			options: {
+				height: 400,
+			},
+			//file
+			bpmnImportFile: null,
+			//file info
+			importedName: null,
+			importedFileName: null,
+			importedFileSize: null,
+			importedFileLastModifiedDate: null,
+			importedFileXml: null,
+			importedActivate: false,
+			//file input
+			fileElementError: false,
+			fileElementErrorMessages: [],
+			fileElementDisabled: false,
+			fileElementHint: null,
+			fileElementLoading: false,
+			fileElementSuccess: false,
+			fileElementSuccessMessages: [],
+			//flags
+			isFileImported: false,
+			isImportButtonDisabled: false,
+
 			//AddVersion
 			versionDialogMaxWidth: 660,
 			versionItem: null,
 			versionTableSearch: null,
 			isVersionTableDataLoading: true,
 			versionTableHeaders: HeaderConfig.activateTableHeaders, //change if needed
-			versionTableData: null,
-
+			versionTableData: [],
 			isVersionDataTableVisible: false,
 			isDisabledActiveVersionBtn: true,
 			isDisabledMultipleVersionsBtn: true,
@@ -704,29 +746,6 @@ export default {
 			//v-data-table-header
 			headerProps: HeaderConfig.headerProps,
 			//Importer
-			BpmnViewer: null,
-			options: {
-				height: 400,
-			},
-			//file
-			bpmnImportFile: null,
-			//file info
-			importedName: null,
-			importedFileName: null,
-			importedFileSize: null,
-			importedFileLastModifiedDate: null,
-			importedActivate: false,
-			//file input
-			fileElementError: false,
-			fileElementErrorMessages: [],
-			fileElementDisabled: false,
-			fileElementHint: null,
-			fileElementLoading: false,
-			fileElementSuccess: false,
-			fileElementSuccessMessages: [],
-			//flags
-			isFileImported: false,
-			isImportButtonDisabled: false,
 		};
 	},
 	computed: {
@@ -753,14 +772,133 @@ export default {
 		this.isMainTableLoading = false;
 	},
 	methods: {
+		async saveImport() {
+			var data = {
+				process_definition_name: this.importedName,
+				file_name: this.importedFileName,
+				is_active: this.importedActivate,
+				xml_definition: this.importedFileXml,
+			};
+			let result = await ProcessDefinition.addProcessDefinition(data);
+			this.mainTableData.unshift(result);
+			this.mainTableData = common.reMapDataTableValues(this.mainTableData);
+			this.handleClearFileInput();
+		},
+		handleFileInput(newInputFile) {
+			let isValidInputType = common.isInputFileValid(newInputFile);
+			this.showInputFeedback(isValidInputType);
+		},
+		showInputFeedback(isValidInputType) {
+			if (isValidInputType == true) {
+				this.fileElementHint = "";
+				this.fileElementError = false;
+				this.fileElementDisabled = false;
+				this.isImportButtonDisabled = false;
+				this.$refs.bpmnInput.blur();
+			} else {
+				this.fileElementHint = "It seems that the selected item is not valid. Please change it into .bpmn or .xml file format.";
+				this.fileElementError = true;
+				this.isImportButtonDisabled = true;
+			}
+		},
+		handleClearFileInput() {
+			if (this.BpmnViewer == null) {
+				return null;
+			}
+			debugger;
+			this.importedName = null;
+			this.importedFileName = null;
+			this.importedFileSize = null;
+			this.importedFileLastModifiedDate = null;
+			Object.assign(this.bpmnImportFile, null);
+			this.BpmnViewer.detach();
+			this.isFileImported = false;
+			this.interception = false;
+			this.isImportButtonDisabled = false;
+		},
+		importBPMN() {
+			if (this.bpmnImportFile == null) {
+				return null;
+			}
+			this.importedName = common.getNameFromFile(this.bpmnImportFile);
+			this.importedFileName = this.bpmnImportFile.name;
+			this.importedFileSize = this.bpmnImportFile.size;
+			this.importedFileLastModifiedDate = new Date(this.bpmnImportFile.lastModifiedDate).toLocaleString();
+
+			this.fileElementLoading = true;
+			this.fileElementDisabled = true;
+			this.isImportButtonDisabled = true;
+
+			const reader = new FileReader();
+			reader.readAsText(this.bpmnImportFile);
+			reader.onload = () => {
+				debugger;
+				this.importedFileXml = reader.result;
+				this.importModel(reader.result);
+			};
+		},
+		async importModel(parsedXml) {
+			if (this.BpmnViewer != null) {
+				this.BpmnViewer.detach();
+			}
+			this.interception = true;
+			console.log(this.$refs);
+			const options = Object.assign({ container: this.$refs.container, width: "100%", height: "100%" }, this.options);
+			this.BpmnViewer = new BpmnViewer(options);
+			try {
+				await this.BpmnViewer.importXML(parsedXml);
+				this.BpmnViewer.attachTo(this.$refs.container);
+				this.BpmnViewer.get("canvas").zoom("fit-viewport");
+				this.isFileImported = true;
+				this.handleImportSuccess();
+			} catch (error) {
+				this.isFileImported = false;
+				this.interception = false;
+				this.handleImportError();
+			}
+		},
+		handleImportSuccess() {
+			this.isImportButtonDisabled = false;
+			this.fileElementLoading = false;
+			this.fileElementDisabled = false;
+			this.fileElementSuccess = true;
+			this.fileElementSuccessMessages.splice(0, 1, "The model is imported successfully.");
+			this.fileElementError = false;
+			this.fileElementErrorMessages.splice(0, 1);
+			setTimeout(
+				() => {
+					this.fileElementSuccess = false;
+					this.fileElementSuccessMessages.splice(0, this.fileElementSuccessMessages.length);
+				},
+				4000,
+				this
+			);
+		},
+		handleImportError() {
+			this.isImportButtonDisabled = false;
+			this.fileElementLoading = false;
+			this.fileElementDisabled = false;
+			this.fileElementSuccess = false;
+			this.fileElementSuccessMessages.splice(0, 1);
+			this.fileElementError = true;
+			this.fileElementErrorMessages.splice(0, 1, "The import of the BPMN model has failed.");
+			setTimeout(
+				() => {
+					this.fileElementError = false;
+					this.fileElementErrorMessages.splice(0, this.fileElementSuccessMessages.length);
+				},
+				4000,
+				this
+			);
+		},
 		goBackToVersionDialog() {
 			this.isVersionDataTableVisible = false;
 			this.versionDialogMaxWidth = "660";
 		},
 		closeNewVersionDialog() {
+			debugger;
+			this.newVersionDialog = false;
 			this.versionDialogMaxWidth = "660";
-			this.isVersionDataTableVisible = false;
-			this.isVersionTableDataLoading = true;
 		},
 		async showVersionDataTable(item) {
 			this.versionDialogMaxWidth = "660";
@@ -791,7 +929,6 @@ export default {
 		showNewDefinitionDialog() {
 			this.newDefinitionDialog = true;
 		},
-
 		exportItem(item) {
 			let binaryFile = new Blob([item.xml_definition], { type: "text/bpmn" });
 			let a = document.createElement("a");
@@ -880,7 +1017,6 @@ export default {
 			}
 			this.editDialog = false;
 		},
-
 		showDeactivationDialog(row) {
 			this.deactivateDialog = true;
 			this.deactivateText = common.showCorrespondingDeactivateText(row);
@@ -939,7 +1075,6 @@ export default {
 			}
 			this.activateCancel();
 		},
-
 		exportItemToPdf(item) {
 			debugger;
 			console.log(item);
@@ -957,110 +1092,15 @@ export default {
 		},
 
 		//----------------------------------------------------------------------------------------------------------------
-		handleFileInput(newInputFile) {
-			let isValidInputType = common.isInputFileValid(newInputFile);
-			this.showInputFeedback(isValidInputType);
-		},
-		showInputFeedback(isValidInputType) {
-			if (isValidInputType == true) {
-				this.fileElementHint = "";
-				this.fileElementError = false;
-				this.fileElementDisabled = false;
-				this.isImportButtonDisabled = false;
-				this.$refs.bpmnInput.blur();
-			} else {
-				this.fileElementHint = "It seems that the selected item is not valid. Please change it into .bpmn or .xml file format.";
-				this.fileElementError = true;
-				this.isImportButtonDisabled = true;
-			}
-		},
-		handleClearFileInput() {
-			if (this.BpmnViewer == null) {
-				return null;
-			}
-			(this.importedName = null), (this.importedFileName = null);
-			this.importedFileSize = null;
-			this.importedFileLastModifiedDate = null;
-
-			this.BpmnViewer.detach();
-			this.isFileImported = false;
-			this.isImportButtonDisabled = false;
-		},
-		importBPMN() {
-			if (this.bpmnImportFile == null) {
-				return null;
-			}
-			this.importedName = common.getNameFromFile(this.bpmnImportFile);
-			this.importedFileName = this.bpmnImportFile.name;
-			this.importedFileSize = this.bpmnImportFile.size;
-			this.importedFileLastModifiedDate = new Date(this.bpmnImportFile.lastModifiedDate).toLocaleString();
-
-			this.fileElementLoading = true;
-			this.fileElementDisabled = true;
-			this.isImportButtonDisabled = true;
-
-			const reader = new FileReader();
-			reader.readAsText(this.bpmnImportFile);
-			reader.onload = () => {
-				this.importModel(reader.result);
-			};
-		},
-		async importModel(parsedXml) {
-			if (this.BpmnViewer != null) {
-				this.BpmnViewer.detach();
-			}
-			const options = Object.assign({ container: this.$refs.container }, this.options);
-			this.BpmnViewer = new BpmnViewer(options);
-			try {
-				await this.BpmnViewer.importXML(parsedXml);
-				this.BpmnViewer.attachTo(this.$refs.container);
-				this.BpmnViewer.get("canvas").zoom("fit-viewport");
-				this.isFileImported = true;
-				this.handleImportSuccess();
-			} catch (error) {
-				this.isFileImported = false;
-				this.handleImportError();
-			}
-		},
-		handleImportSuccess() {
-			this.isImportButtonDisabled = false;
-			this.fileElementLoading = false;
-			this.fileElementDisabled = false;
-			this.fileElementSuccess = true;
-			this.fileElementSuccessMessages.splice(0, 1, "The model is imported successfully.");
-			this.fileElementError = false;
-			this.fileElementErrorMessages.splice(0, 1);
-			setTimeout(
-				() => {
-					this.fileElementSuccess = false;
-					this.fileElementSuccessMessages.splice(0, this.fileElementSuccessMessages.length);
-				},
-				4000,
-				this
-			);
-		},
-		handleImportError() {
-			this.isImportButtonDisabled = false;
-			this.fileElementLoading = false;
-			this.fileElementDisabled = false;
-			this.fileElementSuccess = false;
-			this.fileElementSuccessMessages.splice(0, 1);
-			this.fileElementError = true;
-			this.fileElementErrorMessages.splice(0, 1, "The import of the BPMN model has failed.");
-			setTimeout(
-				() => {
-					this.fileElementError = false;
-					this.fileElementErrorMessages.splice(0, this.fileElementSuccessMessages.length);
-				},
-				4000,
-				this
-			);
-		},
 	},
 };
 </script>
 
 <style>
+.import-btn-margin {
+	margin-left: 3%;
+}
+
 .dialog-card-padding {
 	padding: 2%;
 	border-radius: 0px !important;
@@ -1078,10 +1118,7 @@ export default {
 	letter-spacing: 0px;
 }
 .dialog-card-action {
-	margin-left: 2%;
-	margin-right: 2%;
-	margin-top: 2%;
-	margin-bottom: 1%;
+	margin: 2% 2% 2% 1%;
 	background: linear-gradient(rgba(142, 200, 200, 0.15), rgba(0, 0, 0, 0.11));
 	border-radius: 0px !important;
 }
@@ -1173,16 +1210,20 @@ export default {
 
 .form-item-file-input {
 	margin-left: 1%;
-	margin-right: 1%;
-	flex-grow: 11;
+	padding-right: 2%;
+	flex-grow: 9;
 }
+
+.form-item-file-input-margin {
+	margin-right: 1%;
+}
+
 .form-item-file-general {
 	margin-top: 3%;
 }
 .form-item-btn-import {
-	margin-left: 1%;
-	margin-right: 1%;
-	flex-grow: 1;
+	width: 100%;
+	flex-grow: 3;
 	min-height: 40px;
 }
 .form-search-bottom-margin {
@@ -1193,6 +1234,23 @@ export default {
 }
 .card-padding {
 	padding: 2%;
+}
+.import-card-padding {
+	padding: 1%;
+}
+
+.process-import-info {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	margin-left: 1.5%;
+	margin-right: 1.5%;
+}
+.process-import-info-cancel {
+	margin-right: 1%;
+}
+.process-import-info-save {
+	margin-right: 1%;
 }
 
 .v-text-field > .v-input__control > .v-input__slot {

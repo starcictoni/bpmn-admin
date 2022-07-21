@@ -40,23 +40,42 @@
 			<v-list nav dense>
 				<v-list-item link to="/models">
 					<v-list-item-icon>
-						<v-icon>mdi-folder</v-icon>
+						<v-icon>mdi-file</v-icon>
 					</v-list-item-icon>
 					<v-list-item-title>Models</v-list-item-title>
 				</v-list-item>
-				<v-list-item link to="/instances">
+				<!-- <v-list-item link to="/instances">
 					<v-list-item-icon>
 						<v-icon>mdi-text-search</v-icon>
 					</v-list-item-icon>
 					<v-list-item-title>Running instances</v-list-item-title>
+				</v-list-item> -->
+				<v-list-item link to="/services">
+					<v-list-item-icon>
+						<v-icon>mdi-api</v-icon>
+					</v-list-item-icon>
+					<v-list-item-title>Services</v-list-item-title>
 				</v-list-item>
-
-				<v-list-item link to="/environment">
+				<v-list-item link>
+					<v-list-item-icon>
+						<!-- <v-btn  v-on="on" icon color="yellow accent-3"> -->
+						<v-icon @click="$router.push({ name: 'model-editor', params: { id: '-1' } })">mdi-yoga</v-icon>
+						<!-- </v-btn> -->
+					</v-list-item-icon>
+					<v-list-item-title>Modeler</v-list-item-title>
+				</v-list-item>
+				<v-list-item link to="/settings">
+					<v-list-item-icon>
+						<v-icon>mdi-cog</v-icon>
+					</v-list-item-icon>
+					<v-list-item-title>Settings</v-list-item-title>
+				</v-list-item>
+				<!-- <v-list-item link to="/environment">
 					<v-list-item-icon>
 						<v-icon>mdi-star</v-icon>
 					</v-list-item-icon>
 					<v-list-item-title>Environment</v-list-item-title>
-				</v-list-item>
+				</v-list-item> -->
 			</v-list>
 			<template v-slot:append>
 				<v-list-item>

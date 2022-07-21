@@ -6,6 +6,19 @@ let Service = axios.create({
 });
 
 let ProcessDefinition = {
+    async addProcessDefinition(data) {
+        try {
+            let result = await Service.post('/process-definition', data);
+            if(result?.data.length == 0) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch(e) {
+            console.log(e)
+            return {};
+        }
+    },
     async getProcessDefinition(definitionId) {
         try {
             debugger;
@@ -100,26 +113,6 @@ let ProcessDefinition = {
             return {};
         }
     },
-    // async get(id) {
-    //     try {
-    //         let result = await Service.get(`/model/${id}`);
-    //         return result.data;
-    //     } catch (e) {
-    //         return null;
-    //     }
-    // },
-    // async search(query) {
-    //     try {
-    //         let result = await Service.get('/model', {
-    //             params: {
-    //                 q: query,
-    //             },
-    //         });
-    //         return result.data.results;
-    //     } catch (e) {
-    //         return [];
-    //     }
-    // },
 };
 
 let ProcessVersion = {
@@ -223,52 +216,114 @@ let ProcessVersion = {
 }
 
 let WebService = {
-    async get() {
+    async getServices() {
         try {
-            let result = await Service.get(`/service`);
-            return result.data;
+            let result = await Service.get('/web-service');
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
         }
         catch (e) {
             console.assert(e)
-            return null;
+            return {};
         }
     },
-    async getServiceMeta(url) {
+    async getService(serviceId) {
         try {
-            let serviceUrl = `/service/meta/${encodeURIComponent(url)}`;
-            let result = await Service.get(serviceUrl)
-            if(result.length == 0) return [];
-            return result.data;
-        }
-        catch (e) {
-            console.assert(e);
-            return null;
-        }
-    },
-    async getHealth() {
-        try {
-            let result = await Service.get(`/service/status`);
-            return result.data;
+            let result = await Service.get(`/web-service/${serviceId}`);
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
         }
         catch (e) {
             console.assert(e)
-            return null;
+            return {};
         }
     },
-    async sendData(newData, oldData) {
-        const resp = Service.post(`/service`, {
-            new: newData,
-            old: oldData
-        }).then(function (response) {
-            console.log(response)
-            return response.data;
-        }).catch(function (error) {
-            console.log(error)            
-            return error;
-        })
-        return resp
-    }
-
+    async deleteService(serviceId) {
+        try {
+            debugger;
+            let data = {
+                "id": serviceId,
+            }
+            let result = await Service.delete('/web-service', {data: data});
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch (e) {
+            console.assert(e)
+            return {};
+        }
+    },    
+    async addService(data) {
+        try {
+            let result = await Service.post('/web-service', data);
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch (e) {
+            console.assert(e)
+            return {};
+        }
+    },
+    async updateService(data) {
+        try {
+            let result = await Service.patch('/web-service', data);
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch (e) {
+            console.assert(e)
+            return {};
+        }
+    },
+    async changeServiceStatus(id) {
+        try {
+            let result = await Service.patch(`/web-service/${id}`);
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch (e) {
+            console.assert(e)
+            return {};
+        }
+    },    
+    async getServiceMeta() {
+        try {
+            let result = await Service.get('/web-service/meta');
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch (e) {
+            console.assert(e)
+            return {};
+        }
+    },
+    async getServiceStatus() {
+        try {
+            let result = await Service.get('/web-service/status');
+            if(result?.data == null) {
+                return {};
+            }
+            return JSON.parse(result.data)
+        }
+        catch (e) {
+            console.assert(e)
+            return {};
+        }
+    }    
 }
 
 let ProcessInstance = {

@@ -2,6 +2,21 @@ let HeaderConfig = {
     headerProps: {
         sortIcon: "mdi-sort",
     },
+    serviceTableHeaders: [
+      { text: "", value: "status", explanation: "Service status", divider: true, align: "right" },
+      { text: "Service Name", value: "name", explanation: "Service name", divider: true, align: "left" },
+      { text: "Address", value: "address", explanation: "Service URL", divider: true, align: "left" },
+      { text: "Created", value: "created", explanation: "Created timestamp", divider: true, align: "left" },
+      {
+          text: "Last Modified",
+          value: "last_modified_date",
+          explanation: "Last modified date",
+          divider: true,
+          align: "left",
+      },
+      { text: "Active", value: "is_active", explanation: "Is the service out of function?", divider: true, align: "left" },
+      { text: "Actions", value: "actions", explanation: "Edit process version actions", sortable: false, align: "left" },
+    ],
     activateTableHeaders: [
         { text: "Version Nr.", value: "process_version_number", explanation: "Deployed version number", divider: true, align: "left" },
         { text: "Process Version Name", value: "process_version_name", explanation: "Version name", divider: true, align: "left" },
@@ -92,4 +107,34 @@ let newFile = {
     `
 }
 
-export { HeaderConfig, FooterConfig, newFile }
+let DialogConfig = {
+  service: {
+    active: {
+      title: "ACTIVATE SERVICE",
+			text: "Are you sure you want to activate this service?",
+			buttonColor: "blue darken-3",
+    },
+    inactive: {
+			title: "DEACTIVATE SERVICE",
+			text: "Are you sure you want to deactivate this service?",
+			buttonColor: "red darken-3",
+    },
+    delete: {
+			title: "DELETE SERVICE",
+			text: "Are you sure you want to delete this service?",
+			buttonColor: "red darken-3",
+    },
+    add: {
+			title: "ADD SERVICE",
+			text: 'Fill the data in and press Ok button to save.',
+			buttonColor: "blue lighten-1",
+    },
+    edit: {
+			title: "EDIT SERVICE",
+			text: "Are you sure you want to edit this service?",
+			buttonColor: "cyan darken-1",
+    }
+  }
+}
+
+export { HeaderConfig, FooterConfig, newFile, DialogConfig }

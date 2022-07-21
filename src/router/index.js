@@ -5,6 +5,7 @@ import Environment from '../views/Environment.vue'
 import SearchInstances from '../views/SearchInstances.vue';
 import ModelEditor from '../views/ModelEditor.vue';
 import ProcessInstance from '../views/ProcessInstance.vue';
+import Service from '../views/Service.vue'
 // import Service from '../views/ProcessInstance.vue';
 import Models from '../views/Models.vue';
 
@@ -43,6 +44,12 @@ const routes = [
         name: 'instances',
         component: SearchInstances,
     },
+    {
+        path: '/services',
+        name: 'service',
+        component: Service
+
+    }
 ];
 
 const router = new VueRouter({
