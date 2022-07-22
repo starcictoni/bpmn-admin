@@ -111,30 +111,57 @@ let DialogConfig = {
   service: {
     active: {
       title: "ACTIVATE SERVICE",
-			text: "Are you sure you want to activate this service?",
+			text: "Are you sure that you want to activate this service?",
 			buttonColor: "blue darken-3",
     },
     inactive: {
 			title: "DEACTIVATE SERVICE",
-			text: "Are you sure you want to deactivate this service?",
+			text: "Are you sure that you want to deactivate this service?",
 			buttonColor: "red darken-3",
     },
     delete: {
 			title: "DELETE SERVICE",
-			text: "Are you sure you want to delete this service?",
+			text: "Are you sure that you want to delete this service?",
 			buttonColor: "red darken-3",
     },
     add: {
 			title: "ADD SERVICE",
-			text: 'Fill the data in and press Ok button to save.',
+			text: "Fill the data in and press 'Ok' button to save.",
 			buttonColor: "blue lighten-1",
     },
     edit: {
 			title: "EDIT SERVICE",
-			text: "Are you sure you want to edit this service?",
+			text: "Are you sure that you want to edit this service?",
 			buttonColor: "cyan darken-1",
     }
-  }
+  },
+  model: {
+    active: {
+      title: "ACTIVATE ITEM",
+			text: "Are you sure that you want to activate this item?",
+			buttonColor: "blue darken-3",
+    },
+    inactive: {
+			title: "DEACTIVATE ITEM",
+			text: "Are you sure that you want to deactivate this item?",
+			buttonColor: "red darken-3",
+    },
+    delete: {
+			title: "DELETE ITEM",
+			text: "Are you sure that you want to delete this item?",
+			buttonColor: "red darken-3",
+    },
+    add: {
+			title: "ADD ITEM",
+			text: "Fill the data in and press 'Ok' button to save.",
+			buttonColor: "blue lighten-1",
+    },
+    edit: {
+			title: "EDIT ITEM",
+			text: "Are you sure that you want to edit this item?",
+			buttonColor: "cyan darken-1",
+    }
+  }  
 }
 
 export { HeaderConfig, FooterConfig, newFile, DialogConfig }

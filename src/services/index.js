@@ -21,7 +21,6 @@ let ProcessDefinition = {
     },
     async getProcessDefinition(definitionId) {
         try {
-            debugger;
             let result = await Service.get(`/process-definition/${definitionId}`);
             if(result?.data.length == 0) {
                 return {};
@@ -244,7 +243,6 @@ let WebService = {
     },
     async deleteService(serviceId) {
         try {
-            debugger;
             let data = {
                 "id": serviceId,
             }

@@ -30,11 +30,9 @@ export function reMapDataTableValues(table) {
     });
     return table;
 }
-
 export function isItemProcessDefinition(item) {
     return item.process_version_id === undefined ? true : false;
 }
-
 export function showCorrespondingDeactivateText(item) {
     if(item == null) return null;
     let text = "";
@@ -45,7 +43,6 @@ export function showCorrespondingDeactivateText(item) {
     }
     return text;
 }
-
 export function showCorrespondingActivateText(item) {
     if(item == null) return null;
     let text = "";
@@ -57,21 +54,29 @@ export function showCorrespondingActivateText(item) {
     }
     return text;
 }
-
 export function isExtensionValid(filename) {
     if(filename == null) return true;
     var fileExtension = filename.split('.').pop();
     if(fileExtension == 'bpmn' || fileExtension == 'xml') return true; 
     return false;
 }
-
 export function isInputValid(input) {
     if(input == null) return false;
     input = input.trim()
     if(input == "") return false;
     return true;
 }
-
+export function exportItem(item) {
+    let binaryFile = new Blob([item.xml_definition], { type: "text/bpmn" });
+    let a = document.createElement("a");
+    if (isItemProcessDefinition(item)) {
+        a.download = item.process_definition_name + ".bpmn";
+    } else {
+        a.download = item.process_version_name + ".bpmn";
+    }
+    a.href = window.URL.createObjectURL(binaryFile);
+    a.click();
+}
 export function showCorrespondingBanner(item) {
     if(item == null) return null;
     //aktivacija
@@ -84,4 +89,31 @@ export function showCorrespondingBanner(item) {
     // :icon="bannerIcon"
     // :icon-color="bannerIconColor"
     // :color="bannerColor"
+}
+
+//TODO: rewrite, remove type
+export function findAndReplace(table, item, type) {
+    let idx = null;
+    if(type == "definition") {
+        idx = table.findIndex((x) => x.process_definition_id == item.process_definition_id);
+    }
+    else {
+        idx = table.findIndex((x) => x.process_version_id == item.process_version_id);
+    }
+    table.splice(idx, 1, item);
+    table = reMapDataTableValues(table)
+    return table;
+}
+//TODO: rewrite, remove type
+export function findAndRemove(table, id, type) {
+    let idx = null;
+    if(type == "definition") {
+        idx = table.findIndex(x => x.process_definition_id == id);
+    }
+    else {
+        idx = table.findIndex(x => x.process_version_id == id);
+    }
+    table.splice(idx, 1);
+    table = reMapDataTableValues(table)
+    return table;
 }

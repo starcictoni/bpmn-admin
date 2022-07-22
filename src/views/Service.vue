@@ -239,6 +239,13 @@ export default {
 			if (active == "No") return "Service is under maintenance";
 			return (status = status ? "Service is live&running" : "Service is down");
 		},
+		applyChanges(response, type) {
+			this.serviceTableData = common.reMapDataTableValues(this.serviceTableData);
+			this.setColor(response.is_active, response.status);
+			this.setText(response, response.is_active, response.status);
+			this.isServiceDataTableLoading = false;
+			this.showAndHideDialog(null, type);
+		},
 		async handleOk(type) {
 			this.isServiceDataTableLoading = true;
 			let response = null;
@@ -251,15 +258,9 @@ export default {
 				let idx = this.serviceTableData.findIndex((x) => x.id == response.id);
 				this.serviceTableData.splice(idx, 1, response);
 			}
-			this.serviceTableData = common.reMapDataTableValues(this.serviceTableData);
-			this.setColor(response.is_active, response.status);
-			this.setText(response, response.is_active, response.status);
-			this.isServiceDataTableLoading = false;
-			this.showAndHideDialog(null, type);
+			this.applyChanges(response, type);
 		},
 		async handleAddAndEdit(type, data) {
-			debugger;
-			console.log(type, data);
 			this.isServiceDataTableLoading = true;
 			let response = null;
 			if (type == "add") {
@@ -270,14 +271,8 @@ export default {
 				let idx = this.serviceTableData.findIndex((x) => x.id == response.id);
 				this.serviceTableData.splice(idx, 1, response);
 			}
-			debugger;
-			this.serviceTableData = common.reMapDataTableValues(this.serviceTableData);
-			this.setColor(response.is_active, response.status);
-			this.setText(response, response.is_active, response.status);
-			this.showAndHideDialog(null, type);
-			this.isServiceDataTableLoading = false;
+			this.applyChanges(response, type);
 		},
-
 		async getDataTableData() {
 			this.isServiceDataTableLoading = true;
 			let services = await WebService.getServices();

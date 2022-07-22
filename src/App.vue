@@ -58,9 +58,7 @@
 				</v-list-item>
 				<v-list-item link>
 					<v-list-item-icon>
-						<!-- <v-btn  v-on="on" icon color="yellow accent-3"> -->
 						<v-icon @click="$router.push({ name: 'model-editor', params: { id: '-1' } })">mdi-yoga</v-icon>
-						<!-- </v-btn> -->
 					</v-list-item-icon>
 					<v-list-item-title>Modeler</v-list-item-title>
 				</v-list-item>
