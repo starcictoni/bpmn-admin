@@ -54,7 +54,7 @@
 						BACK
 					</v-btn>
 					<v-btn
-						@click="$router.push({ name: 'model-editor', params: { id: selected[0].process_version_id, obj: selected[0] } })"
+						@click="$router.push({ name: 'editor', params: { id: selected[0].process_version_id, type: 'version', obj: selected[0] } })"
 						class="white--text form-btn-margin"
 						large
 						:disabled="selected.length < 1"
@@ -72,7 +72,7 @@
 					<v-tooltip slot="append" top>
 						<template #activator="{ on }">
 							<v-btn
-								@click="$router.push({ name: 'model-editor', params: { id: '-1' } })"
+								@click="$router.push({ name: 'editor', params: { id: '-1', type: 'version' } })"
 								class="white--text form-btn-margin"
 								v-on="on"
 								large
@@ -88,7 +88,7 @@
 					<v-tooltip slot="append" top>
 						<template #activator="{ on }">
 							<v-btn
-								@click="$router.push({ name: 'model-editor', params: { id: versionItem.active_version_id, obj: versionItem } })"
+								@click="$router.push({ name: 'editor', params: { id: versionItem.active_version_id, type: 'version', obj: versionItem } })"
 								class="white--text form-btn-margin"
 								:disabled="isDisabledActiveVersionBtn"
 								v-on="on"
@@ -163,12 +163,6 @@ export default {
 		}
 	},
 	methods: {
-		cancelAction() {
-			this.$emit("cancel");
-		},
-		okAction() {
-			this.$emit("ok", this.data, this.type);
-		},
 		goBackToVersionDialog() {
 			this.isVersionDataTableVisible = false;
 			this.versionDialogMaxWidth = "660";
@@ -176,6 +170,7 @@ export default {
 		closeNewVersionDialog() {
 			this.newVersionDialog = false;
 			this.versionDialogMaxWidth = "660";
+			this.$emit("cancel");
 		},
 		async showVersionDataTable() {
 			this.versionDialogMaxWidth = "660";

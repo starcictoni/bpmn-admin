@@ -57,10 +57,12 @@ let HeaderConfig = {
         { text: "Actions", value: "actions", explanation: "Edit process definition actions", sortable: false, align: "left" },
     ],
     expandTableHeaders: [
-        { text: "Version Nr.", value: "process_version_number", explanation: "Deployed version number", divider: true, align: "left" },
-        { text: "Process Version Name", value: "process_version_name", explanation: "Version name", divider: true, align: "left" },
-        { text: "Filename", value: "file_name", explanation: "Filename", divider: true, align: "left" },
-        { text: "Process Version Key", value: "process_version_key", explanation: "Internal process UUID", divider: true, align: "left" },
+      { text: "Process Version Name", value: "process_version_name", explanation: "Version name", divider: true, align: "left" },
+      { text: "Filename", value: "file_name", explanation: "Filename", divider: true, align: "left" },  
+      { text: "Version Nr.", value: "process_version_number", explanation: "Deployed version number", divider: true, align: "left" },
+      { text: "Active", value: "is_active", explanation: "Is the version deployed?", divider: true, align: "left" },
+        
+        // { text: "Process Version Key", value: "process_version_key", explanation: "Internal process UUID", divider: true, align: "left" },
         { text: "Created", value: "created", explanation: "Created timestamp", divider: true, align: "left" },
         {
             text: "Last Modified",
@@ -69,7 +71,7 @@ let HeaderConfig = {
             divider: true,
             align: "left",
         },
-        { text: "Active", value: "is_active", explanation: "Is the version deployed?", divider: true, align: "left" },
+        
         { text: "Actions", value: "actions", explanation: "Edit process version actions", sortable: false, divider: true, align: "left" },
     ],
 }
@@ -83,7 +85,6 @@ let FooterConfig = {
         "items-per-page-text": "Items per page",
     },
 }
-
 let newFile = {
     xml_definition: `<?xml version="1.0" encoding="UTF-8"?>
     <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_0ij2edp" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.0.0">
@@ -106,7 +107,6 @@ let newFile = {
     </bpmn:definitions>
     `
 }
-
 let DialogConfig = {
   service: {
     active: {
@@ -163,5 +163,16 @@ let DialogConfig = {
     }
   }  
 }
-
-export { HeaderConfig, FooterConfig, newFile, DialogConfig }
+let TextConfig = {
+  unparsable: "Unparsable content detected, XML is not valid.",
+  headers: {
+    definition: "",
+    version: "",
+    viewer: "PROCESS VIEWER",
+  },
+  explanations: {
+    viewer: "The existing process definition is read-only. You can create or import a new one, but you can never edit the existing one.",
+    goBack: "Return.",
+  },
+}
+export { HeaderConfig, FooterConfig, newFile, DialogConfig, TextConfig }

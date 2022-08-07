@@ -16,6 +16,7 @@ let BpmnUI = {
 
     },
     showPanel(panel, bpmnType) {
+        panel.processInformation.visible = true;
         switch (bpmnType) {
             case "bpmn:Collaboration": 
             case "bpmn:Lane":

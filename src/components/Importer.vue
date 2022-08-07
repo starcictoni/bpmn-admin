@@ -185,11 +185,9 @@ export default {
 				this.BpmnViewer.detach();
 			}
 			this.interception = true;
-			console.log(this.$refs);
-			const options = Object.assign({ container: this.$refs.container, width: "100%", height: "100%" }, this.options);
+			const options = Object.assign({ container: this.$refs.container }, this.options);
 			this.BpmnViewer = new BpmnViewer(options);
 			try {
-				debugger;
 				await this.BpmnViewer.importXML(parsedXml);
 				this.BpmnViewer.attachTo(this.$refs.container);
 				this.BpmnViewer.get("canvas").zoom("fit-viewport");

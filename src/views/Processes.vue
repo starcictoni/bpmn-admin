@@ -16,7 +16,7 @@
 						<div class="card-header-action">
 							<v-tooltip slot="append" right>
 								<template #activator="{ on }">
-									<v-btn @click="$router.push({ name: 'model-editor', params: { id: '-1' } })" v-on="on" icon color="yellow accent-3">
+									<v-btn @click="$router.push({ name: 'editor', params: { id: '-1', type: 'definition' } })" v-on="on" icon color="yellow accent-3">
 										<v-icon large>mdi-plus-box</v-icon>
 									</v-btn>
 								</template>
@@ -112,7 +112,7 @@
 												</template>
 												<!-- Link -->
 												<template #[`item.file_name`]="{ item }">
-													<router-link :to="{ name: 'model-editor', params: { id: item.process_version_id, obj: item } }">
+													<router-link :to="{ name: 'viewer', params: { id: item.process_version_id, type: 'version', obj: item } }">
 														{{ item.file_name }}
 													</router-link>
 												</template>
@@ -175,7 +175,7 @@
 							</template>
 							<!-- Link -->
 							<template #[`item.file_name`]="{ item }">
-								<router-link :to="{ name: 'model-editor', params: { id: item.process_definition_id, obj: item } }">
+								<router-link :to="{ name: 'viewer', params: { id: item.process_definition_id, type: 'definition' } }">
 									{{ item.file_name }}
 								</router-link>
 							</template>
@@ -294,7 +294,7 @@ import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 
 export default {
-	name: "Models",
+	name: "Processes",
 	components: {
 		Importer,
 		GenericDialog,
