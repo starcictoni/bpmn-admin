@@ -35,7 +35,7 @@
 			</div>
 		</div>
 		<div v-if="isEditDialogShown">
-			<properties-edit-service
+			<properties-send-task
 				@ok="applyChanges"
 				@cancel="closeDialog"
 				:model="isEditDialogShown"
@@ -45,19 +45,19 @@
 				:prefillServiceName="apiServiceName"
 				:prefillMethod="apiServiceMethod"
 				:prefillRoute="apiServiceRoute"
-			></properties-edit-service>
+			></properties-send-task>
 		</div>
 	</v-row>
 </template>
 <script>
 import * as common from "@/utils/common.js";
-import PropertiesEditService from "../dialogs/PropertiesSendTask.vue";
+import PropertiesSendTask from "@/components/properties/PropertiesSendTask.vue";
 
 export default {
 	name: "SendTaskPanel",
 	props: ["data", "context"],
 	components: {
-		PropertiesEditService,
+		PropertiesSendTask,
 	},
 	data() {
 		return {

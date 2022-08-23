@@ -119,16 +119,16 @@
 </template>
 
 <script>
-import { BpmnUI, BpmnXml } from "@/utils/bpmn";
-import { UpdateBusinessObjectHandler, UpdateBusinessObjectListHandler, MultiCommandHandler } from "@/utils/handlers";
-import { ProcessDefinition, ProcessVersion } from "../services/index.js";
-import { newFile, PanelsConfig } from "../utils/config.js";
-import * as common from "@/utils/common.js";
 import VueBpmnModeler from "@/components/BpmnModeler";
-import ServiceTaskPanel from "@/components/properties/ServiceTaskPanel.vue";
-import SendTaskPanel from "@/components/properties/SendTaskPanel.vue";
-import UserTaskPanel from "@/components/properties/UserTaskPanel.vue";
-
+import ServiceTaskPanel from "@/components/panels/ServiceTaskPanel.vue";
+import SendTaskPanel from "@/components/panels/SendTaskPanel.vue";
+import UserTaskPanel from "@/components/panels/UserTaskPanel.vue";
+import GeneralPanel from "@/components/panels/GeneralPanel.vue";
+import ProcessInfoPanel from "@/components/panels/ProcessInfoPanel.vue";
+import { BpmnUI, BpmnXml } from "@/utils/bpmn";
+import { ProcessDefinition, ProcessVersion } from "@/services/index.js";
+import { newFile, PanelsConfig } from "@/utils/config.js";
+import * as common from "@/utils/common.js";
 export default {
 	name: "editor",
 	components: {
@@ -136,10 +136,8 @@ export default {
 		ServiceTaskPanel,
 		SendTaskPanel,
 		UserTaskPanel,
-		propGeneral: () => import("@/components/properties/General.vue"),
-		propForm: () => import("@/components/properties/Form.vue"),
-		// propService: () => import("@/components/properties/Service.vue"),
-		propProcessInfo: () => import("@/components/properties/ProcessInfo.vue"),
+		GeneralPanel,
+		ProcessInfoPanel,
 	},
 	data() {
 		return {
@@ -279,9 +277,6 @@ export default {
 		//
 		async onShown() {
 			this.setReferences();
-			this.commandStack.registerHandler("bpmn-update", UpdateBusinessObjectHandler);
-			this.commandStack.registerHandler("bpmn-list-update", UpdateBusinessObjectListHandler);
-			this.commandStack.registerHandler("bpmn-multi-update", MultiCommandHandler);
 			this.eventBus.on("element.hover", () => {});
 
 			this.eventBus.on("element.out", () => {});

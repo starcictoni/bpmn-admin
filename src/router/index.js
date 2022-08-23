@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Environment from '../views/Environment.vue'
 import Editor from '../views/Editor.vue';
 import Viewer from '../views/Viewer.vue'
 import Services from '../views/Services.vue'
@@ -9,11 +8,6 @@ import Processes from '../views/Processes.vue';
 Vue.use(VueRouter);
 
 const routes = [
-    {
-        path: '/environment',
-        name: 'environment',
-        component: Environment,
-    },
     {
         path: '/processes',
         name: 'processes',

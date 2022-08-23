@@ -150,7 +150,7 @@
 			</generic-dialog>
 		</div>
 		<div v-if="isVisibleAddEditDialog">
-			<task-add-edit
+			<service-task-add-edit
 				ref="addEditDialog"
 				:title="title"
 				:btnColor="buttonColor"
@@ -160,22 +160,22 @@
 				@cancel="isVisibleAddEditDialog = false"
 				@ok="handleAddEdit"
 			>
-			</task-add-edit>
+			</service-task-add-edit>
 		</div>
 	</v-dialog>
 </template>
 <script>
 import { WebService } from "@/services/index";
 import { HeaderConfig, FooterConfig, DialogConfig } from "../../utils/config.js";
-import GenericDialog from "../dialogs/GenericDialog.vue";
-import TaskAddEdit from "../dialogs/ServiceTaskAddEditDialog.vue";
+import GenericDialog from "@/components/dialogs/GenericDialog.vue";
+import ServiceTaskAddEdit from "@/components/dialogs/ServiceTaskAddEdit.vue";
 import * as common from "@/utils/common.js";
 import _ from "lodash";
 export default {
 	name: "properties-edit-send",
 	components: {
 		GenericDialog,
-		TaskAddEdit,
+		ServiceTaskAddEdit,
 	},
 	props: ["model", "context", "connector", "inputOutput", "prefillServiceName", "prefillMethod", "prefillRoute"],
 	data() {

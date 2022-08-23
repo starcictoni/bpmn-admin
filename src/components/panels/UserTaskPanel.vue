@@ -28,25 +28,25 @@
 			</div>
 		</div>
 		<div v-if="isEditDialogShown">
-			<properties-edit-user
+			<properties-user-task
 				@ok="applyChanges"
 				@cancel="handleDialogState"
 				:formData="formData"
 				:documentation="documentation"
 				:model="isEditDialogShown"
 				:context="context"
-			></properties-edit-user>
+			></properties-user-task>
 		</div>
 	</v-row>
 </template>
 <script>
 import * as common from "@/utils/common.js";
-import PropertiesEditUser from "../dialogs/PropertiesUserTask.vue";
+import PropertiesUserTask from "@/components/properties/PropertiesUserTask.vue";
 export default {
 	name: "UserTaskPanel",
 	props: ["data", "context"],
 	components: {
-		PropertiesEditUser,
+		PropertiesUserTask,
 	},
 	data() {
 		return {

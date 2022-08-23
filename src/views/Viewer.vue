@@ -36,8 +36,8 @@ export default {
 	name: "viewer",
 	data() {
 		return {
-			errorMessage: TextConfig.unparsable,
-			headerText: TextConfig.headers.viewer,
+			errorMessage: "Unparsable content detected, XML is not valid.",
+			headerText: "PROCESS VIEWER",
 			explanationMessage: TextConfig.explanations.viewer,
 			goBackMessage: TextConfig.explanations.goBack,
 			BpmnViewer: null,

@@ -110,7 +110,7 @@
 				</v-card>
 
 				<div v-if="isVisibleEditDialog">
-					<service-add-dialog
+					<service-add-edit-dialog
 						ref="addDialog"
 						:model="isVisibleEditDialog"
 						:title="config.edit.title"
@@ -120,10 +120,10 @@
 						type="edit"
 						@cancel="isVisibleEditDialog = false"
 						@ok="handleAddAndEdit"
-					></service-add-dialog>
+					></service-add-edit-dialog>
 				</div>
 				<div v-if="isVisibleAddDialog">
-					<service-add-dialog
+					<service-add-edit-dialog
 						ref="addDialog"
 						:model="isVisibleAddDialog"
 						:title="config.add.title"
@@ -133,7 +133,7 @@
 						type="add"
 						@cancel="isVisibleAddDialog = false"
 						@ok="handleAddAndEdit"
-					></service-add-dialog>
+					></service-add-edit-dialog>
 				</div>
 				<div v-if="isVisibleActivateDialog">
 					<generic-dialog
@@ -179,14 +179,14 @@
 import * as common from "../utils/common.js";
 import { WebService } from "../services/index.js";
 import { HeaderConfig, FooterConfig, DialogConfig } from "../utils/config.js";
-import GenericDialog from "../components/dialogs/GenericDialog.vue";
-import ServiceAddDialog from "../components/dialogs/ServiceAddAndEditDialog.vue";
+import GenericDialog from "@/components/dialogs/GenericDialog.vue";
+import ServiceAddEditDialog from "../components/dialogs/WebServiceAddEdit.vue";
 
 export default {
 	name: "Services",
 	components: {
 		GenericDialog,
-		ServiceAddDialog,
+		ServiceAddEditDialog,
 	},
 	data() {
 		return {

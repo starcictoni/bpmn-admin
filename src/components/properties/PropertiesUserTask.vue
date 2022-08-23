@@ -124,8 +124,8 @@
 </template>
 <script>
 import { BpmnXml } from "../../utils/bpmn.js";
-import UserTaskAddEdit from "../dialogs/UserTaskAddEditDialog.vue";
-import GenericDialog from "../dialogs/GenericDialog.vue";
+import UserTaskAddEdit from "../dialogs/UserTaskAddEdit.vue";
+import GenericDialog from "@/components/dialogs/GenericDialog.vue";
 import { HeaderConfig, FooterConfig, DialogConfig } from "../../utils/config.js";
 import _ from "lodash";
 export default {

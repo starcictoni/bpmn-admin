@@ -212,7 +212,7 @@ let ProcessVersion = {
             return {};
         }
     },
-}
+};
 
 let WebService = {
     async getServices() {
@@ -326,29 +326,6 @@ let WebService = {
             return {};
         }
     }    
-}
-
-let ProcessInstance = {
-    async get(id) {
-        try {
-            let result = await Service.get(`/instance/${id}`);
-            return result.data;
-        } catch (e) {
-            return null;
-        }
-    },
-    async search(query) {
-        try {
-            let result = await Service.get('/instance', {
-                params: {
-                    q: query,
-                },
-            });
-            return result.data.results;
-        } catch (e) {
-            return [];
-        }
-    },
 };
 
-export { ProcessInstance, ProcessDefinition, WebService, ProcessVersion };
+export { ProcessDefinition, ProcessVersion, WebService };

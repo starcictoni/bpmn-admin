@@ -285,10 +285,10 @@
 import { ProcessDefinition, ProcessVersion } from "@/services";
 import { HeaderConfig, FooterConfig, DialogConfig } from "../utils/config.js";
 import Importer from "../components/Importer.vue";
-import GenericDialog from "../components/dialogs/GenericDialog.vue";
-import ModelEditDialog from "../components/dialogs/ModelEditDialog.vue";
-import ModelActivateDialog from "../components/dialogs/ModelActivateDialog.vue";
-import ModelAddDialog from "../components/dialogs/ModelAddDialog.vue";
+import GenericDialog from "@/components/dialogs/GenericDialog.vue";
+import ModelEditDialog from "../components/dialogs/ModelEdit.vue";
+import ModelActivateDialog from "../components/dialogs/ModelActivate.vue";
+import ModelAddDialog from "../components/dialogs/ModelAdd.vue";
 import * as common from "../utils/common.js";
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";

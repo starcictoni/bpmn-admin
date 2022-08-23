@@ -133,7 +133,7 @@
 import { BpmnXml } from "../../utils/bpmn.js";
 import { FormItemMetaModel } from "../../utils/bpmn.js";
 import { DialogConfig } from "../../utils/config.js";
-import ServiceSelector from "../ServiceSelector.vue";
+import ServiceSelector from "@/components/ServiceSelector.vue";
 import * as common from "../../utils/common.js";
 import _ from "lodash";
 export default {

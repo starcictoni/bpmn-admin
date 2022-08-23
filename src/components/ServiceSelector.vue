@@ -166,7 +166,7 @@ import { BpmnXml } from "@/utils/bpmn.js";
 import { WebService } from "@/services/index";
 import { HeaderConfig, FooterConfig, DialogConfig } from "../utils/config.js";
 import GenericDialog from "../components/dialogs/GenericDialog.vue";
-import ConnectorAddEdit from "../components/dialogs/ConnectorAddAndEditParams.vue";
+import ConnectorAddEdit from "./dialogs/ConnectorAddEdit.vue";
 export default {
 	components: {
 		GenericDialog,
