@@ -16,7 +16,6 @@
 							single-line
 							hide-details
 						></v-text-field>
-
 						<v-data-table
 							ref="versionTableData"
 							v-model="selected"

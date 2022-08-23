@@ -32,12 +32,6 @@
 					</v-list-item-icon>
 					<v-list-item-title>Modeler</v-list-item-title>
 				</v-list-item>
-				<v-list-item link to="/settings">
-					<v-list-item-icon>
-						<v-icon>mdi-cog</v-icon>
-					</v-list-item-icon>
-					<v-list-item-title>Settings</v-list-item-title>
-				</v-list-item>
 			</v-list>
 			<template v-slot:append>
 				<v-list-item>
@@ -47,13 +41,6 @@
 				</v-list-item>
 			</template>
 		</v-navigation-drawer>
-		<!-- <v-app-bar app>
-            <v-app-bar-title>
-                <router-link to="/" custom v-slot="{ navigate }" style="cursor: pointer">
-                    <span @click="navigate">Python BPMN engine Admin v1.0</span>
-                </router-link>
-            </v-app-bar-title>
-        </v-app-bar> -->
 		<v-main>
 			<router-view></router-view>
 		</v-main>
@@ -73,7 +60,6 @@ export default {
 			localStorage.setItem("theme", this.$vuetify.theme.dark ? "dark" : "light");
 		},
 		goToModeler() {
-			debugger;
 			if (this.$route.path != "/processes/new/-1") {
 				this.$router.push({ name: "editor", params: { id: "-1", type: "new" } });
 			}

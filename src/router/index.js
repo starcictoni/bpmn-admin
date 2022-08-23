@@ -3,7 +3,7 @@ import VueRouter from 'vue-router';
 import Environment from '../views/Environment.vue'
 import Editor from '../views/Editor.vue';
 import Viewer from '../views/Viewer.vue'
-import Service from '../views/Service.vue'
+import Services from '../views/Services.vue'
 import Processes from '../views/Processes.vue';
 
 Vue.use(VueRouter);
@@ -33,8 +33,8 @@ const routes = [
     },
     {
         path: '/services',
-        name: 'service',
-        component: Service
+        name: 'services',
+        component: Services
     },
 ];
 

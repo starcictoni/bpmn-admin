@@ -28,17 +28,10 @@
 			</v-card-text>
 			<div v-if="isChanged" class="d-flex justify-end form-buttons">
 				<v-card-actions>
-					<v-btn
-						@click.stop="save()"
-						:loading="hasResponseArrived != null && hasResponseArrived === false"
-						class="black--text"
-						large
-						outlined
+					<v-btn @click.stop="save()" :loading="hasResponseArrived != null && hasResponseArrived === false" class="black--text" large outlined
 						>SAVE</v-btn
 					>
-					<v-btn @click.stop="cancel()" class="form-button white--text" color="red" depressed large
-						>CANCEL</v-btn
-					>
+					<v-btn @click.stop="cancel()" class="form-button white--text" color="red" depressed large>CANCEL</v-btn>
 				</v-card-actions>
 			</div>
 		</v-card>
@@ -66,17 +59,10 @@
 			</v-card-text>
 			<div v-if="isChanged" class="d-flex justify-end form-buttons">
 				<v-card-actions>
-					<v-btn
-						@click.stop="save()"
-						:loading="hasResponseArrived != null && hasResponseArrived === false"
-						class="black--text"
-						large
-						outlined
+					<v-btn @click.stop="save()" :loading="hasResponseArrived != null && hasResponseArrived === false" class="black--text" large outlined
 						>SAVE</v-btn
 					>
-					<v-btn @click.stop="cancel()" class="form-button white--text" color="red" depressed large
-						>CANCEL</v-btn
-					>
+					<v-btn @click.stop="cancel()" class="form-button white--text" color="red" depressed large>CANCEL</v-btn>
 				</v-card-actions>
 			</div>
 		</v-card>
@@ -104,17 +90,10 @@
 			</v-card-text>
 			<div v-if="isChanged" class="d-flex justify-end form-buttons">
 				<v-card-actions>
-					<v-btn
-						@click.stop="save()"
-						:loading="hasResponseArrived != null && hasResponseArrived === false"
-						class="black--text"
-						large
-						outlined
+					<v-btn @click.stop="save()" :loading="hasResponseArrived != null && hasResponseArrived === false" class="black--text" large outlined
 						>SAVE</v-btn
 					>
-					<v-btn @click.stop="cancel()" class="form-button white--text" color="red" depressed large
-						>CANCEL</v-btn
-					>
+					<v-btn @click.stop="cancel()" class="form-button white--text" color="red" depressed large>CANCEL</v-btn>
 				</v-card-actions>
 			</div>
 		</v-card>
@@ -188,9 +167,7 @@ export default {
 						type: inputOutput.$type,
 						body: inputOutput.$body || "No available data", // || null
 					};
-					field.type === "camunda:inputParameter"
-						? this.inputParameters.push(field)
-						: this.outputParameters.push(field);
+					field.type === "camunda:inputParameter" ? this.inputParameters.push(field) : this.outputParameters.push(field);
 				}
 			}
 

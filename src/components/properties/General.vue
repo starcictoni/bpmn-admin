@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<v-form ref="generalInformation">
+		<v-form v-model="valid" ref="generalInformation">
 			<v-text-field
 				class="input-remove-border"
 				height="10"
@@ -9,7 +9,7 @@
 				outlined
 				dense
 				clearable
-				v-model="state.id"
+				v-model="form.id"
 			></v-text-field>
 			<v-text-field
 				class="input-remove-border input-top-negative-margin"
@@ -19,30 +19,36 @@
 				:rules="[rules.notEmpty]"
 				outlined
 				clearable
-				v-model="state.name"
+				v-model="form.name"
 			></v-text-field>
-			<v-btn v-if="changed" color="darken-1" text @click="setState()">
-				Cancel
-			</v-btn>
-			<v-btn v-if="changed" color="blue darken-1" text @click="save()">
-				Apply
-			</v-btn>
+			<div v-show="areButtonsVisible">
+				<v-btn color="darken-1" text @click="cancel()">
+					Cancel
+				</v-btn>
+				<v-btn color="blue darken-1" text @click="handleApply()">
+					Apply
+				</v-btn>
+			</div>
 		</v-form>
 	</div>
 </template>
 <script>
 import * as common from "@/utils/common.js";
+import _ from "lodash";
+
 export default {
 	name: "properties-general",
 	props: ["data", "context"],
-	created() {
-		this.setState();
-	},
 	data() {
-		let modeler = this.context.modeler;
 		return {
-			modeler: modeler,
-			state: {
+			valid: null,
+			areButtonsVisible: false,
+			isApplyButtonDisabled: true,
+			form: {
+				id: null,
+				name: null,
+			},
+			defaultForm: {
 				id: null,
 				name: null,
 			},
@@ -50,49 +56,65 @@ export default {
 				notEmpty: (field) => {
 					return common.isInputValid(field) || "Cannot be empty.";
 				},
-				extension: (filename) => {
-					return common.isExtensionValid(filename) || "Invalid file extension name.";
-				},
 			},
-			cs: modeler.get("commandStack"),
 		};
 	},
 	watch: {
-		data: function() {
-			this.setState();
+		form: {
+			handler: function() {
+				this.compareData();
+			},
+			deep: true,
+		},
+		valid: function(newValue) {
+			this.handleButtonState(newValue);
 		},
 	},
-	computed: {
-		changed() {
-			for (let att in this.state) {
-				if (this.state[att] != this.data[att]) return true;
-			}
-
-			return false;
-		},
+	created() {
+		this.setData();
 	},
 	methods: {
-		setState() {
-			for (let att in this.state) {
-				this.state[att] = this.data[att];
-			}
+		setData() {
+			this.form.id = this.data.id;
+			this.defaultForm.id = this.data.id;
+			this.form.name = this.data.name;
+			this.defaultForm.name = this.data.name;
 		},
-		save() {
-			let updates = [];
-			for (let att in this.state) {
-				if (this.state[att] != this.data[att]) {
-					updates.push({
-						cmd: "bpmn-update",
-						context: {
-							element: this.context.bpmnElement,
-							businessObject: this.context.bpmnElement.businessObject,
-							properties: { [att]: this.state[att] },
-						},
-					});
-				}
-			}
-			this.cs.execute("bpmn-multi-update", updates);
+		compareData() {
+			let isEqual = _.isEqual(this.form, this.defaultForm);
+			let areFieldsEmpty = Object.values(this.form).some((x) => x == undefined);
+			this.handleButtonVisibility(!isEqual && !areFieldsEmpty);
+		},
+		handleButtonVisibility(newValue) {
+			this.areButtonsVisible = newValue;
+		},
+		handleButtonState(newValue) {
+			this.isApplyButtonDisabled = !newValue;
+		},
+		cancel() {
+			this.form = { ...this.defaultForm };
+		},
+		handleApply() {
+			this.handleButtonVisibility(false);
+			this.handleButtonState(false);
+			this.$emit("generalOk", this.form, this.defaultForm.id);
 		},
 	},
+	// save() {
+	// 	let updates = [];
+	// 	for (let att in this.state) {
+	// 		if (this.state[att] != this.data[att]) {
+	// 			updates.push({
+	// 				cmd: "bpmn-update",
+	// 				context: {
+	// 					element: this.context.bpmnElement,
+	// 					businessObject: this.context.bpmnElement.businessObject,
+	// 					properties: { [att]: this.state[att] },
+	// 				},
+	// 			});
+	// 		}
+	// 	}
+	// 	this.cs.execute("bpmn-multi-update", updates);
+	// },
 };
 </script>

@@ -62,7 +62,7 @@ import { HeaderConfig, FooterConfig, DialogConfig } from "../../utils/config.js"
 import { ProcessVersion } from "@/services";
 import * as common from "../../utils/common.js";
 export default {
-	name: "ModelEditDialog",
+	name: "ModelActivateDialog",
 	props: ["model", "data"],
 	data() {
 		return {

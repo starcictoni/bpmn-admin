@@ -74,6 +74,23 @@ let HeaderConfig = {
         
         { text: "Actions", value: "actions", explanation: "Edit process version actions", sortable: false, divider: true, align: "left" },
     ],
+    serviceConfigurationTableHeaders: [
+      { text: "Type", value: "$type", explanation: "Input or Output type parameter", divider: true, align: "center" },
+      { text: "Name", value: "name", explanation: "Variable name", divider: true, align: "center" },
+      { text: "Value", value: "value", explanation: "Body needs to be enclosed in ${<var>}", divider: true, align: "center"},
+      { text: "Actions", value: "actions", explanation: "Edit or delete the parameter", sortable: false, align: "left" }
+    ],
+    userTaskConfigurationTableHeaders: [
+      { text: "Type", value: "type", explanation: "Form field type", divider: true, align: "left" },
+      { text: "Identifer", value: "id", explanation: "Form field ID", divider: true, align: "left" },
+      { text: "Label", value: "label", explanation: "Form field label", divider: true, align: "left" },
+      { text: "Actions", value: "actions", explanation: "Edit or delete the parameter", sortable: false, align: "left" }
+    ],
+    connectorTableHeaders: [
+      { text: "Name", value: "name", explanation: "Form field ID", divider: true, align: "left" },
+      { text: "Value", value: "value", explanation: "Form field label", divider: true, align: "left" },
+      { text: "Actions", value: "actions", explanation: "Edit or delete the parameter", sortable: false, align: "left" }
+    ]
 }
 let FooterConfig = {
     footerProps: {
@@ -84,6 +101,13 @@ let FooterConfig = {
         nextIcon: "mdi-plus",
         "items-per-page-text": "Items per page",
     },
+    footerReduced: {
+      firstIcon: "mdi-chevron-left",
+      lastIcon: "mdi-chevron-right",
+      prevIcon: "mdi-minus",
+      nextIcon: "mdi-plus",
+      "items-per-page-text": "Per page",
+    }
 }
 let newFile = {
     xml_definition: `<?xml version="1.0" encoding="UTF-8"?>
@@ -133,6 +157,42 @@ let DialogConfig = {
 			title: "EDIT SERVICE",
 			text: "Are you sure that you want to edit this service?",
 			buttonColor: "cyan darken-1",
+    },
+  },
+  serviceConfiguration: {
+    connectorParams: {
+      title: "URL PARAMETERS"
+    },
+    map: {
+      title: "MAP"
+    },
+    add: {
+      title: "ADD PARAMETER",
+      buttonColor: "orange lighten-1",
+    },
+    edit: {
+      title: "EDIT PARAMETER",
+      buttonColor: "orange lighten-2",
+    }
+  },
+  userTaskConfiguration: {
+    add: {
+      title: "ADD FORM FIELD",
+      buttonColor: "amber",
+    },
+    edit: {
+      title: "EDIT FORM FIELD",
+      buttonColor: "yellow",
+    }
+  },
+  connectorConfiguration: {
+    add: {
+      title: "ADD URL PARAMETER",
+      buttonColor: "amber",
+    },
+    edit: {
+      title: "EDIT URL PARAMETER",
+      buttonColor: "yellow",
     }
   },
   model: {
@@ -160,6 +220,15 @@ let DialogConfig = {
 			title: "EDIT ITEM",
 			text: "Are you sure that you want to edit this item?",
 			buttonColor: "cyan darken-1",
+    },
+    addUserField: {
+      formFieldText: "FORM FIELD",
+			validationText: "VALIDATION",
+			propertiesText: "PROPERTIES",
+    },
+    propsUserTask: {
+      documentationText: "DOCUMENTATION",
+      formFieldText: "FORM FIELDS"
     }
   }  
 }
@@ -175,4 +244,37 @@ let TextConfig = {
     goBack: "Return.",
   },
 }
-export { HeaderConfig, FooterConfig, newFile, DialogConfig, TextConfig }
+let PanelsConfig = {
+    processInformation: {
+      label: "Process info", //Definition or Version
+      visible: false,
+      module: "propProcessInfo",
+    },
+    general: {
+      label: "General",
+      visible: false,
+      module: "propGeneral",
+    },
+    // form: {
+    //   label: "Form",
+    //   visible: false,
+    //   module: "propForm",
+    // },
+    send: {
+      label: "Send Task",
+      visible: false,
+      module: "SendTaskPanel"
+    },
+    service:  {
+      label: "Service Task",
+      visible: false,
+      module: "ServiceTaskPanel"
+    },
+    form: {
+      label: "User Task",
+      visible: false,
+      module: "UserTaskPanel"
+    }
+}
+
+export { HeaderConfig, FooterConfig, newFile, DialogConfig, TextConfig, PanelsConfig }

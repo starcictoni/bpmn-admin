@@ -1,38 +1,52 @@
 <template>
-	<div ref="container" class="vue-bpmn-modeler-container"></div>
+	<div ref="container" :options="options" class="vue-bpmn-modeler-container"></div>
 </template>
 
 <script>
-import BpmnModeler from "bpmn-js/dist/bpmn-modeler.production.min.js";
-import { ProcessDefinition, ProcessVersion } from "../services/index.js";
-import { newFile } from "../utils/config.js";
-import "bpmn-js/dist/assets/diagram-js.css";
-import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
+//import BpmnModeler from "bpmn-js/dist/bpmn-modeler.production.min.js";
+//import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from "bpmn-js-properties-panel";
+//import "bpmn-js/dist/assets/diagram-js.css";
+//import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
+// import camundaModdle from "camunda-bpmn-moddle/resources/camunda.json";
+// import * as camundaPropertiesProvider from "bpmn-js-properties-panel/lib/provider/camunda";
+
+//CAMUNDA OPTION
+import BpmnModeler from "bpmn-js/lib/Modeler";
+import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule } from "bpmn-js-properties-panel";
+import CamundaBpmnModdle from "camunda-bpmn-moddle/resources/camunda.json";
 
 export default {
 	name: "vue-bpmn-modeler",
-	props: ["url", "processId", "type", "process", "options"],
+	props: ["processId", "xml", "process"],
 	data() {
 		return {
 			BpmnModeler: null,
+			options: {
+				additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule],
+				moddleExtensions: {
+					camunda: CamundaBpmnModdle,
+				},
+			},
+			eventBus: null,
 		};
 	},
-	// watch: {
-	// 	url: function() {
-	// 		this.getDiagram();
-	// 	},
-	// },
 	async mounted() {
-		this.BpmnModeler = new BpmnModeler(this.options);
-		if (this.process != null || this.process != undefined) {
-			this.importDiagram(this.process.xml_definition);
-		} else {
-			this.process = await this.getDiagram();
-			console.log(this.process);
-		}
+		//this.BpmnModeler = new BpmnModeler();
+		//CAMUNDA OPTION
+		this.BpmnModeler = new BpmnModeler({
+			// container: "container",
+			// propertiesPanel: {
+			// 	parent: "#js-properties-panel",
+			// },
+			additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule],
+			moddleExtensions: {
+				camunda: CamundaBpmnModdle,
+			},
+		});
+
+		await this.importDiagram();
 		this.$emit("shown");
-		console.log(this.processId, this.type, this.process);
-		// var events = ["element.hover", "element.out", "element.click", "element.dblclick", "element.mousedown", "element.mouseup"];
+		// var events = ["element.hover", "element.out", "element.click", "element.dblclick", "element.mousedown", "element.mouseup"]
 		// events.forEach(function(event) {
 		// 	eventBus.on(event, function(e) {
 		// 		// e.element = the model element
@@ -41,37 +55,19 @@ export default {
 		// 	});
 		// });
 	},
-	beforeDestroy() {
-		this.BpmnModeler.destroy();
-	},
 	methods: {
-		async getDiagram() {
-			if (this.processId === undefined) return null; //TODO: add feedback
-			let xml = null;
-			if (this.processId == "-1") {
-				xml = newFile.xml_definition;
-			} else if (this.type == "definition") {
-				let response = await ProcessDefinition.getProcessDefinition(this.process.process_definition_id);
-				this.process = response;
-				xml = response.xml_definition;
-			} else if (this.type == "version") {
-				let response = await ProcessVersion.getProcessVersion(this.processId); //or this.process.process_version_id TODO: check
-				this.process = response;
-				xml = response.xml_definition;
-			}
-			if (xml != null) {
-				this.importDiagram(xml);
-			}
-		},
-		async importDiagram(xml) {
+		async importDiagram() {
 			try {
-				await this.BpmnModeler.importXML(xml);
+				await this.BpmnModeler.importXML(this.xml);
 				this.BpmnModeler.attachTo(this.$refs.container);
 				this.BpmnModeler.get("canvas").zoom(0.9);
 			} catch (error) {
 				console.error(error);
 				//this.isValid = false;
 			}
+		},
+		beforeDestroy() {
+			this.BpmnModeler.destroy();
 		},
 	},
 };

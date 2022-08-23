@@ -77,6 +77,15 @@ export function exportItem(item) {
     a.href = window.URL.createObjectURL(binaryFile);
     a.click();
 }
+
+export function exportDiagram(name, xml) {
+    let binaryFile = new Blob([xml], { type: "text/bpmn" });
+    let a = document.createElement("a");
+    a.download = name + ".bpmn";
+    a.href = window.URL.createObjectURL(binaryFile);
+    a.click();
+}
+
 export function showCorrespondingBanner(item) {
     if(item == null) return null;
     //aktivacija
@@ -90,6 +99,7 @@ export function showCorrespondingBanner(item) {
     // :icon-color="bannerIconColor"
     // :color="bannerColor"
 }
+
 
 //TODO: rewrite, remove type
 export function findAndReplace(table, item, type) {
@@ -117,3 +127,7 @@ export function findAndRemove(table, id, type) {
     table = reMapDataTableValues(table)
     return table;
 }
+
+export function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }

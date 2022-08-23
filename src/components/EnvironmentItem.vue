@@ -4,34 +4,13 @@
 			<v-icon :color="originalData.color" round>mdi-server</v-icon>
 		</div>
 		<div class="form-item">
-			<v-text-field
-				v-model="originalData.name"
-				label="Name"
-				dense
-				required
-				outlined
-				:disabled="originalData.disabled"
-			></v-text-field>
+			<v-text-field v-model="originalData.name" label="Name" dense required outlined :disabled="originalData.disabled"></v-text-field>
 		</div>
 		<div class="form-item">
-			<v-text-field
-				v-model="originalData.type"
-				label="Type"
-				dense
-				required
-				outlined
-				:disabled="originalData.disabled"
-			></v-text-field>
+			<v-text-field v-model="originalData.type" label="Type" dense required outlined :disabled="originalData.disabled"></v-text-field>
 		</div>
 		<div class="form-item">
-			<v-text-field
-				v-model="originalData.url"
-				label="URL"
-				dense
-				required
-				outlined
-				:disabled="originalData.disabled"
-			></v-text-field>
+			<v-text-field v-model="originalData.url" label="URL" dense required outlined :disabled="originalData.disabled"></v-text-field>
 		</div>
 		<div class="action-items">
 			<v-btn ref="editButton" :outlined="!isEditClicked" @click="handleEditButtonOnClick(originalData)" icon>
@@ -60,9 +39,7 @@ export default {
 	},
 	watch: {
 		changed(newValue, oldValue) {
-			newValue
-				? Vue.set(this.originalData, "changed", newValue)
-				: Vue.set(this.originalData, "changed", newValue);
+			newValue ? Vue.set(this.originalData, "changed", newValue) : Vue.set(this.originalData, "changed", newValue);
 			this.$emit("fieldHasChanged", newValue, oldValue, this.originalData.id, this.originalData);
 		},
 	},

@@ -296,17 +296,21 @@ let WebService = {
             return {};
         }
     },    
-    async getServiceMeta() {
+    async getServiceMeta(address) {
         try {
-            let result = await Service.get('/web-service/meta');
+            let result = await Service.get(`/service/meta`, {
+                params: { 
+                    address: address
+                }
+            });
             if(result?.data == null) {
-                return {};
+                return [];
             }
             return JSON.parse(result.data)
         }
         catch (e) {
             console.assert(e)
-            return {};
+            return [];
         }
     },
     async getServiceStatus() {
@@ -347,4 +351,4 @@ let ProcessInstance = {
     },
 };
 
-export { Service, ProcessInstance, ProcessDefinition, WebService, ProcessVersion };
+export { ProcessInstance, ProcessDefinition, WebService, ProcessVersion };

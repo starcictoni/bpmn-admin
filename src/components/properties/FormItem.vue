@@ -1,83 +1,85 @@
 <template>
-	<v-card>
-		<v-card-title class="d-flex justify-start form-title">
-			Placeholder for the title
-		</v-card-title>
-		<v-card-subtitle class="form-subtitle">
-			Placeholder for the subtitle
-		</v-card-subtitle>
-		<v-card-text>
-			<v-row>
-				<v-col>
-					<v-form>
-						<v-text-field v-model="state.id" label="ID" outlined dense></v-text-field>
-						<v-text-field v-model="state.defaultValue" label="Default Value" outlined dense></v-text-field>
-						<v-textarea v-model="state.label" label="Label" outlined dense></v-textarea>
-						<v-select
-							dense
-							v-model="state.type"
-							outlined
-							:items="types"
-							item-value="type"
-							item-text="name"
-							label="Item Type"
-							@change="showFormRightSide"
-							return-object
-						>
-							<template v-slot:item="{ item }">
-								<v-list-item-icon>
-									<v-icon v-text="item.icon"></v-icon>
-								</v-list-item-icon>
-								<v-list-item-content>
-									<v-list-item-title v-text="item.name"></v-list-item-title>
-								</v-list-item-content>
-							</template>
-						</v-select>
-					</v-form>
-				</v-col>
+	<v-dialog v-model="model" max-width="660">
+		<v-card>
+			<v-card-title class="d-flex justify-start form-title">
+				Placeholder for the title
+			</v-card-title>
+			<v-card-subtitle class="form-subtitle">
+				Placeholder for the subtitle
+			</v-card-subtitle>
+			<v-card-text>
+				<v-row>
+					<v-col>
+						<v-form>
+							<v-text-field v-model="state.id" label="ID" outlined dense></v-text-field>
+							<v-text-field v-model="state.defaultValue" label="Default Value" outlined dense></v-text-field>
+							<v-textarea v-model="state.label" label="Label" outlined dense></v-textarea>
+							<v-select
+								dense
+								v-model="state.type"
+								outlined
+								:items="types"
+								item-value="type"
+								item-text="name"
+								label="Item Type"
+								@change="showFormRightSide"
+								return-object
+							>
+								<template v-slot:item="{ item }">
+									<v-list-item-icon>
+										<v-icon v-text="item.icon"></v-icon>
+									</v-list-item-icon>
+									<v-list-item-content>
+										<v-list-item-title v-text="item.name"></v-list-item-title>
+									</v-list-item-content>
+								</template>
+							</v-select>
+						</v-form>
+					</v-col>
 
-				<v-col v-if="isRightSideShown && !loading">
-					<div class="form-item">
-						<!-- append-outer-icon="mdi-api"  -->
-						<v-select
-							append-icon="mdi-api"
-							dense
-							outlined
-							:items="services"
-							item-text="name"
-							@change="getServiceMeta"
-							cache-items
-							label="Select a service"
-							return-object
-						></v-select>
-					</div>
-					<!-- append-outer-icon="mdi-routes" -->
-					<div class="form-item">
-						<v-select
-							append-icon="mdi-routes"
-							clearable
-							dense
-							:disabled="isRoutesDisabled"
-							outlined
-							:items="routes"
-							item-text="url"
-							label="Available routes"
-							return-object
-						></v-select>
-					</div>
-				</v-col>
-			</v-row>
-		</v-card-text>
-		<v-card-actions>
-			<v-spacer></v-spacer>
-			<v-btn color="blue darken-1" text @click="$emit('close')">
-				Close
-			</v-btn>
-			<v-btn v-if="changed" color="blue darken-1" text @click="save()">
-				Apply
-			</v-btn>
-		</v-card-actions>
-	</v-card>
+					<v-col v-if="isRightSideShown && !loading">
+						<div class="form-item">
+							<!-- append-outer-icon="mdi-api"  -->
+							<v-select
+								append-icon="mdi-api"
+								dense
+								outlined
+								:items="services"
+								item-text="name"
+								@change="getServiceMeta"
+								cache-items
+								label="Select a service"
+								return-object
+							></v-select>
+						</div>
+						<!-- append-outer-icon="mdi-routes" -->
+						<div class="form-item">
+							<v-select
+								append-icon="mdi-routes"
+								clearable
+								dense
+								:disabled="isRoutesDisabled"
+								outlined
+								:items="routes"
+								item-text="url"
+								label="Available routes"
+								return-object
+							></v-select>
+						</div>
+					</v-col>
+				</v-row>
+			</v-card-text>
+			<v-card-actions>
+				<v-spacer></v-spacer>
+				<v-btn color="blue darken-1" text @click="$emit('close')">
+					Close
+				</v-btn>
+				<v-btn v-if="changed" color="blue darken-1" text @click="save()">
+					Apply
+				</v-btn>
+			</v-card-actions>
+		</v-card>
+	</v-dialog>
 </template>
 <script>
 import _ from "lodash";
@@ -85,7 +87,7 @@ import { FormItemMetaModel } from "@/utils/bpmn";
 import { WebService } from "@/services/index";
 export default {
 	name: "properties-form-item",
-	props: ["data", "context"],
+	props: ["data", "context", "model"],
 	data() {
 		let modeler = this.context.modeler;
 		return {

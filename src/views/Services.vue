@@ -183,7 +183,7 @@ import GenericDialog from "../components/dialogs/GenericDialog.vue";
 import ServiceAddDialog from "../components/dialogs/ServiceAddAndEditDialog.vue";
 
 export default {
-	name: "Service",
+	name: "Services",
 	components: {
 		GenericDialog,
 		ServiceAddDialog,
