@@ -11,16 +11,16 @@
 									PROCESS DEFINITIONS
 								</div>
 							</template>
-							<span>Definition of the process definition.</span>
+							<span>List of all process definitions</span>
 						</v-tooltip>
 						<div class="card-header-action">
 							<v-tooltip slot="append" right>
 								<template #activator="{ on }">
-									<v-btn @click="$router.push({ name: 'editor', params: { id: '-1', type: 'definition' } })" v-on="on" icon color="yellow accent-3">
+									<v-btn @click="goToModeler()" v-on="on" icon color="yellow accent-4">
 										<v-icon large>mdi-plus-box</v-icon>
 									</v-btn>
 								</template>
-								<span>Add a new process defintion.</span>
+								<span>Add a new process defintion</span>
 							</v-tooltip>
 						</div>
 						<v-spacer></v-spacer>
@@ -276,6 +276,7 @@
 				<div v-if="isVisibleAddDialog">
 					<model-add-dialog :model="isVisibleAddDialog" :data="data1" @cancel="isVisibleAddDialog = false" @ok="handleAdd"></model-add-dialog>
 				</div>
+				<snackbar :show="showSnackbar" :color="snackbarColor" :text="snackbarText"></snackbar>
 			</v-col>
 		</v-row>
 	</v-container>
@@ -283,12 +284,13 @@
 
 <script>
 import { ProcessDefinition, ProcessVersion } from "@/services";
-import { HeaderConfig, FooterConfig, DialogConfig } from "../utils/config.js";
-import Importer from "../components/Importer.vue";
+import { HeaderConfig, FooterConfig, DialogConfig } from "@/utils/config.js";
+import Importer from "@/components/Importer.vue";
 import GenericDialog from "@/components/dialogs/GenericDialog.vue";
-import ModelEditDialog from "../components/dialogs/ModelEdit.vue";
-import ModelActivateDialog from "../components/dialogs/ModelActivate.vue";
-import ModelAddDialog from "../components/dialogs/ModelAdd.vue";
+import ModelEditDialog from "@/components/dialogs/ModelEdit.vue";
+import ModelActivateDialog from "@/components/dialogs/ModelActivate.vue";
+import ModelAddDialog from "@/components/dialogs/ModelAdd.vue";
+import Snackbar from "@/components/Snackbar.vue";
 import * as common from "../utils/common.js";
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
@@ -301,6 +303,7 @@ export default {
 		ModelEditDialog,
 		ModelActivateDialog,
 		ModelAddDialog,
+		Snackbar,
 	},
 	//TODO: need to add loading to the dialogs
 	data() {
@@ -329,6 +332,11 @@ export default {
 			expandTableData: [],
 			isExpandTableDataLoading: true,
 			expandTableHeaders: HeaderConfig.expandTableHeaders,
+
+			//Snackbar
+			showSnackbar: false,
+			snackbarColor: null,
+			snackbarText: null,
 		};
 	},
 	async mounted() {
@@ -338,6 +346,11 @@ export default {
 		this.isMainTableLoading = false;
 	},
 	methods: {
+		goToModeler() {
+			if (this.$route.path != "/processes/new/-1") {
+				this.$router.push({ name: "editor", params: { id: "-1", type: "definition" } });
+			}
+		},
 		showAndHideDialog(data, type) {
 			if (data != null) {
 				this.data1 = Object.assign({}, this.data1, data);
@@ -363,7 +376,6 @@ export default {
 		async handleAdd() {
 			debugger;
 		},
-		//OK
 		async handleDelete(type) {
 			if (common.isItemProcessDefinition(this.data1)) {
 				let processDefinition = await ProcessDefinition.deleteProcessDefinition(this.data1.process_definition_id);
@@ -409,6 +421,7 @@ export default {
 					this.expandTableData = common.findAndReplace(this.expandTableData, processVersion, "version");
 				});
 			}
+			this.handleSnackbar("Succes", "green");
 			this.showAndHideDialog(null, type);
 		},
 		async handleDeactivate(type) {
@@ -416,9 +429,11 @@ export default {
 				let response = await ProcessVersion.deactivateProcessVersion(this.data1.process_definition_id, this.data1.process_version_id);
 				this.mainTableData = common.findAndReplace(this.mainTableData, response.process_definition, "definition");
 				this.expandTableData = common.findAndReplace(this.expandTableData, response.process_version, "version");
+				this.handleSnackbar("Succes", "green");
 			} else {
 				let processDefinition = await ProcessDefinition.deactivateProcessDefinition(this.data1.process_definition_id);
 				this.mainTableData = common.findAndReplace(this.mainTableData, processDefinition, "definition");
+				this.handleSnackbar("Deactivation", "green");
 			}
 			this.showAndHideDialog(null, type);
 		},
@@ -434,6 +449,14 @@ export default {
 			let versions = await ProcessVersion.getProcessVersions(row.item.process_definition_id);
 			this.expandTableData = common.reMapDataTableValues(versions);
 			this.isExpandTableDataLoading = false;
+		},
+		handleSnackbar(text, color) {
+			this.showSnackbar = true;
+			this.snackbarText = text;
+			this.snackbarColor = color;
+			setTimeout(() => {
+				this.showSnackbar = false;
+			}, 2000);
 		},
 	},
 };

@@ -3,7 +3,6 @@
 		<v-card tile class="dialog-card-padding">
 			<v-card-title class="dialog-card-title-generic" v-text="title"></v-card-title>
 			<v-card-text>
-				<div class="dialog-card-text" v-text="text"></div>
 				<v-form class="service-form">
 					<v-text-field
 						placeholder="Service name"
@@ -32,7 +31,7 @@
 					></v-checkbox>
 				</v-form>
 			</v-card-text>
-			<v-card-actions class="dialog-card-action-generic">
+			<v-card-actions class="btns-align-right">
 				<v-btn class="dialog-card-action-btn black--text" :disabled="false" large depressed tile color="white" @click="cancelAction()"
 					>BACK</v-btn
 				>

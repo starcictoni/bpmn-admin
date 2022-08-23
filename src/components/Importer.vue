@@ -45,14 +45,14 @@
 					<v-card elevation="0" class="import-card-padding" tile>
 						<v-card-title>
 							<div class="card-title">
-								INFO
+								INFORMATION
 							</div>
 						</v-card-title>
 						<v-card-text class="card-text">
 							<div class="form-item-file-general" v-if="isFileImported">
 								<v-text-field class="input-remove-border" label="Process Name" dense outlined tile v-model="importedName"></v-text-field>
 								<v-text-field class="input-remove-border" label="File Name" dense outlined v-model="importedFileName"></v-text-field>
-								<v-checkbox v-model="importedActivate" color="primary" label="Active"> </v-checkbox>
+								<v-checkbox v-model="importedActivate" color="amber darken-3" label="Active"> </v-checkbox>
 							</div>
 						</v-card-text>
 						<v-card-actions class="process-import-info">
@@ -66,7 +66,7 @@
 					<v-card elevation="0" class="import-card-padding" tile>
 						<v-card-title>
 							<div class="card-title">
-								PREVIEW
+								MODEL PREVIEW
 							</div>
 						</v-card-title>
 						<v-card-text class="card-text">

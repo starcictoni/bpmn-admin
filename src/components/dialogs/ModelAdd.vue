@@ -1,126 +1,123 @@
 <template>
-	<v-row justify="center">
-		<v-dialog ref="versionDialog" v-model="model" persistent :max-width="versionDialogMaxWidth">
-			<v-card class="dialog-card-padding">
-				<v-card-title class="dialog-card-title">NEW PROCESS VERSION</v-card-title>
-				<v-card-text>
-					<div v-if="!isVersionDataTableVisible" class="dialog-card-text">Please, pick an option.</div>
-					<div class="card-padding" v-if="isVersionDataTableVisible">
-						<v-text-field
-							v-model="versionTableSearch"
-							class="input-remove-border-sans-serif form-search-bottom-margin"
-							outlined
-							dense
-							prepend-inner-icon="mdi-magnify"
-							placeholder=" Search"
-							single-line
-							hide-details
-						></v-text-field>
-						<v-data-table
-							ref="versionTableData"
-							v-model="selected"
-							:single-select="true"
-							:show-select="true"
-							item-key="process_version_id"
-							tile
-							outlined
-							loading-text="Loading..."
-							:search="versionTableSearch"
-							:loading="isVersionTableDataLoading"
-							:headers="versionTableHeaders"
-							:items="versionTableData"
-							:items-per-page="5"
-							:footer-props="footerProps"
-							:header-props="headerProps"
-							sort-by="process_version_number"
-							:sort-desc="false"
-						>
-							<!-- Header tooltip -->
-							<template v-for="(h, idx) in versionTableHeaders" v-slot:[`header.${h.value}`]="{}">
-								<v-tooltip top :key="idx">
-									<template v-slot:activator="{ on }">
-										<span v-on="on">{{ h.text }}</span>
-									</template>
-									<span>{{ h.explanation }}</span>
-								</v-tooltip>
-							</template>
-						</v-data-table>
-					</div>
-				</v-card-text>
-				<v-card-actions v-if="isVersionDataTableVisible" class="dialog-card-action">
-					<v-spacer></v-spacer>
-					<v-btn class="black--text" large depressed tile color="white" @click="goBackToVersionDialog()">
-						BACK
-					</v-btn>
-					<v-btn
-						@click="$router.push({ name: 'editor', params: { id: selected[0].process_version_id, type: 'version', obj: selected[0] } })"
-						class="white--text form-btn-margin"
-						large
-						:disabled="selected.length < 1"
-						depressed
+	<v-dialog ref="versionDialog" v-model="model" persistent :max-width="versionDialogMaxWidth">
+		<v-card class="dialog-card-padding" tile>
+			<v-card-title class="dialog-card-title">NEW PROCESS VERSION</v-card-title>
+			<v-card-text>
+				<div v-if="!isVersionDataTableVisible" class="dialog-card-text">Please, pick an option.</div>
+				<div class="card-padding" v-if="isVersionDataTableVisible">
+					<v-text-field
+						v-model="versionTableSearch"
+						class="input-remove-border-sans-serif form-search-bottom-margin"
+						outlined
+						dense
+						prepend-inner-icon="mdi-magnify"
+						placeholder=" Search"
+						single-line
+						hide-details
+					></v-text-field>
+					<v-data-table
+						ref="versionTableData"
+						v-model="selected"
+						:single-select="true"
+						:show-select="true"
+						item-key="process_version_id"
 						tile
-						color="blue lighten-1"
-						>NEW VERSION</v-btn
+						outlined
+						loading-text="Loading..."
+						:search="versionTableSearch"
+						:loading="isVersionTableDataLoading"
+						:headers="versionTableHeaders"
+						:items="versionTableData"
+						:items-per-page="5"
+						:footer-props="footerProps"
+						:header-props="headerProps"
+						sort-by="process_version_number"
+						:sort-desc="false"
 					>
-				</v-card-actions>
-				<v-card-actions v-if="!isVersionDataTableVisible" class="dialog-card-action">
-					<v-btn class="black--text" large depressed tile color="white" @click="closeNewVersionDialog()">
-						BACK
-					</v-btn>
-					<v-spacer></v-spacer>
-					<v-tooltip slot="append" top>
-						<template #activator="{ on }">
-							<v-btn
-								@click="$router.push({ name: 'editor', params: { id: '-1', type: 'version' } })"
-								class="white--text form-btn-margin"
-								v-on="on"
-								large
-								depressed
-								tile
-								color="blue lighten-3"
-								>NEW VERSION</v-btn
-							>
+						<!-- Header tooltip -->
+						<template v-for="(h, idx) in versionTableHeaders" v-slot:[`header.${h.value}`]="{}">
+							<v-tooltip top :key="idx">
+								<template v-slot:activator="{ on }">
+									<span v-on="on">{{ h.text }}</span>
+								</template>
+								<span>{{ h.explanation }}</span>
+							</v-tooltip>
 						</template>
-						<span>The default diagram will taken as a template.</span>
-					</v-tooltip>
+					</v-data-table>
+				</div>
+			</v-card-text>
+			<v-card-actions v-if="isVersionDataTableVisible" class="btns-align-right">
+				<v-btn class="black--text" large depressed tile color="white" @click="goBackToVersionDialog()">
+					BACK
+				</v-btn>
+				<v-btn
+					@click="$router.push({ name: 'editor', params: { id: selected[0].process_version_id, type: 'version', obj: selected[0] } })"
+					class="white--text form-btn-margin"
+					large
+					:disabled="selected.length < 1"
+					depressed
+					tile
+					color="amber darken-2"
+					>NEW VERSION</v-btn
+				>
+			</v-card-actions>
+			<v-card-actions v-if="!isVersionDataTableVisible" class="btns-align-right">
+				<v-btn class="black--text" large depressed tile color="white" @click="closeNewVersionDialog()">
+					BACK
+				</v-btn>
+				<v-spacer></v-spacer>
+				<v-tooltip slot="append" top>
+					<template #activator="{ on }">
+						<v-btn
+							@click="$router.push({ name: 'editor', params: { id: '-1', type: 'version' } })"
+							class="white--text form-btn-margin"
+							v-on="on"
+							large
+							depressed
+							tile
+							color="amber darken-2"
+							>NEW VERSION</v-btn
+						>
+					</template>
+					<span>The default diagram will taken as a template.</span>
+				</v-tooltip>
 
-					<v-tooltip slot="append" top>
-						<template #activator="{ on }">
-							<v-btn
-								@click="$router.push({ name: 'editor', params: { id: versionItem.active_version_id, type: 'version', obj: versionItem } })"
-								class="white--text form-btn-margin"
-								:disabled="isDisabledActiveVersionBtn"
-								v-on="on"
-								large
-								depressed
-								tile
-								color="blue lighten-1"
-								>ACTIVE VERSION</v-btn
-							>
-						</template>
-						<span>The active version will taken as a template.</span>
-					</v-tooltip>
+				<v-tooltip slot="append" top>
+					<template #activator="{ on }">
+						<v-btn
+							@click="$router.push({ name: 'editor', params: { id: versionItem.active_version_id, type: 'version', obj: versionItem } })"
+							class="white--text form-btn-margin"
+							:disabled="isDisabledActiveVersionBtn"
+							v-on="on"
+							large
+							depressed
+							tile
+							color="amber darken-2"
+							>ACTIVE VERSION</v-btn
+						>
+					</template>
+					<span>The active version will taken as a template.</span>
+				</v-tooltip>
 
-					<v-tooltip slot="append" top>
-						<template #activator="{ on }">
-							<v-btn
-								@click="showVersionDataTable(versionItem)"
-								v-on="on"
-								class="white--text form-btn-margin-right"
-								:disabled="isDisabledMultipleVersionsBtn"
-								large
-								depressed
-								tile
-								color="blue darken-3"
-								>PICK A VERSION</v-btn
-							>
-						</template>
-						<span>The version you choose will be taken as a template.</span>
-					</v-tooltip>
-				</v-card-actions>
-			</v-card>
-		</v-dialog>
-	</v-row>
+				<v-tooltip slot="append" top>
+					<template #activator="{ on }">
+						<v-btn
+							@click="showVersionDataTable(versionItem)"
+							v-on="on"
+							class="white--text form-btn-margin-right"
+							:disabled="isDisabledMultipleVersionsBtn"
+							large
+							depressed
+							tile
+							color="amber darken-2"
+							>PICK A VERSION</v-btn
+						>
+					</template>
+					<span>The version you choose will be taken as a template.</span>
+				</v-tooltip>
+			</v-card-actions>
+		</v-card>
+	</v-dialog>
 </template>
 <script>
 import { ProcessVersion } from "@/services";
@@ -184,4 +181,11 @@ export default {
 	},
 };
 </script>
-<style></style>
+<style>
+.dialog-card-title {
+	font-family: Helvetica, Arial, sans-serif !important;
+	font-size: 25px !important;
+	letter-spacing: -1px !important;
+	font-weight: 600 !important;
+}
+</style>

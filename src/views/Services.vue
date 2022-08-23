@@ -237,7 +237,7 @@ export default {
 		},
 		setText(active, status) {
 			if (active == "No") return "Service is under maintenance";
-			return (status = status ? "Service is live&running" : "Service is down");
+			return (status = status ? "Service is up" : "Service is down");
 		},
 		applyChanges(response, type) {
 			this.serviceTableData = common.reMapDataTableValues(this.serviceTableData);

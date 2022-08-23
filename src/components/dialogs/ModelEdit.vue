@@ -2,7 +2,7 @@
 	<v-row justify="center">
 		<v-dialog v-model="model" persistent max-width="600">
 			<v-card class="dialog-card-padding">
-				<v-card-title class="dialog-card-title">EDIT INFO</v-card-title>
+				<v-card-title class="dialog-card-title">EDIT INFORMATION</v-card-title>
 				<v-card-text class="dialog-card-body">
 					<v-form ref="editDialogFormInput">
 						<div v-if="this.type == 'definition'">
@@ -35,8 +35,7 @@
 						></v-text-field>
 					</v-form>
 				</v-card-text>
-				<v-card-actions class="dialog-card-action">
-					<v-spacer></v-spacer>
+				<v-card-actions class="btns-align-right">
 					<v-btn class="black--text" large depressed tile color="white" @click="cancelAction()">
 						CANCEL
 					</v-btn>
@@ -101,4 +100,11 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.dialog-card-title {
+	font-family: Helvetica, Arial, sans-serif !important;
+	font-size: 25px !important;
+	letter-spacing: -1px !important;
+	font-weight: 600 !important;
+}
+</style>

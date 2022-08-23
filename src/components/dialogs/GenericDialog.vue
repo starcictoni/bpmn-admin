@@ -3,7 +3,7 @@
 		<v-card tile class="dialog-card-padding">
 			<v-card-title class="dialog-card-title-generic" v-text="title"></v-card-title>
 			<v-card-text class="dialog-card-text" v-text="text"> </v-card-text>
-			<v-card-actions class="dialog-card-action-generic">
+			<v-card-actions class="btns-align-right">
 				<v-btn class="dialog-card-action-btn black--text" large depressed tile color="white" @click="cancelAction()">BACK</v-btn>
 				<v-btn class="dialog-card-action-btn white--text" large depressed tile color="green" @click="okAction()">OK</v-btn>
 			</v-card-actions>
