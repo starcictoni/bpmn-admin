@@ -91,8 +91,7 @@ let DialogConfig = {
   service: {
     active: {
       title: "ACTIVATE SERVICE",
-			text: "Are you sure that you want to activate this service?",
-			buttonColor: "blue darken-3",
+			buttonColor: "amber darken-1",
     },
     inactive: {
 			title: "DEACTIVATE SERVICE",
@@ -106,21 +105,16 @@ let DialogConfig = {
     },
     add: {
 			title: "ADD SERVICE",
-			text: "Fill the data in and press 'Ok' button to save.",
-			buttonColor: "blue lighten-1",
+			buttonColor: "amber darken-1",
     },
     edit: {
 			title: "EDIT SERVICE",
-			text: "Are you sure that you want to edit this service?",
-			buttonColor: "cyan darken-1",
+			buttonColor: "amber darken-1",
     },
   },
   serviceConfiguration: {
     connectorParams: {
       title: "URL PARAMETERS"
-    },
-    map: {
-      title: "MAP"
     },
     add: {
       title: "ADD PARAMETER",
@@ -134,28 +128,27 @@ let DialogConfig = {
   userTaskConfiguration: {
     add: {
       title: "ADD FORM FIELD",
-      buttonColor: "amber",
+      buttonColor: "amber darken-1",
     },
     edit: {
       title: "EDIT FORM FIELD",
-      buttonColor: "yellow",
+      buttonColor: "amber darken-1",
     }
   },
   connectorConfiguration: {
     add: {
       title: "ADD URL PARAMETER",
-      buttonColor: "amber",
+      buttonColor: "amber darken-1",
     },
     edit: {
       title: "EDIT URL PARAMETER",
-      buttonColor: "yellow",
+      buttonColor: "amber darken-1",
     }
   },
   model: {
     active: {
       title: "ACTIVATE ITEM",
-			text: "Are you sure that you want to activate this item?",
-			buttonColor: "blue darken-3",
+			buttonColor: "amber darken-1",
     },
     inactive: {
 			title: "DEACTIVATE ITEM",
@@ -169,13 +162,11 @@ let DialogConfig = {
     },
     add: {
 			title: "ADD ITEM",
-			text: "Fill the data in and press 'Ok' button to save.",
-			buttonColor: "blue lighten-1",
+			buttonColor: "amber darken-1",
     },
     edit: {
 			title: "EDIT ITEM",
-			text: "Are you sure that you want to edit this item?",
-			buttonColor: "cyan darken-1",
+			buttonColor: "amber darken-1",
     },
     addUserField: {
       formFieldText: "FORM FIELD",
@@ -191,7 +182,7 @@ let DialogConfig = {
 
 let TextConfig = {
   explanations: {
-    viewer: "The existing process definition is read-only. You can create or import a new one, but you can never edit the existing one",
+    viewer: "The existing process definition is read-only. You can create or import a new one, but you cannot edit the existing one",
     goBack: "Return",
   },
 }

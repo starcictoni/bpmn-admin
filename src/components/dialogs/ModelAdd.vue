@@ -1,7 +1,7 @@
 <template>
-	<v-dialog ref="versionDialog" v-model="model" persistent :max-width="versionDialogMaxWidth">
+	<v-dialog content-class="dialog-border" ref="versionDialog" v-model="model" persistent :max-width="versionDialogMaxWidth">
 		<v-card class="dialog-card-padding" tile>
-			<v-card-title class="dialog-card-title">NEW PROCESS VERSION</v-card-title>
+			<v-card-title class="dialog-card-title-generic">NEW VERSION</v-card-title>
 			<v-card-text>
 				<div v-if="!isVersionDataTableVisible" class="dialog-card-text">Please, pick an option.</div>
 				<div class="card-padding" v-if="isVersionDataTableVisible">
@@ -47,35 +47,28 @@
 				</div>
 			</v-card-text>
 			<v-card-actions v-if="isVersionDataTableVisible" class="btns-align-right">
-				<v-btn class="black--text" large depressed tile color="white" @click="goBackToVersionDialog()">
+				<v-btn class="dialog-card-action-btn black--text" large depressed tile color="white" @click="goBackToVersionDialog()">
 					BACK
 				</v-btn>
 				<v-btn
-					@click="$router.push({ name: 'editor', params: { id: selected[0].process_version_id, type: 'version', obj: selected[0] } })"
+					@click="goToModeler(selected[0].process_version_id, selected[0])"
 					class="white--text form-btn-margin"
 					large
 					:disabled="selected.length < 1"
 					depressed
 					tile
-					color="amber darken-2"
+					color="amber darken-1"
 					>NEW VERSION</v-btn
 				>
 			</v-card-actions>
 			<v-card-actions v-if="!isVersionDataTableVisible" class="btns-align-right">
-				<v-btn class="black--text" large depressed tile color="white" @click="closeNewVersionDialog()">
+				<v-btn class="dialog-card-action-btn black--text" large depressed tile color="white" @click="closeNewVersionDialog()">
 					BACK
 				</v-btn>
 				<v-spacer></v-spacer>
 				<v-tooltip slot="append" top>
 					<template #activator="{ on }">
-						<v-btn
-							@click="$router.push({ name: 'editor', params: { id: '-1', type: 'version' } })"
-							class="white--text form-btn-margin"
-							v-on="on"
-							large
-							depressed
-							tile
-							color="amber darken-2"
+						<v-btn @click="goToModeler('-1', null)" class="white--text form-btn-margin" v-on="on" large depressed tile color="amber darken-2"
 							>NEW VERSION</v-btn
 						>
 					</template>
@@ -85,14 +78,14 @@
 				<v-tooltip slot="append" top>
 					<template #activator="{ on }">
 						<v-btn
-							@click="$router.push({ name: 'editor', params: { id: versionItem.active_version_id, type: 'version', obj: versionItem } })"
+							@click="goToModeler(versionItem.active_version_id, versionItem)"
 							class="white--text form-btn-margin"
 							:disabled="isDisabledActiveVersionBtn"
 							v-on="on"
 							large
 							depressed
 							tile
-							color="amber darken-2"
+							color="amber darken-3"
 							>ACTIVE VERSION</v-btn
 						>
 					</template>
@@ -109,7 +102,7 @@
 							large
 							depressed
 							tile
-							color="amber darken-2"
+							color="amber darken-4"
 							>PICK A VERSION</v-btn
 						>
 					</template>
@@ -117,15 +110,20 @@
 				</v-tooltip>
 			</v-card-actions>
 		</v-card>
+		<snackbar :show="showSnackbar" :color="snackbarColor" :text="snackbarText"></snackbar>
 	</v-dialog>
 </template>
 <script>
 import { ProcessVersion } from "@/services";
+import Snackbar from "@/components/Snackbar.vue";
 import { HeaderConfig, FooterConfig, DialogConfig } from "../../utils/config.js";
 import * as common from "../../utils/common.js";
 export default {
 	name: "ModelAddDialog",
 	props: ["model", "data"],
+	components: {
+		Snackbar,
+	},
 	data() {
 		return {
 			config: DialogConfig.model,
@@ -133,7 +131,7 @@ export default {
 			headerProps: HeaderConfig.headerProps,
 
 			newVersionDialog: false,
-			versionDialogMaxWidth: 660,
+			versionDialogMaxWidth: 720,
 			versionItem: null,
 			versionTableSearch: null,
 			isVersionTableDataLoading: true,
@@ -145,6 +143,10 @@ export default {
 			activateTableData: [],
 			isActivateBtnDisabled: true,
 			selected: [], //state of selected rows
+			//Snackbar
+			showSnackbar: false,
+			snackbarColor: null,
+			snackbarText: null,
 		};
 	},
 	created() {
@@ -159,24 +161,38 @@ export default {
 		}
 	},
 	methods: {
+		goToModeler(id, obj) {
+			this.$router.push({ name: "editor", params: { id: id, type: "version", obj: obj } });
+		},
 		goBackToVersionDialog() {
 			this.isVersionDataTableVisible = false;
-			this.versionDialogMaxWidth = "660";
+			this.versionDialogMaxWidth = "720";
 		},
 		closeNewVersionDialog() {
 			this.newVersionDialog = false;
-			this.versionDialogMaxWidth = "660";
+			this.versionDialogMaxWidth = "720";
 			this.$emit("cancel");
 		},
 		async showVersionDataTable() {
-			this.versionDialogMaxWidth = "660";
+			this.versionDialogMaxWidth = "720";
 			this.isVersionDataTableVisible = false;
 			this.isVersionTableDataLoading = true;
-			this.versionTableData = await ProcessVersion.getProcessVersions(this.data.process_definition_id);
+			let response = await ProcessVersion.getProcessVersions(this.data.process_definition_id);
+			this.handleSnackbar(response.show, response.message, response.color); //maybe not ok, move to parent or smth
+			this.versionTableData = response.data;
+			this.activateTableData = common.reMapDataTableValues(response.data);
 			this.versionTableData = common.reMapDataTableValues(this.versionTableData);
 			this.versionDialogMaxWidth = "960";
 			this.isVersionTableDataLoading = false;
 			this.isVersionDataTableVisible = true;
+		},
+		handleSnackbar(show, text, color) {
+			this.showSnackbar = show;
+			this.snackbarText = text;
+			this.snackbarColor = color;
+			setTimeout(() => {
+				this.showSnackbar = false;
+			}, 3000);
 		},
 	},
 };

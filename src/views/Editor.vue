@@ -1,7 +1,7 @@
 <template>
 	<v-row>
 		<v-col cols="12">
-			<v-card ref="properties" class="up" hover tile outlined :height="panelHeight" :width="panelWidth">
+			<v-card v-show="isValid" ref="properties" class="up" hover tile outlined :height="panelHeight" :width="panelWidth">
 				<div :class="[isPropPanelExpanded ? extraPadded : '']" class="properties-icons-wrapper">
 					<div class="properties-icons">
 						<v-tooltip bottom>
@@ -36,7 +36,7 @@
 						<v-tooltip bottom>
 							<template #activator="{ on }">
 								<v-btn icon tile>
-									<v-icon class="btn-group-space-around" v-on="on" @click="globalSave()">mdi-content-save</v-icon>
+									<v-icon class="btn-group-space-around" :disabled="isDisabledSaveButton" v-on="on" @click="globalSave()">mdi-content-save</v-icon>
 								</v-btn>
 							</template>
 							<span>Save</span>
@@ -50,10 +50,10 @@
 							</template>
 							<span>Search</span>
 						</v-tooltip>
-						<!-- <v-divider vertical></v-divider>
+						<v-divider vertical></v-divider>
 						<v-tooltip bottom>
 							<template #activator="{ on }">
-								<v-icon dense v-on="on" @click="test()">mdi-ab-testing</v-icon>
+								<v-icon dense v-on="on" @click="test()">mdi-heart</v-icon>
 							</template>
 							<span>Test</span>
 						</v-tooltip>
@@ -63,7 +63,7 @@
 								<v-icon v-on="on" @click="xTest()">mdi-heart</v-icon>
 							</template>
 							<span>xTest</span>
-						</v-tooltip> -->
+						</v-tooltip>
 						<v-divider vertical></v-divider>
 						<v-tooltip bottom>
 							<template #activator="{ on }">
@@ -97,13 +97,13 @@
 								<v-expansion-panel-content>
 									<component
 										:is="p.module"
-										:key="propertyData.id"
 										:data="propertyData"
 										:process="process"
 										:processType="processType"
 										:context="{ modeler, bpmnElement }"
 										@infoOk="handleProcessInfoChange"
 										@generalOk="handleGeneralInfoChange"
+										@disableSaveButton="disableSaveButton"
 									></component>
 								</v-expansion-panel-content>
 							</div>
@@ -111,9 +111,20 @@
 					</v-expansion-panels>
 				</div>
 			</v-card>
-			<div v-if="hasDiagramArrived">
-				<vue-bpmn-modeler ref="bpmn" :processId="processId" :xml="diagramXML" :process="process" v-on:shown="onShown"></vue-bpmn-modeler>
-			</div>
+			<v-sheet light>
+				<div v-if="hasDiagramArrived">
+					<vue-bpmn-modeler
+						ref="bpmn"
+						:key="$router.fullPath"
+						:processId="processId"
+						:xml="diagramXML"
+						:process="process"
+						v-on:shown="onShown"
+						@checkValidity="showPropsIfValid"
+					></vue-bpmn-modeler>
+				</div>
+			</v-sheet>
+			<snackbar :show="showSnackbar" :color="snackbarColor" :text="snackbarText"></snackbar>
 		</v-col>
 	</v-row>
 </template>
@@ -125,6 +136,7 @@ import SendTaskPanel from "@/components/panels/SendTaskPanel.vue";
 import UserTaskPanel from "@/components/panels/UserTaskPanel.vue";
 import GeneralPanel from "@/components/panels/GeneralPanel.vue";
 import ProcessInfoPanel from "@/components/panels/ProcessInfoPanel.vue";
+import Snackbar from "@/components/Snackbar.vue";
 import { BpmnUI, BpmnXml } from "@/utils/bpmn";
 import { ProcessDefinition, ProcessVersion } from "@/services/index.js";
 import { newFile, PanelsConfig } from "@/utils/config.js";
@@ -138,6 +150,7 @@ export default {
 		UserTaskPanel,
 		GeneralPanel,
 		ProcessInfoPanel,
+		Snackbar,
 	},
 	data() {
 		return {
@@ -173,9 +186,22 @@ export default {
 			search: null,
 			searchItems: null,
 			otherItems: null,
+			//Snackbar
+			showSnackbar: false,
+			snackbarColor: null,
+			snackbarText: null,
+			//Valid
+			isValid: null,
+			errorMessage: "Unparsable content detected, going back.",
+			isDisabledSaveButton: false,
 		};
 	},
 	watch: {
+		isValid: function(newValue) {
+			if (!newValue) {
+				this.goBackIfNotValid();
+			}
+		},
 		search: function(newVal) {
 			this.searchElements(newVal);
 		},
@@ -192,6 +218,14 @@ export default {
 		await this.getDiagram();
 	},
 	methods: {
+		async goBackIfNotValid() {
+			this.handleSnackbar(true, this.errorMessage, "red darken-3");
+			await new Promise((resolve) => setTimeout(resolve, 3000));
+			this.$router.push({ name: "processes" });
+		},
+		showPropsIfValid(value) {
+			this.isValid = value;
+		},
 		setBpmnElement(element) {
 			this.bpmnElement = element;
 		},
@@ -245,28 +279,21 @@ export default {
 		//
 		//
 		//
-		xTest() {
+		async xTest() {
 			debugger;
-			window.moddle = this.moddle.create("bpmn:ExtensionElements").get("values");
 			window.modeler = this.modeler;
-			console.log(window.modeler);
-		},
-		async test() {
 			const test = await this.moddle.toXML(this.modeler._definitions);
 			console.log(test.xml);
 		},
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
+		async test() {
+			try {
+				const result = await this.modeler.saveXML({ format: false });
+				const { xml } = result;
+				console.log(xml);
+			} catch (err) {
+				console.log(err);
+			}
+		},
 		//
 		//
 		//
@@ -389,15 +416,31 @@ export default {
 				this.diagramXML = newFile.xml_definition;
 				this.hasDiagramArrived = true;
 			} else if (this.processType == "definition") {
-				this.process = await ProcessDefinition.getProcessDefinition(this.process.process_definition_id);
-				console.log("Editor - def", this.process);
-				this.diagramXML = this.process.xml_definition;
+				let response = await ProcessDefinition.getProcessDefinition(this.process.process_definition_id);
+				this.handleSnackbar(response.show, response.message, response.color);
+				if (!response.data) this.diagramXML = "";
+				else this.diagramXML = response.data?.xml_definition;
+				this.process = response.data;
 				this.hasDiagramArrived = true;
 			} else if (this.processType == "version") {
-				this.process = await ProcessVersion.getProcessVersion(this.processId);
-				this.diagramXML = this.process.xml_definition;
+				let response = await ProcessVersion.getProcessVersion(this.processId);
+				this.handleSnackbar(response.show, response.message, response.color);
+				if (!response.data) this.diagramXML = "";
+				else this.diagramXML = response.data?.xml_definition;
+				this.process = response.data;
 				this.hasDiagramArrived = true;
 			}
+		},
+		handleSnackbar(show, text, color) {
+			this.showSnackbar = show;
+			this.snackbarText = text;
+			this.snackbarColor = color;
+			setTimeout(() => {
+				this.showSnackbar = false;
+			}, 3000);
+		},
+		disableSaveButton(value) {
+			this.isDisabledSaveButton = value;
 		},
 	},
 };

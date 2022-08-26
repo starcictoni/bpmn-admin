@@ -1,37 +1,37 @@
 <template>
-	<v-dialog v-model="model" persistent max-width="1000">
+	<v-dialog content-class="dialog-border" v-model="model" persistent max-width="1000">
 		<v-card tile class="dialog-card-padding title-margin">
 			<v-card-text>
 				<v-form ref="serviceInformation">
 					<service-selector
-						:prefilledService="prefillServiceName"
-						:prefilledMethod="prefillMethod"
-						:prefilledRoute="prefillRoute"
-						:connector="connector"
+						:connectorData="connector"
 						:context="context"
 						@setService="setServiceValue"
 						@setMethod="setMethodValue"
 						@setRoute="setRouteValue"
+						@setUrlParameters="setUrlParams"
 					></service-selector>
 					<v-row>
 						<v-col cols="12" class="col-no-top-padding">
-							<div class="card-wrap parameter-title-margin">
-								<div class="card-title">PARAMETERS</div>
-								<div class="card-add-button">
+							<div class="form-header">
+								<div class="form-header-text">PARAMETERS</div>
+								<div class="form-header-btn">
 									<v-btn @click="showAddEditDialog(null, 'add')" icon color="yellow accent-3">
-										<v-icon large>mdi-plus-box</v-icon>
+										<v-icon class="icon-medium">mdi-plus-box</v-icon>
 									</v-btn>
 								</div>
-								<v-text-field
-									v-model="search"
-									class="input-remove-border-sans-serif card-search"
-									outlined
-									dense
-									prepend-inner-icon="mdi-magnify"
-									placeholder=" Search"
-									single-line
-									hide-details
-								></v-text-field>
+								<div class="form-header-search">
+									<v-text-field
+										v-model="search"
+										class="input-remove-border-sans-serif card-search"
+										outlined
+										dense
+										prepend-inner-icon="mdi-magnify"
+										placeholder=" Search"
+										single-line
+										hide-details
+									></v-text-field>
+								</div>
 							</div>
 						</v-col>
 						<v-col cols="12" class="col-no-top-padding">
@@ -132,6 +132,7 @@ import ServiceTaskAddEdit from "@/components/dialogs/ServiceTaskAddEdit.vue";
 import ServiceSelector from "@/components/ServiceSelector.vue";
 import * as common from "@/utils/common.js";
 import _ from "lodash";
+import { BpmnXml } from "../../utils/bpmn.js";
 export default {
 	name: "properties-edit-service",
 	components: {
@@ -139,7 +140,7 @@ export default {
 		ServiceSelector,
 		ServiceTaskAddEdit,
 	},
-	props: ["model", "context", "connector", "inputOutput", "prefillServiceName", "prefillMethod", "prefillRoute"],
+	props: ["model", "context", "connector", "inputOutput"],
 	data() {
 		return {
 			//Table
@@ -168,24 +169,42 @@ export default {
 			buttonColor: null,
 			title: null,
 			//service
-			service: {},
-			serviceItem: {},
-			methodItem: {},
-			routeItem: {},
+			serviceSelectorData: {
+				serviceItem: {},
+				methodText: {},
+				routeText: {},
+				urlParams: [],
+			},
+			isConnectorFilled: false,
+			isConnectorChanged: false,
+			serviceDefault: null,
+			methodDefault: null,
+			routeDefault: null,
 		};
 	},
 	watch: {
-		parameters: function(newValue) {
-			console.log("Parameters watch -", newValue);
+		parameters: function() {
 			this.compareData();
 		},
-		connectorData: function(newValue) {
-			console.log("Connector watch selector-", newValue);
-			this.compareData();
+		serviceSelectorData: {
+			handler: function() {
+				debugger;
+				let isFilled =
+					this.serviceSelectorData.serviceItem != null &&
+					this.serviceSelectorData.methodText != null &&
+					this.serviceSelectorData.routeText != null;
+				let isEqual = this.compareConnector();
+				this.isConnectorFilled = isFilled && !isEqual;
+			},
+			deep: true,
+		},
+		isConnectorFilled: function(newValue) {
+			this.setApplyButtonState(!newValue);
 		},
 	},
 	mounted() {
 		this.setData();
+		//tu negdje se dinamicki mora graditi novi konektor - pogledaj ispod data -> service
 	},
 	methods: {
 		setData() {
@@ -194,7 +213,6 @@ export default {
 				this.inputOutputData = [];
 				this.parameters = [];
 			} else {
-				// debugger;
 				this.connectorData = _.cloneDeep(this.connector);
 				this.inputOutputData = _.cloneDeep(this.inputOutput);
 				if (this.inputOutputData.inputParameters) {
@@ -203,18 +221,25 @@ export default {
 					this.parameters = this.inputOutputData.outputParameters;
 				}
 			}
+			this.serviceDefault = this.connector.connectorId;
+			this.methodDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "method").value;
+			this.routeDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "url").value;
 			this.defaultParameters = _.cloneDeep(this.parameters);
 		},
-
+		compareConnector() {
+			let isEqual =
+				this.serviceDefault.toUpperCase() == this.serviceSelectorData.serviceItem.name.toUpperCase() &&
+				this.methodDefault == this.serviceSelectorData.methodText &&
+				this.serviceSelectorData.routeText == this.routeDefault;
+			return isEqual;
+		},
 		compareData() {
 			let areParamsEqual = _.isEqual(this.parameters, this.defaultParameters);
-			let isConnectorEqual = _.isEqual(this.connector, this.connectorData);
-			this.setApplyButtonState(!isConnectorEqual || !areParamsEqual);
+			this.setApplyButtonState(areParamsEqual);
 		},
 		setApplyButtonState(value) {
 			this.isApplyButtonDisabled = value;
 		},
-		//Add & Edit
 		showAddEditDialog(item, type) {
 			if (type == "add") {
 				this.buttonColor = this.serviceConfig.add.buttonColor;
@@ -231,7 +256,6 @@ export default {
 			this.isVisibleAddEditDialog = false;
 		},
 		handleAddEdit(item, type) {
-			//Nije dobro, sto ako se promijeni name
 			if (type == "edit") {
 				let idx = this.parameters.findIndex((x) => x.name == item.name);
 				this.parameters.splice(idx, 1, item);
@@ -240,38 +264,73 @@ export default {
 			}
 			this.closeAddAndEditDialog();
 		},
-		//Delete
 		showDeleteDialog(item) {
 			this.item = item;
 			this.isVisibleDeleteDialog = true;
 		},
 		handleDelete() {
+			debugger;
 			this.isVisibleDeleteDialog = false;
-			let idx = this.parameters.findIndex((x) => x.name == this.deleteItem.name);
+			let idx = this.parameters.findIndex((x) => x.name == this.item.name);
 			this.parameters.splice(idx, 1);
 		},
 		cancel() {
 			this.$emit("cancel");
 		},
 		ok() {
+			let moddle = this.context.modeler.get("moddle");
+			this.connector;
+			this.serviceSelectorData.serviceItem;
+			debugger;
+			//name
+			this.connector.connectorId = this.serviceSelectorData.serviceItem.name;
+			//method
+			let method = this.connector.inputOutput.inputParameters.find((x) => x.name == "method");
+			method.value = this.serviceSelectorData.methodText;
+			//url
+			let url = this.connector.inputOutput.inputParameters.find((x) => x.name == "url");
+			url.value = this.serviceSelectorData.routeText;
+			let urlParameter = this.connector?.inputOutput.inputParameters.find((x) => x.name == "url_parameter");
+			if (!urlParameter) {
+				this.connector.inputOutput.inputParameters.push(this.serviceSelectorData.urlParams);
+			}
+			//maybe
+			let connector = BpmnXml.createSpecialConnector(moddle, this.connectorData); //maybe not connectorData
+			connector;
 			let data = null;
 			this.$emit("ok", data);
 		},
 		//Service
 		setServiceValue(service, serviceName) {
 			this.service = service;
-			this.serviceItem = serviceName;
+			this.serviceSelectorData.serviceItem = serviceName;
 		},
 		setMethodValue(methodName) {
-			this.methodItem = methodName;
+			this.serviceSelectorData.methodText = methodName;
 		},
 		setRouteValue(routeName) {
-			this.routeItem = routeName;
+			this.serviceSelectorData.routeText = routeName;
+		},
+		setUrlParams(urlParams) {
+			this.serviceSelectorData.urlParams = urlParams;
 		},
 	},
 };
 </script>
 <style>
+.form-header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	margin-top: 2%;
+	margin-bottom: 2%;
+}
+.form-header-search {
+	display: flex;
+	justify-content: flex-end !important;
+	align-items: center;
+	flex-grow: 1;
+}
 .input-remove-border {
 	border-radius: 0px !important;
 }
@@ -296,10 +355,7 @@ export default {
 .card-search {
 	margin-left: 20% !important;
 }
-.card-add-button {
-	margin-bottom: 1%;
-	margin-left: 1%;
-}
+
 .connector-title-margin {
 	margin-top: 4%;
 	margin-bottom: 3%;
@@ -307,8 +363,5 @@ export default {
 .parameter-title-margin {
 	margin-top: 3%;
 	margin-bottom: 2%;
-}
-.dialog-card-padding {
-	padding: 5% !important;
 }
 </style>

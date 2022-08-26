@@ -52,13 +52,21 @@
 							<div class="form-item-file-general" v-if="isFileImported">
 								<v-text-field class="input-remove-border" label="Process Name" dense outlined tile v-model="importedName"></v-text-field>
 								<v-text-field class="input-remove-border" label="File Name" dense outlined v-model="importedFileName"></v-text-field>
-								<v-checkbox v-model="importedActivate" color="amber darken-3" label="Active"> </v-checkbox>
+								<v-checkbox v-model="importedActivate" color="yellow accent-4" label="Active"> </v-checkbox>
 							</div>
 						</v-card-text>
 						<v-card-actions class="process-import-info">
 							<v-spacer></v-spacer>
-							<v-btn class="process-import-info-cancel" @click="handleClearFileInput()" large outlined tile>Cancel</v-btn>
-							<v-btn class="process-import-info-save" @click="saveImport()" large outlined tile>Save</v-btn>
+							<v-btn
+								class="dialog-card-action-btn black--text  btn-margin-right"
+								@click="handleClearFileInput()"
+								color="white"
+								depressed
+								large
+								tile
+								>Cancel</v-btn
+							>
+							<v-btn class="dialog-card-action-btn white--text" @click="saveImport()" depressed large color="yellow accent-4" tile>Save</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -236,4 +244,8 @@ export default {
 	},
 };
 </script>
-<style></style>
+<style scoped>
+.btn-margin-right {
+	margin-right: 3%;
+}
+</style>

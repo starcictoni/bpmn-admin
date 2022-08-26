@@ -1,19 +1,8 @@
 <template>
-	<v-dialog v-model="model" persistent max-width="900">
+	<v-dialog content-class="dialog-border" v-model="model" persistent tile max-width="900">
 		<v-card class="dialog-card-padding" tile>
-			<v-card-title class="dialog-card-title" v-text="config.active.title"></v-card-title>
+			<v-card-title class="dialog-card-title-generic" v-text="config.active.title"></v-card-title>
 			<v-card-text>
-				<div class="dialog-card-text" v-text="config.active.text"></div>
-				<!-- <v-text-field
-						v-model="activateSearch"
-						class="input-remove-border-sans-serif form-search-bottom-margin"
-						outlined
-						dense
-						prepend-inner-icon="mdi-magnify"
-						placeholder=" Search"
-						single-line
-						hide-details
-					></v-text-field> -->
 				<v-data-table
 					ref="activeDataTable"
 					v-model="selected"
@@ -23,7 +12,6 @@
 					outlined
 					loading-text="Loading..."
 					:loading="isActivateDataTableLoading"
-					:search="activateSearch"
 					:headers="activateTableHeaders"
 					:items="activateTableData"
 					:items-per-page="5"
@@ -43,24 +31,37 @@
 				</v-data-table>
 			</v-card-text>
 			<v-card-actions class="btns-align-right">
-				<v-btn class="black--text" large depressed tile color="white" @click="cancelAction()">
+				<v-btn class="dialog-card-action-btn black--text" large depressed tile color="white" @click="cancelAction()">
 					CANCEL
 				</v-btn>
-				<v-btn class="white--text" :disabled="selected.length == 0" large depressed tile color="green darken-3" @click="okAction()">
+				<v-btn
+					class="dialog-card-action-btn white--text"
+					large
+					depressed
+					tile
+					:disabled="selected.length == 0"
+					color="amber darken-3"
+					@click="okAction()"
+				>
 					ACTIVATE
 				</v-btn>
 			</v-card-actions>
 		</v-card>
+		<snackbar :show="showSnackbar" :color="snackbarColor" :text="snackbarText"></snackbar>
 	</v-dialog>
 </template>
 
 <script>
 import { HeaderConfig, FooterConfig, DialogConfig } from "../../utils/config.js";
+import Snackbar from "@/components/Snackbar.vue";
 import { ProcessVersion } from "@/services";
 import * as common from "../../utils/common.js";
 export default {
 	name: "ModelActivateDialog",
 	props: ["model", "data"],
+	components: {
+		Snackbar,
+	},
 	data() {
 		return {
 			config: DialogConfig.model,
@@ -68,11 +69,14 @@ export default {
 			activateTableHeaders: HeaderConfig.activateTableHeaders,
 			footerProps: FooterConfig.footerProps,
 			headerProps: HeaderConfig.headerProps,
-			activateSearch: null,
 			activateTableData: [],
 			isActivateBtnDisabled: true,
 			selected: [], //state of selected rows
 			type: "active",
+			//Snackbar
+			showSnackbar: false,
+			snackbarColor: null,
+			snackbarText: null,
 		};
 	},
 	async created() {
@@ -82,8 +86,9 @@ export default {
 		async setData() {
 			this.isActivateDataTableLoading = true;
 			if (common.isItemProcessDefinition(this.data)) {
-				let versions = await ProcessVersion.getProcessVersions(this.data.process_definition_id);
-				this.activateTableData = common.reMapDataTableValues(versions);
+				let response = await ProcessVersion.getProcessVersions(this.data.process_definition_id);
+				this.handleSnackbar(response.show, response.message, response.color); //maybe not ok, move to parent or smth
+				this.activateTableData = common.reMapDataTableValues(response.data);
 			} else {
 				this.activateTableData.splice(0, 0, this.data);
 			}
@@ -94,6 +99,14 @@ export default {
 		},
 		okAction() {
 			this.$emit("ok", this.selected[0], this.type);
+		},
+		handleSnackbar(show, text, color) {
+			this.showSnackbar = show;
+			this.snackbarText = text;
+			this.snackbarColor = color;
+			setTimeout(() => {
+				this.showSnackbar = false;
+			}, 3000);
 		},
 	},
 };

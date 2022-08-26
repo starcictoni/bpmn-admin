@@ -1,25 +1,20 @@
 <template>
-	<div ref="container" :options="options" class="vue-bpmn-modeler-container"></div>
+	<div ref="container" class="vue-bpmn-modeler-container"></div>
+	<!-- :options="options" -->
 </template>
 
 <script>
-//import BpmnModeler from "bpmn-js/dist/bpmn-modeler.production.min.js";
-//import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from "bpmn-js-properties-panel";
-//import "bpmn-js/dist/assets/diagram-js.css";
-//import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
-// import camundaModdle from "camunda-bpmn-moddle/resources/camunda.json";
-// import * as camundaPropertiesProvider from "bpmn-js-properties-panel/lib/provider/camunda";
-
-//CAMUNDA OPTION
 import BpmnModeler from "bpmn-js/lib/Modeler";
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule } from "bpmn-js-properties-panel";
 import CamundaBpmnModdle from "camunda-bpmn-moddle/resources/camunda.json";
-
+import { TextConfig } from "../utils/config.js";
 export default {
 	name: "vue-bpmn-modeler",
 	props: ["processId", "xml", "process"],
 	data() {
 		return {
+			explanationMessage: TextConfig.explanations.viewer,
+			goBackMessage: TextConfig.explanations.goBack,
 			BpmnModeler: null,
 			options: {
 				additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule],
@@ -28,47 +23,54 @@ export default {
 				},
 			},
 			eventBus: null,
+			isValid: null,
+			errorMessage: "Unparsable content detected, going back.",
 		};
 	},
+	watch: {
+		// $router: {
+		// 	handler: function() {
+		// 		debugger;
+		// 		this.setData();
+		// 	},
+		// 	deep: true,
+		// },
+	},
 	async mounted() {
-		//this.BpmnModeler = new BpmnModeler();
-		//CAMUNDA OPTION
-		this.BpmnModeler = new BpmnModeler({
-			// container: "container",
-			// propertiesPanel: {
-			// 	parent: "#js-properties-panel",
-			// },
-			additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule],
-			moddleExtensions: {
-				camunda: CamundaBpmnModdle,
-			},
-		});
-
-		await this.importDiagram();
-		this.$emit("shown");
-		// var events = ["element.hover", "element.out", "element.click", "element.dblclick", "element.mousedown", "element.mouseup"]
-		// events.forEach(function(event) {
-		// 	eventBus.on(event, function(e) {
-		// 		// e.element = the model element
-		// 		// e.gfx = the graphical element
-		// 		console.log(event, "on", e.element.id);
-		// 	});
-		// });
+		await this.setData();
 	},
 	methods: {
+		async setData() {
+			this.BpmnModeler = new BpmnModeler({
+				additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule],
+				moddleExtensions: {
+					camunda: CamundaBpmnModdle,
+				},
+			});
+			await this.importDiagram();
+			this.$emit("shown");
+		},
+		goBack() {
+			this.$router.back();
+		},
 		async importDiagram() {
 			try {
 				await this.BpmnModeler.importXML(this.xml);
 				this.BpmnModeler.attachTo(this.$refs.container);
 				this.BpmnModeler.get("canvas").zoom(0.9);
+				this.isValid = true;
+				this.$emit("checkValidity", this.isValid);
 			} catch (error) {
-				console.error(error);
-				//this.isValid = false;
+				this.isValid = false;
+				this.$emit("checkValidity", this.isValid);
 			}
 		},
-		beforeDestroy() {
-			this.BpmnModeler.destroy();
-		},
+	},
+	beforeDestroy() {
+		this.BpmnModeler.destroy();
+	},
+	updated() {
+		debugger;
 	},
 };
 </script>
@@ -77,5 +79,9 @@ export default {
 .vue-bpmn-modeler-container {
 	height: 100%;
 	width: 100%;
+	background-color: whitesmoke !important;
+}
+.djs-palette {
+	background: white !important;
 }
 </style>

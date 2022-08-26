@@ -10,7 +10,7 @@ export function getNameFromFile(file) {
     return name;
 }
 export function reMapDataTableValues(table) {
-    if(table == null) return null;
+    if(table == null ) return []; //was null
 
     function setActiveToYesAndNo(active) {
         if(active == null) return null;
@@ -99,6 +99,8 @@ export function showCorrespondingBanner(item) {
 }
 export function findAndReplace(table, item, type) {
     let idx = null;
+    if(table == null || table == []) return []; //didnt exist
+    if(item == null || item == {}) return [];
     if(type == "definition") {
         idx = table.findIndex((x) => x.process_definition_id == item.process_definition_id);
     }
@@ -111,6 +113,7 @@ export function findAndReplace(table, item, type) {
 }
 export function findAndRemove(table, id, type) {
     let idx = null;
+    if(table == null || table == []) return []; //didnt exist
     if(type == "definition") {
         idx = table.findIndex(x => x.process_definition_id == id);
     }

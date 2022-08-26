@@ -2,7 +2,7 @@
 	<v-container fill-height fluid class="background">
 		<v-row>
 			<v-col align="center" justify="center" cols="12">
-				<v-card elevation="0" class="card-padding" tile outlined height="95vh">
+				<v-card elevation="0" class="card-padding" tile outlined height="95vh" v-if="isValid">
 					<v-card-title>
 						<v-tooltip slot="append" right>
 							<template #activator="{ on }">
@@ -21,22 +21,27 @@
 					</v-card-title>
 					<v-card-text class="v-card-text-height">
 						<div v-if="isValid" ref="container" class="vue-bpmn-modeler-container"></div>
-						<div v-if="!isValid" v-text="errorMessage"></div>
+						<!-- <div v-if="!isValid" v-text="errorMessage"></div> -->
 					</v-card-text>
 				</v-card>
+				<snackbar :show="showSnackbar" :color="snackbarColor" :text="snackbarText"></snackbar>
 			</v-col>
 		</v-row>
 	</v-container>
 </template>
 <script>
 import BpmnViewer from "bpmn-js/dist/bpmn-viewer.production.min.js";
+import Snackbar from "@/components/Snackbar.vue";
 import { TextConfig } from "../utils/config.js";
 import { ProcessDefinition, ProcessVersion } from "../services/index.js";
 export default {
 	name: "viewer",
+	components: {
+		Snackbar,
+	},
 	data() {
 		return {
-			errorMessage: "Unparsable content detected, XML is not valid.",
+			errorMessage: "Unparsable content detected, going back.",
 			headerText: "PROCESS VIEWER",
 			explanationMessage: TextConfig.explanations.viewer,
 			goBackMessage: TextConfig.explanations.goBack,
@@ -45,7 +50,16 @@ export default {
 			isValid: true,
 			id: null,
 			type: null,
+			//Snackbar
+			showSnackbar: false,
+			snackbarColor: null,
+			snackbarText: null,
 		};
+	},
+	watch: {
+		isValid: function(valid) {
+			if (!valid) this.goBackIfNotValid();
+		},
 	},
 	async mounted() {
 		let params = this.$route?.params;
@@ -73,13 +87,30 @@ export default {
 		},
 		async getDiagram() {
 			if (this.type == "definition") {
-				this.process = await ProcessDefinition.getProcessDefinition(this.id);
+				let response = await ProcessDefinition.getProcessDefinition(this.id);
+				this.handleSnackbar(response.show, response.message, response.color);
+				this.process = response.data;
 			} else {
-				this.process = await ProcessVersion.getProcessVersion(this.id);
+				let response = await ProcessVersion.getProcessVersion(this.id);
+				this.handleSnackbar(response.show, response.message, response.color);
+				this.process = response.data;
 			}
 		},
 		goBack() {
 			this.$router.back();
+		},
+		handleSnackbar(show, text, color) {
+			this.showSnackbar = show;
+			this.snackbarText = text;
+			this.snackbarColor = color;
+			setTimeout(() => {
+				this.showSnackbar = false;
+			}, 3000);
+		},
+		async goBackIfNotValid() {
+			this.handleSnackbar(true, this.errorMessage, "red darken-3");
+			await new Promise((resolve) => setTimeout(resolve, 3000));
+			this.$router.push({ name: "processes" });
 		},
 	},
 };

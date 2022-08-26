@@ -68,6 +68,7 @@ export default {
 		},
 		valid: function(newValue) {
 			this.handleButtonState(newValue);
+			this.$emit("disableSaveButton", !newValue);
 		},
 	},
 	created() {

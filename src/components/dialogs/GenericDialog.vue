@@ -5,7 +5,7 @@
 			<v-card-text class="dialog-card-text" v-text="text"> </v-card-text>
 			<v-card-actions class="btns-align-right">
 				<v-btn class="dialog-card-action-btn black--text" large depressed tile color="white" @click="cancelAction()">BACK</v-btn>
-				<v-btn class="dialog-card-action-btn white--text" large depressed tile color="green" @click="okAction()">OK</v-btn>
+				<v-btn class="dialog-card-action-btn white--text" large depressed tile :color="btnColor" @click="okAction()">OK</v-btn>
 			</v-card-actions>
 		</v-card>
 	</v-dialog>
@@ -34,7 +34,7 @@ export default {
 	border-radius: 0px !important;
 }
 .dialog-card-padding {
-	padding: 1.5%;
+	padding: 1.5% !important;
 }
 .dialog-card-title-generic {
 	font-family: Helvetica, Arial, sans-serif !important;

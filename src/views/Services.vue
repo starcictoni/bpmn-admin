@@ -172,21 +172,23 @@
 					></generic-dialog>
 				</div>
 			</v-col>
+			<snackbar :show="showSnackbar" :color="snackbarColor" :text="snackbarText"></snackbar>
 		</v-row>
 	</v-container>
 </template>
 <script>
-import * as common from "../utils/common.js";
-import { WebService } from "../services/index.js";
+import * as common from "@/utils/common.js";
+import { WebService } from "@/services/index.js";
 import { HeaderConfig, FooterConfig, DialogConfig } from "../utils/config.js";
 import GenericDialog from "@/components/dialogs/GenericDialog.vue";
-import ServiceAddEditDialog from "../components/dialogs/WebServiceAddEdit.vue";
-
+import ServiceAddEditDialog from "@/components/dialogs/WebServiceAddEdit.vue";
+import Snackbar from "@/components/Snackbar.vue";
 export default {
 	name: "Services",
 	components: {
 		GenericDialog,
 		ServiceAddEditDialog,
+		Snackbar,
 	},
 	data() {
 		return {
@@ -197,13 +199,16 @@ export default {
 			isVisibleDeactivateDialog: false,
 			isVisibleAddDialog: false,
 			isVisibleEditDialog: false,
-
 			serviceSearch: null,
 			isServiceDataTableLoading: false,
 			footerProps: FooterConfig.footerProps,
 			headerProps: HeaderConfig.headerProps,
 			serviceHeaders: HeaderConfig.serviceTableHeaders,
 			serviceTableData: [],
+			//Snackbar
+			showSnackbar: false,
+			snackbarColor: null,
+			snackbarText: null,
 		};
 	},
 	async mounted() {
@@ -211,7 +216,6 @@ export default {
 	},
 	methods: {
 		showAndHideDialog(data, type) {
-			debugger;
 			this.data = data;
 			switch (type) {
 				case "add":
@@ -251,38 +255,66 @@ export default {
 			let response = null;
 			if (type === "delete") {
 				response = await WebService.deleteService(this.data.id);
-				let idx = this.serviceTableData.findIndex((x) => x.id == response.id);
-				this.serviceTableData.splice(idx, 1);
+				this.handleSnackbar(response.show, response.message, response.color);
+				if (response.data) {
+					let idx = this.serviceTableData.findIndex((x) => x.id == response.data.id);
+					this.serviceTableData.splice(idx, 1);
+				}
 			} else {
 				response = await WebService.changeServiceStatus(this.data.id);
-				let idx = this.serviceTableData.findIndex((x) => x.id == response.id);
-				this.serviceTableData.splice(idx, 1, response);
+				this.handleSnackbar(response.show, response.message, response.color);
+				debugger;
+				if (response.data) {
+					let idx = this.serviceTableData.findIndex((x) => x.id == response.data.id);
+					this.serviceTableData.splice(idx, 1, response.data);
+				}
 			}
 			this.applyChanges(response, type);
 		},
 		async handleAddAndEdit(type, data) {
 			this.isServiceDataTableLoading = true;
-			let response = null;
 			if (type == "add") {
-				response = await WebService.addService(data);
-				this.serviceTableData.splice(0, 0, response);
+				let response = await WebService.addService(data);
+				this.handleSnackbar(response.show, response.message, response.color);
+				if (response.data) {
+					this.serviceTableData.splice(0, 0, response.data);
+				}
+				this.applyChanges(response, type);
 			} else {
-				response = await WebService.updateService(data);
-				let idx = this.serviceTableData.findIndex((x) => x.id == response.id);
-				this.serviceTableData.splice(idx, 1, response);
+				let response = await WebService.updateService(data);
+				this.handleSnackbar(response.show, response.message, response.color);
+				if (response.data) {
+					let idx = this.serviceTableData.findIndex((x) => x.id == response.data.id);
+					this.serviceTableData.splice(idx, 1, response.data);
+				}
+				this.applyChanges(response, type);
 			}
-			this.applyChanges(response, type);
 		},
 		async getDataTableData() {
 			this.isServiceDataTableLoading = true;
-			let services = await WebService.getServices();
-			this.serviceTableData = common.reMapDataTableValues(services);
+			let response = await WebService.getServices();
+			this.handleSnackbar(false, response.message, response.color);
+			this.serviceTableData = common.reMapDataTableValues(response.data);
 			this.isServiceDataTableLoading = false;
+		},
+		handleSnackbar(show, text, color) {
+			this.showSnackbar = show;
+			this.snackbarText = text;
+			this.snackbarColor = color;
+			setTimeout(() => {
+				this.showSnackbar = false;
+			}, 3000);
 		},
 	},
 };
 </script>
 <style>
+.background {
+	/* background-color: cornsilk !important; */
+	/* background-color: ghostwhite !important; */
+	/* background-color: floralwhite !important; */
+	background-color: whitesmoke !important;
+}
 .card-title {
 	font-family: Helvetica, Arial, sans-serif;
 	font-size: 30px;

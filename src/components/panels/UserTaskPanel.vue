@@ -72,7 +72,9 @@ export default {
 		},
 		setPropertiesPanelData() {
 			this.formData != null ? this.handleFormFieldMessage(true) : this.handleFormFieldMessage(false);
-			this.documentation != null ? this.showDocumentationIcons(true) : this.showDocumentationIcons(false);
+			this.documentation?.text != null || this.documentation?.text != ""
+				? this.showDocumentationIcons(true)
+				: this.showDocumentationIcons(false);
 		},
 		handleFormFieldMessage(value) {
 			if (!this.formData.fields) {
@@ -92,11 +94,30 @@ export default {
 		handleDialogState(newValue) {
 			this.isEditDialogShown = newValue;
 		},
-		applyChanges(formFields, documentation) {
-			this.data.formData.fields = formFields;
-			this.documentation = documentation;
-			//+ save changes to xml
+		applyChanges(formData, documentation) {
+			formData;
+			documentation;
+			//let commandStack = this.context.modeler.get("commandStack");
+			let eventBus = this.context.modeler.get("eventBus");
+			eventBus.on("element.changed", (e) => {
+				console.log(e.element);
+				console.log(e.element.businessObject);
+			});
+			let element = this.context.bpmnElement;
+			let modeling = this.context.modeler.get("modeling");
+			//this one updates attrs
+			//modeling.updateModdleProperties(element, element.businessObject, this.documentation);
+
+			//this one updates the real deal
+			if (!this.documentation.text) modeling.updateModdleProperties(element, element.businessObject, { documentation: [] });
+			modeling.updateModdleProperties(element, element.businessObject, { documentation: [this.documentation] });
+			//if docs null delete documentation
+			element.businessObject.extensionElements.values.forEach((form) => {
+				debugger;
+				modeling.updateModdleProperties(element, form, formData);
+			});
 			debugger;
+
 			this.setPropertiesPanelData();
 			this.handleDialogState(false);
 		},

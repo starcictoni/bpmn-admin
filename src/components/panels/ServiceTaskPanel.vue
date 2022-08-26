@@ -93,7 +93,7 @@ export default {
 			this.isEditDialogShown = false;
 		},
 		setPropertiesPanelData() {
-			if (this.data.connector.connectorId !== null) {
+			if (this.data.connector.connectorId) {
 				this.apiConfigured = true;
 				this.apiServiceName = this.data.connector.connectorId;
 				this.apiServiceName = this.apiServiceName.toUpperCase(); //capitalizeFirstLetter();

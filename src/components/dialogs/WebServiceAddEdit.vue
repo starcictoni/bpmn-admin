@@ -3,15 +3,16 @@
 		<v-card tile class="dialog-card-padding">
 			<v-card-title class="dialog-card-title-generic" v-text="title"></v-card-title>
 			<v-card-text>
-				<v-form class="service-form">
+				<v-form v-model="valid" class="service-form">
 					<v-text-field
 						placeholder="Service name"
 						class="input-remove-border"
-						v-model="data.name"
+						v-model="form.name"
 						label="Name"
 						dense
 						outlined
 						tile
+						:rules="[rules.notEmpty]"
 					></v-text-field>
 					<v-text-field
 						placeholder="http://127.0.0.1:9999"
@@ -21,21 +22,28 @@
 						dense
 						outlined
 						tile
-						v-model="data.address"
+						v-model="form.address"
+						:rules="[rules.notEmpty]"
 					></v-text-field>
 					<v-checkbox
 						class="service-form-checkbox input-remove-border"
-						v-model="data.is_active"
+						v-model="form.is_active"
+						color="amber darken-5"
 						label="Active"
 						v-if="type == 'add'"
 					></v-checkbox>
 				</v-form>
 			</v-card-text>
 			<v-card-actions class="btns-align-right">
-				<v-btn class="dialog-card-action-btn black--text" :disabled="false" large depressed tile color="white" @click="cancelAction()"
-					>BACK</v-btn
-				>
-				<v-btn class="dialog-card-action-btn white--text" :disabled="false" large depressed tile :color="btnColor" @click="okAction()"
+				<v-btn class="dialog-card-action-btn black--text" large depressed tile color="white" @click="cancelAction()">BACK</v-btn>
+				<v-btn
+					class="dialog-card-action-btn white--text"
+					:disabled="isOkButtonDisabled"
+					large
+					depressed
+					tile
+					:color="btnColor"
+					@click="okAction()"
 					>OK</v-btn
 				>
 			</v-card-actions>
@@ -43,17 +51,34 @@
 	</v-dialog>
 </template>
 <script>
+import * as common from "@/utils/common.js";
 export default {
 	name: "ServiceAddAndEditDialog",
 	props: ["model", "title", "text", "btnColor", "type", "formData"],
 	data() {
 		return {
-			data: {
+			valid: null,
+			form: {
+				id: null,
 				name: null,
 				address: null,
 				is_active: false,
 			},
+			rules: {
+				notEmpty: (field) => {
+					return common.isInputValid(field) || "Cannot be empty.";
+				},
+			},
+			isOkButtonDisabled: true,
 		};
+	},
+	watch: {
+		form: {
+			handler: function() {
+				this.compareData();
+			},
+			deep: true,
+		},
 	},
 	mounted() {
 		this.setData();
@@ -61,17 +86,35 @@ export default {
 	methods: {
 		setData() {
 			if (this.type == "edit") {
-				this.data.id = this.formData.id;
-				this.data.name = this.formData.name;
-				this.data.address = this.formData.address;
-				this.data.is_active = this.formData.is_active;
+				this.form.id = this.formData.id;
+				this.form.name = this.formData.name;
+				this.form.address = this.formData.address;
+				this.form.is_active = this.formData.is_active;
 			}
+		},
+		compareData() {
+			if (this.type === "edit") {
+				debugger;
+				let isEqual =
+					this.form.name == this.formData.name && this.form.address == this.formData.address && this.form.is_active == this.formData.is_active;
+				this.setButtonState(isEqual);
+			} else {
+				let isNull = this.checkForEmpty();
+				this.setButtonState(isNull);
+			}
+		},
+		checkForEmpty() {
+			if (!this.form.name || !this.form.address) return true;
+			return false;
+		},
+		setButtonState(newValue) {
+			this.isOkButtonDisabled = newValue;
 		},
 		cancelAction() {
 			this.$emit("cancel");
 		},
 		okAction() {
-			this.$emit("ok", this.type, this.data);
+			this.$emit("ok", this.type, this.form);
 		},
 	},
 };
@@ -92,7 +135,7 @@ export default {
 	border-radius: 0px !important;
 }
 .dialog-card-padding {
-	padding: 1.5%;
+	padding: 1.5% !important;
 }
 .dialog-card-title-generic {
 	font-family: Helvetica, Arial, sans-serif !important;

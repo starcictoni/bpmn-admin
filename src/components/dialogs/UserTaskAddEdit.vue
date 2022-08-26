@@ -1,12 +1,12 @@
 <template>
 	<v-dialog
+		content-class="dialog-border"
 		transition="scale-transition"
 		hide-overlay
 		overlay-color="black"
 		overlay-opacity="0.6"
 		open-delay="500"
 		close-delay="1000"
-		content-class="dialog-border"
 		v-model="model"
 		persistent
 		max-width="800"
@@ -48,17 +48,15 @@
 								outlined
 								return-object
 								:items="types"
-								@change="handleTypeChange()"
-								@click:clear="handleTypeClear()"
 							></v-select>
 							<div v-show="form.type == 'autocomplete-string'">
 								<service-selector
-									:prefilledService="null"
-									:prefilledMethod="null"
-									:prefilledRoute="null"
+									:connectorData="null"
+									:context="context"
 									@setService="setServiceValue"
 									@setMethod="setMethodValue"
 									@setRoute="setRouteValue"
+									@setUrlParameters="setUrlParams"
 								></service-selector>
 							</div>
 						</div>
@@ -168,6 +166,7 @@ export default {
 			serviceItem: {},
 			methodItem: {},
 			routeItem: {},
+			urlParams: [],
 		};
 	},
 	watch: {
@@ -177,21 +176,11 @@ export default {
 			},
 			deep: true,
 		},
-		methodItem: function(newValue) {
-			this.methodItem = newValue;
-			this.setRoutesState(newValue);
-		},
 	},
 	mounted() {
 		this.setData();
 	},
 	methods: {
-		handleTypeChange() {
-			this.getServices();
-		},
-		handleTypeClear() {
-			this.clearServiceInput();
-		},
 		handleButtonState(newValue) {
 			this.isApplyButtonDisabled = newValue;
 		},
@@ -288,6 +277,9 @@ export default {
 		},
 		setRouteValue(routeName) {
 			this.routeItem = routeName;
+		},
+		setUrlParams(urlParams) {
+			this.urlParams = urlParams;
 		},
 	},
 };

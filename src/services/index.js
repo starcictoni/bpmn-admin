@@ -5,61 +5,70 @@ let Service = axios.create({
     //timeout: 10000,
 });
 
+let errorMessage = {
+    data: null,
+    message: "Server error",
+    color: "red darken-3",
+    show: true
+}
+
+let warningMessage = {
+    data: null,
+    message: "Oops, Something Went Wrong. Please try again.",
+    color: "yellow darken-1",
+    show: true,
+}
+
+let successNoMessage = {
+    data: null,
+    message: null,
+    color: null,
+    show: false
+}
+
+let successMessage = {
+    data: null,
+    message: "",
+    color: "green darken-1",
+    show: true
+}
 let ProcessDefinition = {
-    async addProcessDefinition(data) {
-        try {
-            let result = await Service.post('/process-definition', data);
-            if(result?.data.length == 0) {
-                return {};
-            }
-            return JSON.parse(result.data)
-        }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
-    },
     async getProcessDefinition(definitionId) {
         try {
             let result = await Service.get(`/process-definition/${definitionId}`);
             if(result?.data.length == 0) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successNoMessage.data = JSON.parse(result.data);
+            return successNoMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async getProcessDefinitions() {
         try {
             let result = await Service.get('/process-definition');
             if(result?.data.length == 0) {
-                return [];
+                warningMessage.data = []
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successNoMessage.data = JSON.parse(result.data);
+            return successNoMessage
         }
-        catch(e) {
-            console.log(e)
-            return [];
-        }
+        catch(e) { return errorMessage; }
     },
-    async deactivateProcessDefinition(processDefinitionId) {
+    async addProcessDefinition(data) {
         try {
-            let data = {
-                "process_definition_id": processDefinitionId,
-            }            
-            let result = await Service.patch('/process-definition/inactive', data);
-            if(result?.data == null) {
-                return {};
+            let result = await Service.post('/process-definition', data);
+            if(result?.data.length == 0) {
+                warningMessage.data = []
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully added"
+            return successMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async activateProcessDefinition(processDefinitionId, processVersionId) {
         try {
@@ -68,15 +77,27 @@ let ProcessDefinition = {
                 "process_version_id": processVersionId
             }
             let result = await Service.patch(`/process-definition/active`, data);
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully activated"
+            return successMessage
+        }
+        catch(e) { return errorMessage; }
+    },
+    async deactivateProcessDefinition(processDefinitionId) {
+        try {
+            let data = {
+                "process_definition_id": processDefinitionId,
+            }            
+            let result = await Service.patch('/process-definition/inactive', data);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully deactivated"
+            return successMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async updateProcessDefinitionInformation(id, name, filename) {
         try {
@@ -87,14 +108,14 @@ let ProcessDefinition = {
             }
             let result = await Service.patch('/process-definition/info', data);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully updated"
+            return successMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async deleteProcessDefinition(id) {
         try {
@@ -103,30 +124,29 @@ let ProcessDefinition = {
             }
             let result = await Service.delete('/process-definition', {data: data});
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully deleted"
+            return successMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
 };
-
+//TODO: addProcessVersion
 let ProcessVersion = {
     async getProcessVersion(versionId) {
         try {
             let result = await Service.get(`/process-version/${versionId}`);
-            if(result?.data.length == 0) {
-                return {};
+            if(result?.data == 0) {
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successNoMessage.data = JSON.parse(result.data);
+            return successNoMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async getProcessVersions(processDefinitionId) {
         try {
@@ -135,14 +155,13 @@ let ProcessVersion = {
             }
             let result = await Service.get('/process-version', { params: params })
             if(result?.data.length == 0) {
-                return [];
+                warningMessage.data = []
+                return warningMessage;
             } 
-            return JSON.parse(result.data)
+            successNoMessage.data = JSON.parse(result.data);
+            return successNoMessage
         }
-        catch(e) {
-            console.assert(e);
-            return null;
-        }
+        catch(e) { return errorMessage; }
     },
     async activateProcessVersion(processDefinitionId, processVersionId) {
         try {
@@ -152,14 +171,14 @@ let ProcessVersion = {
             }
             let result = await Service.patch('/process-version/active', data);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully activated"
+            return successMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async deactivateProcessVersion(processDefinitionId, processVersionId) {
         try {
@@ -169,14 +188,14 @@ let ProcessVersion = {
             }
             let result = await Service.patch('/process-version/inactive', data);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully deactivated"
+            return successMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async updateProcessVersionInformation(id, name, filename) {
         try {
@@ -187,14 +206,14 @@ let ProcessVersion = {
             }
             let result = await Service.patch(`/process-version/info`, data);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully updated"
+            return successMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async deleteProcessVersion(id) {
         try {
@@ -203,43 +222,41 @@ let ProcessVersion = {
             }
             let result = await Service.delete('/process-version', {data: data});
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully deleted"
+            return successMessage
         }
-        catch(e) {
-            console.log(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
 };
-
+//TODO: getServiceStatus not called
 let WebService = {
     async getServices() {
         try {
             let result = await Service.get('/web-service');
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successNoMessage.data = JSON.parse(result.data);
+            return successNoMessage
         }
-        catch (e) {
-            console.assert(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async getService(serviceId) {
         try {
             let result = await Service.get(`/web-service/${serviceId}`);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successNoMessage.data = JSON.parse(result.data);
+            return successNoMessage
         }
-        catch (e) {
-            console.assert(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async deleteService(serviceId) {
         try {
@@ -248,53 +265,53 @@ let WebService = {
             }
             let result = await Service.delete('/web-service', {data: data});
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully deleted"
+            return successMessage
         }
-        catch (e) {
-            console.assert(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },    
     async addService(data) {
         try {
             let result = await Service.post('/web-service', data);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully added"
+            return successMessage
         }
-        catch (e) {
-            console.assert(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async updateService(data) {
         try {
             let result = await Service.patch('/web-service', data);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully updated"
+            return successMessage
         }
-        catch (e) {
-            console.assert(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },
     async changeServiceStatus(id) {
         try {
             let result = await Service.patch(`/web-service/${id}`);
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully updated"
+            return successMessage
         }
-        catch (e) {
-            console.assert(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     },    
     async getServiceMeta(address) {
         try {
@@ -304,27 +321,25 @@ let WebService = {
                 }
             });
             if(result?.data == null) {
-                return [];
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successNoMessage.data = JSON.parse(result.data);
+            return successNoMessage
         }
-        catch (e) {
-            console.assert(e)
-            return [];
-        }
+        catch(e) { return errorMessage; }
     },
     async getServiceStatus() {
         try {
             let result = await Service.get('/web-service/status');
             if(result?.data == null) {
-                return {};
+                warningMessage.data = {}
+                return warningMessage;
             }
-            return JSON.parse(result.data)
+            successNoMessage.data = JSON.parse(result.data);
+            return successNoMessage
         }
-        catch (e) {
-            console.assert(e)
-            return {};
-        }
+        catch(e) { return errorMessage; }
     }    
 };
 

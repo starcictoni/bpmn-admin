@@ -67,6 +67,8 @@ let BpmnXml = {
                 currentElement = this.createFormExtensionElements(moddle, previousElement);
                 element.businessObject.extensionElements = currentElement;
             }
+            //Mozda dodati specialConnector, treba provjeriti
+            
             //Form Data
             let referenceIndex = null;
             let formDataIndex = element.businessObject.extensionElements.values.findIndex(x => x.$type == "camunda:FormData")
@@ -206,6 +208,44 @@ let BpmnXml = {
             return [];
         else 
             return parameter[0].definition.entries;
+    },
+    createSpecialConnector(moddle, parent) {
+        let connector = moddle.create("camunda:Connector", { 
+            connectorId: null,
+            inputOutput: null
+        });
+        connector.$parent = parent;
+        let inputOutput = this.createSpecialConnectorInputOutput(moddle, connector);
+        let method = this.createSpecialConnectorInputRegular("method", moddle, inputOutput);
+        let url = this.createSpecialConnectorInputRegular("url", moddle, inputOutput);
+        let url_parametar = this.createSpecialConnectorInputIrregular(moddle, inputOutput);
+        inputOutput.inputParameters.push(method, url, url_parametar);
+        connector.inputOutput = inputOutput;
+        return connector;
+    },
+    createSpecialConnectorInputOutput(moddle, parent) {
+        let inputOutput = moddle.create("camunda:InputOutput", {
+            inputParameters: [],
+        })
+        inputOutput.$parent = parent;
+        return inputOutput;
+    },
+    createSpecialConnectorInputRegular(name, moddle, parent) {
+        let inputParameter = moddle.create("camunda:InputParameter", {
+            name: name,
+            value: null,
+        })
+        inputParameter.$parent = parent;
+        return inputParameter;
+    },
+    createSpecialConnectorInputIrregular(moddle, parent) {
+        let inputParameter = moddle.create("camunda:InputParameter", {
+            name: "url_parameter",
+            definition: null
+        })
+        inputParameter.$parent = parent;
+        inputParameter.definition = this.createMap(moddle, inputParameter)
+        return inputParameter;
     },
     //Rewrite all create if time allows
     createServiceExtensionElements(moddle, parent) {
