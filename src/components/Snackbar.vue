@@ -1,5 +1,5 @@
 <template>
-	<v-snackbar elevation="0" multi-line v-model="show" :color="color" tile>
+	<v-snackbar timeout="3000" elevation="0" multi-line v-model="show" :color="color" tile>
 		<div class="snackbar-frame">
 			<div class="snackbar-text" v-text="text"></div>
 		</div>

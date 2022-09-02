@@ -41,7 +41,9 @@
 </template>
 <script>
 import * as common from "@/utils/common.js";
+import _ from "lodash";
 import PropertiesUserTask from "@/components/properties/PropertiesUserTask.vue";
+import { BpmnXml } from "../../utils/bpmn";
 export default {
 	name: "UserTaskPanel",
 	props: ["data", "context"],
@@ -72,12 +74,12 @@ export default {
 		},
 		setPropertiesPanelData() {
 			this.formData != null ? this.handleFormFieldMessage(true) : this.handleFormFieldMessage(false);
-			this.documentation?.text != null || this.documentation?.text != ""
+			this.documentation?.text != null && this.documentation?.text != ""
 				? this.showDocumentationIcons(true)
 				: this.showDocumentationIcons(false);
 		},
 		handleFormFieldMessage(value) {
-			if (!this.formData.fields) {
+			if (_.isEmpty(this.process)) {
 				return;
 			}
 			if (value) {
@@ -94,30 +96,17 @@ export default {
 		handleDialogState(newValue) {
 			this.isEditDialogShown = newValue;
 		},
-		applyChanges(formData, documentation) {
-			formData;
-			documentation;
-			//let commandStack = this.context.modeler.get("commandStack");
+		applyChanges() {
 			let eventBus = this.context.modeler.get("eventBus");
+			let moddle = this.context.modeler.get("moddle");
+			let modeling = this.context.modeler.get("modeling");
+			let element = this.context.bpmnElement;
 			eventBus.on("element.changed", (e) => {
 				console.log(e.element);
 				console.log(e.element.businessObject);
 			});
-			let element = this.context.bpmnElement;
-			let modeling = this.context.modeler.get("modeling");
-			//this one updates attrs
-			//modeling.updateModdleProperties(element, element.businessObject, this.documentation);
-
-			//this one updates the real deal
-			if (!this.documentation.text) modeling.updateModdleProperties(element, element.businessObject, { documentation: [] });
-			modeling.updateModdleProperties(element, element.businessObject, { documentation: [this.documentation] });
-			//if docs null delete documentation
-			element.businessObject.extensionElements.values.forEach((form) => {
-				debugger;
-				modeling.updateModdleProperties(element, form, formData);
-			});
-			debugger;
-
+			BpmnXml.updateDocumentation(moddle, modeling, element, this.documentation);
+			BpmnXml.updateFormData(modeling, element, this.formData);
 			this.setPropertiesPanelData();
 			this.handleDialogState(false);
 		},

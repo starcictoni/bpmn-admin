@@ -73,8 +73,8 @@ let ProcessDefinition = {
     async activateProcessDefinition(processDefinitionId, processVersionId) {
         try {
             let data = {
-                "process_definition_id": processDefinitionId,
-                "process_version_id": processVersionId
+                "definition_id": processDefinitionId,
+                "version_id": processVersionId
             }
             let result = await Service.patch(`/process-definition/active`, data);
             successMessage.data = JSON.parse(result.data);
@@ -83,10 +83,10 @@ let ProcessDefinition = {
         }
         catch(e) { return errorMessage; }
     },
-    async deactivateProcessDefinition(processDefinitionId) {
+    async deactivateProcessDefinition(id) {
         try {
             let data = {
-                "process_definition_id": processDefinitionId,
+                "id": id,
             }            
             let result = await Service.patch('/process-definition/inactive', data);
             if(result?.data == null) {
@@ -102,9 +102,9 @@ let ProcessDefinition = {
     async updateProcessDefinitionInformation(id, name, filename) {
         try {
             let data = {
-                "process_definition_id": id,
-                "process_definition_name": name,
-                "file_name": filename
+                "id": id,
+                "name": name,
+                "filename": filename
             }
             let result = await Service.patch('/process-definition/info', data);
             if(result?.data == null) {
@@ -120,7 +120,7 @@ let ProcessDefinition = {
     async deleteProcessDefinition(id) {
         try {
             let data = {
-                "process_definition_id": id,
+                "id": id,
             }
             let result = await Service.delete('/process-definition', {data: data});
             if(result?.data == null) {
@@ -136,6 +136,19 @@ let ProcessDefinition = {
 };
 //TODO: addProcessVersion
 let ProcessVersion = {
+    async addProcessVersion(data) {
+        try {
+            let result = await Service.post('/process-version', data);
+            if(result?.data.length == 0) {
+                warningMessage.data = []
+                return warningMessage;
+            }
+            successMessage.data = JSON.parse(result.data);
+            successMessage.message = "Successfully added"
+            return successMessage
+        }
+        catch(e) { return errorMessage; }
+    },
     async getProcessVersion(versionId) {
         try {
             let result = await Service.get(`/process-version/${versionId}`);
@@ -148,10 +161,10 @@ let ProcessVersion = {
         }
         catch(e) { return errorMessage; }
     },
-    async getProcessVersions(processDefinitionId) {
+    async getProcessVersions(id) {
         try {
             let params = {
-                "process_definition_id": processDefinitionId
+                "id": id
             }
             let result = await Service.get('/process-version', { params: params })
             if(result?.data.length == 0) {
@@ -163,11 +176,11 @@ let ProcessVersion = {
         }
         catch(e) { return errorMessage; }
     },
-    async activateProcessVersion(processDefinitionId, processVersionId) {
+    async activateProcessVersion(definitionId, versionId) {
         try {
             let data = {
-                "process_definition_id": processDefinitionId,
-                "process_version_id": processVersionId
+                "definition_id": definitionId,
+                "version_id": versionId
             }
             let result = await Service.patch('/process-version/active', data);
             if(result?.data == null) {
@@ -180,11 +193,11 @@ let ProcessVersion = {
         }
         catch(e) { return errorMessage; }
     },
-    async deactivateProcessVersion(processDefinitionId, processVersionId) {
+    async deactivateProcessVersion(definitionId, versionId) {
         try {
             let data = {
-                "process_definition_id": processDefinitionId,
-                "process_version_id": processVersionId
+                "definition_id": definitionId,
+                "version_id": versionId
             }
             let result = await Service.patch('/process-version/inactive', data);
             if(result?.data == null) {
@@ -200,8 +213,8 @@ let ProcessVersion = {
     async updateProcessVersionInformation(id, name, filename) {
         try {
             let data = {
-                "process_version_id": id,
-                "process_version_name": name,
+                "id": id,
+                "name": name,
                 "filename": filename
             }
             let result = await Service.patch(`/process-version/info`, data);

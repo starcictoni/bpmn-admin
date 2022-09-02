@@ -170,7 +170,6 @@ export default {
 	},
 	methods: {
 		setData() {
-			debugger;
 			this.formFields = _.cloneDeep(this.formData.fields);
 			this.documentationData = this.documentation.text;
 		},
@@ -222,10 +221,9 @@ export default {
 			this.$emit("cancel", false);
 		},
 		ok() {
-			debugger;
 			this.formData.fields = this.formFields;
 			this.documentation.text = this.documentationData;
-			this.$emit("ok", this.formData, this.documentation);
+			this.$emit("ok");
 		},
 	},
 };

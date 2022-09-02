@@ -94,7 +94,6 @@ export default {
 		},
 		compareData() {
 			if (this.type === "edit") {
-				debugger;
 				let isEqual =
 					this.form.name == this.formData.name && this.form.address == this.formData.address && this.form.is_active == this.formData.is_active;
 				this.setButtonState(isEqual);

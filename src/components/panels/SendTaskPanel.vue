@@ -52,6 +52,7 @@
 <script>
 import * as common from "@/utils/common.js";
 import PropertiesSendTask from "@/components/properties/PropertiesSendTask.vue";
+import { BpmnXml } from "../../utils/bpmn";
 
 export default {
 	name: "SendTaskPanel",
@@ -64,7 +65,6 @@ export default {
 			utils: common,
 			connector: null,
 			inputOutput: null,
-			isNew: true,
 			apiNotConfigureMessage: "NOT CONFIGURED",
 			apiConfigured: false,
 			apiServiceName: null,
@@ -85,25 +85,27 @@ export default {
 		showDialog() {
 			this.isEditDialogShown = true;
 		},
-		applyChanges(data) {
-			console.log(data);
-			this.closeDialog();
+		setPropertiesPanelData() {
+			if (this.connector && this.connector.connectorId) {
+				this.apiConfigured = true;
+				this.apiServiceName = this.connector.connectorId.toUpperCase();
+				this.apiServiceMethod = this.connector.inputOutput.inputParameters.find((x) => x.name == "method")?.value;
+				this.apiServiceRoute = this.connector.inputOutput.inputParameters.find((x) => x.name == "url")?.value;
+			} else {
+				this.apiConfigured = false;
+			}
 		},
 		closeDialog() {
 			this.isEditDialogShown = false;
 		},
-		setPropertiesPanelData() {
-			if (this.data.connector) {
-				this.apiConfigured = true;
-				this.apiServiceName = this.data.connector?.connectorId;
-				this.apiServiceName = this.apiServiceName.toUpperCase();
-				//capitalizeFirstLetter();
-				let io = this.data.connector.inputOutput.inputParameters;
-				this.apiServiceMethod = io.find((x) => x.name == "method").value;
-				this.apiServiceRoute = io.find((x) => x.name == "url").value;
-			} else {
-				this.apiConfigured = false;
-			}
+		applyChanges(connector, inputOutput) {
+			let modeling = this.context.modeler.get("modeling");
+			let element = this.context.bpmnElement;
+			BpmnXml.updateConnector(modeling, element, connector);
+			BpmnXml.updateInputOutput(modeling, element, inputOutput);
+			this.connector = connector;
+			this.setPropertiesPanelData();
+			this.closeDialog();
 		},
 	},
 };
@@ -150,6 +152,7 @@ export default {
 .fields-text {
 	display: flex;
 	flex-direction: row;
+	align-items: center;
 	letter-spacing: -1px;
 	font-size: 16px;
 	font-weight: 400;
@@ -166,8 +169,13 @@ export default {
 	font-weight: 500;
 }
 .fields-text-route {
+	margin-left: 5%;
 	letter-spacing: 0px;
 	font-size: 15px;
 	font-weight: 400;
+	width: 90px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 </style>

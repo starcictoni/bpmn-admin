@@ -52,6 +52,7 @@
 <script>
 import * as common from "@/utils/common.js";
 import PropertiesServiceTask from "@/components/properties/PropertiesServiceTask.vue";
+import { BpmnXml } from "../../utils/bpmn";
 
 export default {
 	name: "ServiceTaskPanel",
@@ -78,31 +79,33 @@ export default {
 	},
 	methods: {
 		setState() {
-			// debugger;
 			this.connector = this.data.connector;
 			this.inputOutput = this.data.inputOutput;
 		},
 		showDialog() {
 			this.isEditDialogShown = true;
 		},
-		applyChanges(data) {
-			console.log(data);
-			this.closeDialog();
+		setPropertiesPanelData() {
+			if (this.connector && this.connector.connectorId) {
+				this.apiConfigured = true;
+				this.apiServiceName = this.connector.connectorId.toUpperCase();
+				this.apiServiceMethod = this.connector.inputOutput.inputParameters.find((x) => x.name == "method")?.value;
+				this.apiServiceRoute = this.connector.inputOutput.inputParameters.find((x) => x.name == "url")?.value;
+			} else {
+				this.apiConfigured = false;
+			}
 		},
 		closeDialog() {
 			this.isEditDialogShown = false;
 		},
-		setPropertiesPanelData() {
-			if (this.data.connector.connectorId) {
-				this.apiConfigured = true;
-				this.apiServiceName = this.data.connector.connectorId;
-				this.apiServiceName = this.apiServiceName.toUpperCase(); //capitalizeFirstLetter();
-				let io = this.data.connector.inputOutput.inputParameters;
-				this.apiServiceMethod = io.find((x) => x.name == "method").value;
-				this.apiServiceRoute = io.find((x) => x.name == "url").value;
-			} else {
-				this.apiConfigured = false;
-			}
+		applyChanges(connector, inputOutput) {
+			let modeling = this.context.modeler.get("modeling");
+			let element = this.context.bpmnElement;
+			BpmnXml.updateConnector(modeling, element, connector);
+			BpmnXml.updateInputOutput(modeling, element, inputOutput);
+			this.connector = connector;
+			this.setPropertiesPanelData();
+			this.closeDialog();
 		},
 	},
 };

@@ -22,11 +22,11 @@
 				v-model="form.filename"
 			></v-text-field>
 		</v-form>
-		<div v-show="areButtonsVisible">
-			<v-btn color="darken-1" text @click="cancel()">
+		<div class="btns-align-right" v-if="areButtonsVisible">
+			<v-btn color="red darken-4" text @click="cancel()">
 				Cancel
 			</v-btn>
-			<v-btn :disabled="isApplyButtonDisabled" color="blue darken-1" text @click="handleApply()">
+			<v-btn :disabled="isApplyButtonDisabled" color="grey darken-4" text @click="handleApply()">
 				Apply
 			</v-btn>
 		</div>
@@ -52,6 +52,7 @@ export default {
 			valid: null,
 			areButtonsVisible: false,
 			isApplyButtonDisabled: true,
+			changed: false,
 			form: {
 				name: null,
 				filename: null,
@@ -65,20 +66,22 @@ export default {
 	watch: {
 		form: {
 			handler: function() {
+				this.$emit("setProcessData", this.form);
 				this.compareData();
 			},
 			deep: true,
 		},
 		valid: function(newValue) {
-			this.$emit("disableSaveButton", !newValue);
 			this.handleButtonState(newValue);
 		},
 	},
-	created() {
+	mounted() {
 		this.setData();
+		this.handleButtonVisibility(false);
 	},
 	methods: {
 		setData() {
+			if (_.isEmpty(this.process)) return;
 			let routeParams = this.$route.params;
 			let id = routeParams.id;
 			let type = routeParams.type;
@@ -99,18 +102,25 @@ export default {
 				this.defaultForm.filename = this.process.file_name;
 			}
 		},
-		compareData() {
-			let isEqual = _.isEqual(this.form, this.defaultForm);
-			this.handleButtonVisibility(!isEqual);
+		handleButtonState(newValue) {
+			this.isApplyButtonDisabled = !newValue;
 		},
 		handleButtonVisibility(newValue) {
 			this.areButtonsVisible = newValue;
 		},
-		handleButtonState(newValue) {
-			this.isApplyButtonDisabled = !newValue;
+		compareData() {
+			let isEqual = _.isEqual(this.form, this.defaultForm);
+			let isIdEmpty = _.isEmpty(this.form.id);
+			if (!isEqual) {
+				this.handleButtonVisibility(true);
+			} else if (!isEqual && !isIdEmpty) {
+				this.handleButtonState(false);
+			}
 		},
 		cancel() {
 			this.form = { ...this.defaultForm };
+			this.handleButtonVisibility(false);
+			this.handleButtonState(false);
 		},
 		handleApply() {
 			this.handleButtonVisibility(false);

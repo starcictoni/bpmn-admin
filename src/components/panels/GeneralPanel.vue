@@ -16,16 +16,17 @@
 				label="Name"
 				height="10"
 				dense
-				:rules="[rules.notEmpty]"
 				outlined
 				clearable
 				v-model="form.name"
 			></v-text-field>
-			<div v-show="areButtonsVisible">
-				<v-btn color="darken-1" text @click="cancel()">
+			<!-- :rules="[rules.notEmpty]" -->
+			<div class="btns-align-right" v-if="areButtonsVisible">
+				<v-spacer></v-spacer>
+				<v-btn color="red darken-4" text @click="cancel()">
 					Cancel
 				</v-btn>
-				<v-btn color="blue darken-1" text @click="handleApply()">
+				<v-btn :disabled="isApplyButtonDisabled" color="grey darken-4" text @click="handleApply()">
 					Apply
 				</v-btn>
 			</div>
@@ -62,16 +63,17 @@ export default {
 	watch: {
 		form: {
 			handler: function() {
+				this.$emit("setElementIdCheck", this.form);
 				this.compareData();
 			},
 			deep: true,
 		},
 		valid: function(newValue) {
-			this.handleButtonState(newValue);
-			this.$emit("disableSaveButton", !newValue);
+			if (this.areButtonsVisible) this.handleButtonState(newValue);
 		},
 	},
-	created() {
+	mounted() {
+		this.handleButtonVisibility(false);
 		this.setData();
 	},
 	methods: {
@@ -83,17 +85,23 @@ export default {
 		},
 		compareData() {
 			let isEqual = _.isEqual(this.form, this.defaultForm);
-			let areFieldsEmpty = Object.values(this.form).some((x) => x == undefined);
-			this.handleButtonVisibility(!isEqual && !areFieldsEmpty);
-		},
-		handleButtonVisibility(newValue) {
-			this.areButtonsVisible = newValue;
+			let isIdEmpty = !!this.form.id;
+			if (!isEqual) {
+				this.handleButtonVisibility(true);
+			} else if (!isEqual && !isIdEmpty) {
+				this.handleButtonState(false);
+			}
 		},
 		handleButtonState(newValue) {
 			this.isApplyButtonDisabled = !newValue;
 		},
+		handleButtonVisibility(newValue) {
+			this.areButtonsVisible = newValue;
+		},
 		cancel() {
 			this.form = { ...this.defaultForm };
+			this.handleButtonVisibility(false);
+			this.handleButtonState(false);
 		},
 		handleApply() {
 			this.handleButtonVisibility(false);
@@ -101,21 +109,5 @@ export default {
 			this.$emit("generalOk", this.form, this.defaultForm.id);
 		},
 	},
-	// save() {
-	// 	let updates = [];
-	// 	for (let att in this.state) {
-	// 		if (this.state[att] != this.data[att]) {
-	// 			updates.push({
-	// 				cmd: "bpmn-update",
-	// 				context: {
-	// 					element: this.context.bpmnElement,
-	// 					businessObject: this.context.bpmnElement.businessObject,
-	// 					properties: { [att]: this.state[att] },
-	// 				},
-	// 			});
-	// 		}
-	// 	}
-	// 	this.cs.execute("bpmn-multi-update", updates);
-	// },
 };
 </script>

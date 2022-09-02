@@ -51,6 +51,63 @@ let BpmnUI = {
 };
 
 let BpmnXml = {
+    updateDocumentation(moddle, modeling, element, documentation) {
+        if(!element || !documentation) {
+            return null;
+        }
+        let moddleDocumentation = this.createDocumentation(moddle, element.businessObject);
+        if (documentation.text != null) {
+            moddleDocumentation.text = documentation.text;
+            modeling.updateModdleProperties(element, element.businessObject, { documentation: [moddleDocumentation] });
+        } 
+        else {
+            delete element.businessObject.documentation;
+        }
+    },
+    updateFormData(modeling, element, formData) {
+        if(!element || !formData) {
+            return null;
+        }
+        if(formData.fields.length > 0) {
+            element.businessObject.extensionElements.values.forEach(context => {
+                if(context.$type == "camunda:FormData") {
+                    modeling.updateModdleProperties(element, context, {fields: formData.fields})
+                }
+            })
+        }
+        else {
+            let idx = element.businessObject.extensionElements.values.find(x => x.$type == "camunda:FormData");
+            element.businessObject.extensionElements.values.splice(idx, 1);
+        }
+    },
+    updateConnector(modeling, element, connector) {
+        if(!element || !connector) {
+            return null;
+        }
+        element.businessObject.extensionElements.values.forEach((index) => {
+            if (index.$type == "camunda:Connector") {
+                modeling.updateModdleProperties(element, index, connector);
+                let idx = element.businessObject.extensionElements.values.find(x => x.$type == "camunda:InputOutput");
+                element.businessObject.extensionElements.values.splice(idx, 1);
+            }
+        });
+    },
+    updateInputOutput(modeling, element, inputOutput) {
+        if(!element || !inputOutput) {
+            return null;
+        }
+        element.businessObject.extensionElements.values.forEach((index) => {
+            if (index.$type == "camunda:InputOutput") {
+                if(inputOutput.inputParameters.length == 0 && inputOutput.outputParameters.length == 0) {
+                    let idx = element.businessObject.extensionElements.values.find(x => x.$type == "camunda:InputOutput");
+                    element.businessObject.extensionElements.values.splice(idx, 1);
+                }
+                else {
+                    modeling.updateModdleProperties(element, index, inputOutput);
+                }
+            }
+        });
+    },
     handleElement(moddle, element) {
         if(!element || !moddle) return;
         if(element.businessObject.$type == "bpmn:UserTask") {
@@ -70,60 +127,63 @@ let BpmnXml = {
             //Mozda dodati specialConnector, treba provjeriti
             
             //Form Data
-            let referenceIndex = null;
+            // let referenceIndex = null;
             let formDataIndex = element.businessObject.extensionElements.values.findIndex(x => x.$type == "camunda:FormData")
             let valuesLength = element.businessObject.extensionElements.values.length
             previousElement = element.businessObject.extensionElements;
             if(formDataIndex != -1) {
-                referenceIndex = formDataIndex;
+                // referenceIndex = formDataIndex;
             } else {
                 currentElement = this.createFormData(moddle, previousElement);
                 element.businessObject.extensionElements.values[valuesLength] = currentElement
-                referenceIndex = valuesLength;
+                // referenceIndex = valuesLength;
             }
+            //Commented out everything that is hierarchically lower then form data.7
+            //reference index maybe needed
+
             //Form Field
-            previousElement = currentElement;
-            currentElement = element.businessObject.extensionElements.values[referenceIndex].fields;
-            if(!currentElement) {
-                currentElement = this.createFormField(moddle, previousElement)
-                element.businessObject.extensionElements.values[referenceIndex].fields = currentElement;
-            }
-            //Validation 1-M Constraint
-            let fields = element.businessObject.extensionElements.values[referenceIndex].fields;
-            fields.forEach((item, index) => {
-                if(!item.validation) {
-                    currentElement = this.createValidation(moddle, item);
-                    element.businessObject.extensionElements.values[referenceIndex].fields[index].validation = currentElement;
-                }
-            });
-            //Properties 1-M Property
-            fields = element.businessObject.extensionElements.values[referenceIndex].fields;
-            fields.forEach((item, index) => {
-                if(!item.properties) {
-                    currentElement = this.createProperties(moddle, item);
-                    element.businessObject.extensionElements.values[referenceIndex].fields[index].properties = currentElement;
-                }
-            });
-            //Constraint
-            fields = element.businessObject.extensionElements.values[referenceIndex].fields
-            fields.forEach((outterItem, outterIndex) => {
-                outterItem.validation.constraints.forEach((innerItem, innerIndex) => {
-                    if(!innerItem) {
-                        currentElement = this.createConstraint(moddle, outterItem.validation);
-                        element.businessObject.extensionElements.values[referenceIndex].fields[outterIndex].validation.constraints[innerIndex] = currentElement;
-                    }
-                })
-            })
-            //Property
-            fields = element.businessObject.extensionElements.values[referenceIndex].fields
-            fields.forEach((outterItem, outterIndex) => {
-                outterItem.properties.values.forEach((innerItem, innerIndex) => {
-                    if(!innerItem) {
-                        currentElement = this.createConstraint(moddle, outterItem.properties);
-                        element.businessObject.extensionElements.values[referenceIndex].fields[outterIndex].properties.values[innerIndex] = currentElement;
-                    }
-                })
-            })
+            // previousElement = currentElement;
+            // currentElement = element.businessObject.extensionElements.values[referenceIndex].fields;
+            // if(!currentElement) {
+            //     currentElement = this.createFormField(moddle, previousElement)
+            //     element.businessObject.extensionElements.values[referenceIndex].fields = currentElement;
+            // }
+            // //Validation 1-M Constraint
+            // let fields = element.businessObject.extensionElements.values[referenceIndex].fields;
+            // fields.forEach((item, index) => {
+            //     if(!item.validation) {
+            //         currentElement = this.createValidation(moddle, item);
+            //         element.businessObject.extensionElements.values[referenceIndex].fields[index].validation = currentElement;
+            //     }
+            // });
+            // //Properties 1-M Property
+            // fields = element.businessObject.extensionElements.values[referenceIndex].fields;
+            // fields.forEach((item, index) => {
+            //     if(!item.properties) {
+            //         currentElement = this.createProperties(moddle, item);
+            //         element.businessObject.extensionElements.values[referenceIndex].fields[index].properties = currentElement;
+            //     }
+            // });
+            // //Constraint
+            // fields = element.businessObject.extensionElements.values[referenceIndex].fields
+            // fields.forEach((outterItem, outterIndex) => {
+            //     outterItem.validation.constraints.forEach((innerItem, innerIndex) => {
+            //         if(!innerItem) {
+            //             currentElement = this.createConstraint(moddle, outterItem.validation);
+            //             element.businessObject.extensionElements.values[referenceIndex].fields[outterIndex].validation.constraints[innerIndex] = currentElement;
+            //         }
+            //     })
+            // })
+            // //Property
+            // fields = element.businessObject.extensionElements.values[referenceIndex].fields
+            // fields.forEach((outterItem, outterIndex) => {
+            //     outterItem.properties.values.forEach((innerItem, innerIndex) => {
+            //         if(!innerItem) {
+            //             currentElement = this.createConstraint(moddle, outterItem.properties);
+            //             element.businessObject.extensionElements.values[referenceIndex].fields[outterIndex].properties.values[innerIndex] = currentElement;
+            //         }
+            //     })
+            // })
         }
         else if(element.businessObject.$type == "bpmn:ServiceTask" || element.businessObject.$type == "bpmn:SendTask") {
             let previousElement = element.businessObject;
@@ -141,62 +201,68 @@ let BpmnXml = {
             if(connectorIndex != -1) {
                 referenceConnectorIndex = connectorIndex;
             } else {
-                currentElement = this.createInputOutput(moddle, previousElement);
+                currentElement = this.createSpecialConnector(moddle, previousElement);
                 element.businessObject.extensionElements.values[valuesLength] = currentElement
                 referenceConnectorIndex = valuesLength;
             }
+            
             //Connector InputOutput
             let connectorInputOutput = element.businessObject.extensionElements.values[referenceConnectorIndex].inputOutput;
-            connectorInputOutput.inputParameters.forEach((item, index) => {
-                if(!item) {
-                    currentElement = this.createConnectorInputParameter(moddle, item);
-                    element.businessObject.extensionElements.values[referenceConnectorIndex].inputOutput.inputParameters[index] = currentElement;
+            if(connectorInputOutput.inputParameters.length == 0) {
+                this.createSpecialConnectorParameters(moddle, connectorInputOutput.inputParameters)
+            }
+            let inputParams = connectorInputOutput.inputParameters.map(item => {return item.name});
+            let missing = ["url", "method", "url_parameter"].filter(item => !inputParams.includes(item));
+            missing.forEach(x => {
+                if(x == "url") {
+                    currentElement = this.createSpecialConnectorInputRegular("url", moddle, connectorInputOutput)
+                    connectorInputOutput.inputParameters.push(currentElement);
                 }
-            });
-
-            //Connector InputOutput Definition Map
-            connectorInputOutput.inputParameters.forEach((item, index) => {
-                if(!item.definition) {
-                    currentElement = this.createMap(moddle, item);
-                    element.businessObject.extensionElements.values[referenceConnectorIndex].inputOutput.inputParameters[index].definition 
-                    = currentElement;
+                else if(x == "method") {
+                    currentElement = this.createSpecialConnectorInputRegular("method", moddle, connectorInputOutput)
+                    connectorInputOutput.inputParameters.push(currentElement);
                 }
-            });
+                else if(x == "url_parameter"){
+                    currentElement = this.createSpecialConnectorInputIrregular(moddle, connectorInputOutput)
+                    connectorInputOutput.inputParameters.push(currentElement);
+                }
+            })
+            //Commented out everything that is hierarchically lower then inputOutput
 
             //InputOutput
-            let referenceIoIndex = null;
+            // let referenceIoIndex = null;
             let inputOutputIndex = element.businessObject.extensionElements.values.findIndex(x => x.$type == "camunda:InputOutput")
             valuesLength = element.businessObject.extensionElements.values.length;
             previousElement = element.businessObject.extensionElements;
             if(inputOutputIndex != -1) {
-                referenceIoIndex = inputOutputIndex;
+                // referenceIoIndex = inputOutputIndex;
             } else {
                 currentElement = this.createInputOutput(moddle, previousElement);
                 element.businessObject.extensionElements.values[valuesLength] = currentElement;
-                referenceIoIndex = valuesLength;
+                // referenceIoIndex = valuesLength;
             }
 
-            //Output Parameters
-            let outParams = element.businessObject.extensionElements.values[referenceIoIndex];
-            if(outParams.outputParameters) {
-                outParams.outputParameters.forEach((item, index) => {
-                    if(!item) {
-                        currentElement = this.createOutputParameter(moddle, item);
-                        element.businessObject.extensionElements.values[referenceIoIndex].outputParameters[index] = currentElement;
-                    }
-                });
-            }
+            // //Output Parameters
+            // let outParams = element.businessObject.extensionElements.values[referenceIoIndex];
+            // if(outParams.outputParameters) {
+            //     outParams.outputParameters.forEach((item, index) => {
+            //         if(!item) {
+            //             currentElement = this.createOutputParameter(moddle, item);
+            //             element.businessObject.extensionElements.values[referenceIoIndex].outputParameters[index] = currentElement;
+            //         }
+            //     });
+            // }
 
-            //Input Parameters
-            let ioParams = element.businessObject.extensionElements.values[referenceIoIndex];
-            if(ioParams.inputParameters) {
-                ioParams.inputParameters.forEach((item, index) => {
-                    if(!item) {
-                        currentElement = this.createInputParameter(moddle, item);
-                        element.businessObject.extensionElements.values[referenceIoIndex].inputParameters[index] = currentElement;
-                    }
-                });
-            }
+            // //Input Parameters
+            // let ioParams = element.businessObject.extensionElements.values[referenceIoIndex];
+            // if(ioParams.inputParameters) {
+            //     ioParams.inputParameters.forEach((item, index) => {
+            //         if(!item) {
+            //             currentElement = this.createInputParameter(moddle, item);
+            //             element.businessObject.extensionElements.values[referenceIoIndex].inputParameters[index] = currentElement;
+            //         }
+            //     });
+            // }
         }
         return element;
     },
@@ -216,12 +282,20 @@ let BpmnXml = {
         });
         connector.$parent = parent;
         let inputOutput = this.createSpecialConnectorInputOutput(moddle, connector);
-        let method = this.createSpecialConnectorInputRegular("method", moddle, inputOutput);
-        let url = this.createSpecialConnectorInputRegular("url", moddle, inputOutput);
-        let url_parametar = this.createSpecialConnectorInputIrregular(moddle, inputOutput);
-        inputOutput.inputParameters.push(method, url, url_parametar);
+        // let method = this.createSpecialConnectorInputRegular("method", moddle, inputOutput);
+        // let url = this.createSpecialConnectorInputRegular("url", moddle, inputOutput);
+        // let url_parametar = this.createSpecialConnectorInputIrregular(moddle, inputOutput);
+        this.createSpecialConnectorParameters(moddle, inputOutput);
+        // debugger;
+        // inputOutput.inputParameters.push(method, url, url_parametar);
         connector.inputOutput = inputOutput;
         return connector;
+    },
+    createSpecialConnectorParameters(moddle, parent) {
+        let method = this.createSpecialConnectorInputRegular("method", moddle, parent);
+        let url = this.createSpecialConnectorInputRegular("url", moddle, parent);
+        let url_parametar = this.createSpecialConnectorInputIrregular(moddle, parent);
+        parent.inputParameters.push(method, url, url_parametar);
     },
     createSpecialConnectorInputOutput(moddle, parent) {
         let inputOutput = moddle.create("camunda:InputOutput", {
@@ -247,11 +321,11 @@ let BpmnXml = {
         inputParameter.definition = this.createMap(moddle, inputParameter)
         return inputParameter;
     },
-    //Rewrite all create if time allows
     createServiceExtensionElements(moddle, parent) {
         let extensionElements = moddle.create("bpmn:ExtensionElements", { values: [] })
         extensionElements.$parent = parent;
-        let connector = this.createConnector(moddle, extensionElements);
+        let connector = this.createSpecialConnector(moddle, extensionElements)
+        // let connector = this.createConnector(moddle, extensionElements);
         let inputOutput = this.createInputOutput(moddle, extensionElements);
         extensionElements.values.push(connector);
         extensionElements.values.push(inputOutput);
@@ -272,10 +346,10 @@ let BpmnXml = {
             outputParameters: []
         })
         inputOutput.$parent = parent;
-        let inputParameter = this.createInputParameter(moddle, inputOutput);
-        let outputParameter = this.createOutputParameter(moddle, inputOutput);
-        inputOutput.inputParameters.push(inputParameter);
-        inputOutput.outputParameters.push(outputParameter);
+        // let inputParameter = this.createInputParameter(moddle, inputOutput);
+        // let outputParameter = this.createOutputParameter(moddle, inputOutput);
+        // inputOutput.inputParameters.push(inputParameter);
+        // inputOutput.outputParameters.push(outputParameter);
         return inputOutput;
     },
     createConnectorInputParameter(moddle, parent) {
@@ -337,8 +411,8 @@ let BpmnXml = {
     createFormData(moddle, parent) {
         let formData = moddle.create("camunda:FormData", {fields: []})
         formData.$parent = parent;
-        let formField = this.createFormField(moddle, formData);
-        formData.fields.push(formField);
+        //let formField = this.createFormField(moddle, formData);
+        //formData.fields.push(formField);
         return formData;
     },
     createFormField(moddle, parent) {

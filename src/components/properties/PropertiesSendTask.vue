@@ -13,23 +13,25 @@
 					></service-selector>
 					<v-row>
 						<v-col cols="12" class="col-no-top-padding">
-							<div class="card-wrap parameter-title-margin">
-								<div class="card-title">PARAMETERS</div>
-								<div class="card-add-button">
+							<div class="form-header">
+								<div class="form-header-text">PARAMETERS</div>
+								<div class="form-header-btn">
 									<v-btn @click="showAddEditDialog(null, 'add')" icon color="yellow accent-3">
 										<v-icon class="icon-medium">mdi-plus-box</v-icon>
 									</v-btn>
 								</div>
-								<v-text-field
-									v-model="search"
-									class="input-remove-border-sans-serif card-search"
-									outlined
-									dense
-									prepend-inner-icon="mdi-magnify"
-									placeholder=" Search"
-									single-line
-									hide-details
-								></v-text-field>
+								<div class="form-header-search">
+									<v-text-field
+										v-model="search"
+										class="input-remove-border-sans-serif card-search"
+										outlined
+										dense
+										prepend-inner-icon="mdi-magnify"
+										placeholder=" Search"
+										single-line
+										hide-details
+									></v-text-field>
+								</div>
 							</div>
 						</v-col>
 						<v-col cols="12" class="col-no-top-padding">
@@ -39,7 +41,7 @@
 								item-key="name"
 								loading-text="Loading..."
 								:search="search"
-								:headers="serviceConfigurationTableHeaders"
+								:headers="sendConfigurationTableHeaders"
 								:items="parameters"
 								:items-per-page="5"
 								:footer-props="footerProps"
@@ -48,7 +50,7 @@
 								:sort-desc="false"
 							>
 								<!-- Header tooltip -->
-								<template v-for="(h, idx) in serviceConfigurationTableHeaders" v-slot:[`header.${h.value}`]="{}">
+								<template v-for="(h, idx) in sendConfigurationTableHeaders" v-slot:[`header.${h.value}`]="{}">
 									<v-tooltip top :key="idx">
 										<template v-slot:activator="{ on }">
 											<span v-on="on">{{ h.text }}</span>
@@ -56,7 +58,7 @@
 										<span>{{ h.explanation }}</span>
 									</v-tooltip>
 								</template>
-								<template #[`item.$type`]="{ item }">
+								<template #[`item.type`]="{ item }">
 									<div v-if="item.$type == 'camunda:InputParameter'">
 										Input
 									</div>
@@ -147,11 +149,11 @@ export default {
 			config: DialogConfig.model,
 			footerProps: FooterConfig.footerProps,
 			headerProps: HeaderConfig.headerProps,
-			serviceConfigurationTableHeaders: HeaderConfig.serviceConfigurationTableHeaders,
+			sendConfigurationTableHeaders: HeaderConfig.sendConfigurationTableHeaders,
 			//Params
 			connectorData: null,
 			inputOutputData: null,
-			parameters: [],
+			parameters: [], //inputOutput Params
 			defaultParameters: [],
 			isApplyButtonDisabled: true,
 			rules: {
@@ -167,56 +169,76 @@ export default {
 			buttonColor: null,
 			title: null,
 			//service
-			service: {},
-			serviceItem: {},
-			methodItem: {},
-			routeItem: {},
-			urlParams: [],
+			serviceSelectorData: {
+				serviceItem: {},
+				methodText: {},
+				routeText: {},
+				urlParams: [],
+			},
+			serviceDefault: {},
+			methodDefault: {},
+			routeDefault: {},
+			urlParamsDefault: [],
 		};
 	},
 	watch: {
-		parameters: function(newValue) {
-			console.log("Parameters watch -", newValue);
-			this.compareData();
+		parameters: function() {
+			this.checkDataAndDisableButtonIfNeeded();
 		},
-		connectorData: function(newValue) {
-			//for disable
-			console.log("Connector watch selector-", newValue);
-			this.compareData();
+		serviceSelectorData: {
+			handler: function() {
+				this.checkDataAndDisableButtonIfNeeded();
+			},
+			deep: true,
 		},
 	},
 	mounted() {
 		this.setData();
-		//tu negdje se dinamicki mora graditi novi konektor - pogledaj ispod data -> service
 	},
 	methods: {
 		setData() {
-			if (this.connector && this.connector.connectorId == null) {
-				this.connectorData = [];
-				this.inputOutputData = [];
-				this.parameters = [];
-			} else {
-				// debugger;
-				this.connectorData = _.cloneDeep(this.connector);
-				this.inputOutputData = _.cloneDeep(this.inputOutput);
-				if (this.inputOutputData.inputParameters) {
-					this.parameters = this.inputOutputData.inputParameters.concat(this.inputOutputData.outputParameters);
-				} else {
-					this.parameters = this.inputOutputData.outputParameters;
-				}
-			}
+			this.connectorData = this.connector.connectorId != null ? _.cloneDeep(this.connector) : [];
+			this.inputOutputData = this.inputOutput != null ? _.cloneDeep(this.inputOutput) : [];
+			this.parameters =
+				this.inputOutput != null
+					? this.inputOutputData.inputParameters
+						? this.inputOutputData.inputParameters.concat(this.inputOutputData.outputParameters)
+						: (this.parameters = this.inputOutputData.outputParameters)
+					: [];
 			this.defaultParameters = _.cloneDeep(this.parameters);
+			this.serviceDefault = this.connector.connectorId || {};
+			this.methodDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "method")?.value || {};
+			this.routeDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "url")?.value || {};
+			let urlParamsDefault = this.connector.inputOutput.inputParameters;
+			if (_.has(urlParamsDefault, "definition")) {
+				this.urlParamsDefault = urlParamsDefault?.definition.entries.find((x) => x.name == "url_parameter") || [];
+			} else {
+				this.urlParamsDefault = [];
+			}
 		},
-
 		compareData() {
+			let isConnectorDataEqual = true;
+			if (typeof this.serviceDefault == "string" && _.has(this.serviceSelectorData.serviceItem, "name")) {
+				isConnectorDataEqual =
+					this.serviceDefault?.toUpperCase() == this.serviceSelectorData.serviceItem?.name.toUpperCase() &&
+					this.methodDefault == this.serviceSelectorData.methodText &&
+					this.routeDefault == this.serviceSelectorData.routeText;
+			}
+			let urlParamsCheck = this.urlParamsDefault.find((x) => x.key == null && x.value == null);
+			if (urlParamsCheck && this.urlParamsDefault.length == 1) urlParamsCheck = [];
+			let areUrlParamsEq = _.isEqual(this.urlParamsDefault, urlParamsCheck);
 			let areParamsEqual = _.isEqual(this.parameters, this.defaultParameters);
-			let isConnectorEqual = _.isEqual(this.connector, this.connectorData);
-			this.setApplyButtonState(!isConnectorEqual || !areParamsEqual);
+			let isApplyButtonDisabled = isConnectorDataEqual && areUrlParamsEq && areParamsEqual;
+			this.setApplyButtonState(isApplyButtonDisabled);
+		},
+		checkDataAndDisableButtonIfNeeded() {
+			let isApplyButtonDisabled = this.compareData();
+			this.setApplyButtonState(isApplyButtonDisabled);
 		},
 		setApplyButtonState(value) {
 			this.isApplyButtonDisabled = value;
 		},
-		//Add & Edit
+		//Dialogs
 		showAddEditDialog(item, type) {
 			if (type == "add") {
 				this.buttonColor = this.serviceConfig.add.buttonColor;
@@ -232,54 +254,91 @@ export default {
 		closeAddAndEditDialog() {
 			this.isVisibleAddEditDialog = false;
 		},
-		handleAddEdit(item, type) {
-			//Nije dobro, sto ako se promijeni name
+		handleAddEdit(item, oldItem, type) {
 			if (type == "edit") {
-				let idx = this.parameters.findIndex((x) => x.name == item.name);
+				let idx = this.parameters.findIndex((x) => x.name == oldItem.name);
 				this.parameters.splice(idx, 1, item);
+				if (oldItem.$type == "camunda:InputParameter") {
+					idx = this.inputOutput.inputParameters.findIndex((x) => x.name == oldItem.name);
+					this.inputOutput.inputParameters.splice(idx, 1, item);
+				} else {
+					idx = this.inputOutput.outputParameters.findIndex((x) => x.name == oldItem.name);
+					this.inputOutput.outputParameters.splice(idx, 1, item);
+				}
 			} else {
 				this.parameters.push(item);
+				if (item.$type == "camunda:InputParameter") {
+					this.inputOutput.inputParameters.push(item);
+				} else {
+					this.inputOutput.outputParameters.push(item);
+				}
 			}
 			this.closeAddAndEditDialog();
 		},
-		//Delete
 		showDeleteDialog(item) {
 			this.item = item;
 			this.isVisibleDeleteDialog = true;
 		},
 		handleDelete() {
 			this.isVisibleDeleteDialog = false;
-			let idx = this.parameters.findIndex((x) => x.name == this.deleteItem.name);
+			let idx = this.parameters.findIndex((x) => x.name == this.item.name);
 			this.parameters.splice(idx, 1);
+			if (this.item.$type == "camunda:InputParameter") {
+				idx = this.inputOutput.inputParameters.findIndex((x) => x.name == this.item.name);
+				this.inputOutput.inputParameters.splice(idx, 1);
+			} else {
+				idx = this.inputOutput.outputParameters.findIndex((x) => x.name == this.item.name);
+				this.inputOutput.outputParameters.splice(idx, 1);
+			}
 		},
 		cancel() {
 			this.$emit("cancel");
 		},
 		ok() {
-			let moddle = this.context.modeler.get("moddle");
-			let connector = BpmnXml.createSpecialConnector(moddle, this.connectorData); //maybe not connectorData
-			connector;
-			let data = null;
-			this.$emit("ok", data);
+			this.connector.connectorId = _.has(this.serviceSelectorData.serviceItem, "name") ? this.serviceSelectorData.serviceItem.name : null;
+			let method = this.connector.inputOutput.inputParameters.find((x) => x.name == "method");
+			method.value = this.serviceSelectorData.methodText;
+			let url = this.connector.inputOutput.inputParameters.find((x) => x.name == "url");
+			url.value = this.serviceSelectorData.routeText;
+			let urlParameter = this.connector?.inputOutput.inputParameters.find((x) => x.name == "url_parameter");
+			if (!urlParameter) {
+				let moddle = this.context.modeler.get("moddle");
+				let inputParameter = BpmnXml.createSpecialConnectorInputIrregular(moddle, this.connector.inputOutput);
+				inputParameter.definition.entries = this.serviceSelectorData.urlParams;
+				this.connector.inputOutput.inputParameters.push(inputParameter);
+			}
+			this.$emit("ok", this.connector, this.inputOutput);
 		},
-		//Service
 		setServiceValue(service, serviceName) {
 			this.service = service;
-			this.serviceItem = serviceName;
+			this.serviceSelectorData.serviceItem = serviceName;
 		},
 		setMethodValue(methodName) {
-			this.methodItem = methodName;
+			this.serviceSelectorData.methodText = methodName;
 		},
 		setRouteValue(routeName) {
-			this.routeItem = routeName;
+			this.serviceSelectorData.routeText = routeName;
 		},
 		setUrlParams(urlParams) {
-			this.urlParams = urlParams;
+			this.serviceSelectorData.urlParams = urlParams.definition.entries;
 		},
 	},
 };
 </script>
 <style>
+.form-header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	margin-top: 2%;
+	margin-bottom: 2%;
+}
+.form-header-search {
+	display: flex;
+	justify-content: flex-end !important;
+	align-items: center;
+	flex-grow: 1;
+}
 .input-remove-border {
 	border-radius: 0px !important;
 }
@@ -304,9 +363,7 @@ export default {
 .card-search {
 	margin-left: 20% !important;
 }
-.card-add-button {
-	margin-bottom: 1%;
-}
+
 .connector-title-margin {
 	margin-top: 4%;
 	margin-bottom: 3%;

@@ -100,21 +100,14 @@ export default {
 			this.$emit("cancel");
 		},
 		okAction() {
-			if (this.type === "edit") {
-				this.data.$type = this.form.$type;
-				this.data.name = this.form.name;
-				this.data.value = this.form.value;
-				this.$emit("ok", this.data, this.type);
-			} else {
-				let moddle = this.context.modeler.get("moddle");
-				let property =
-					this.form.$type == "camunda:InputParameter"
-						? BpmnXml.createInputParameter(moddle, this.parameters)
-						: BpmnXml.createOutputParameter(moddle, this.parameters);
-				property.name = this.form.name;
-				property.value = this.form.value;
-				this.$emit("ok", property, this.type);
-			}
+			let moddle = this.context.modeler.get("moddle");
+			let property =
+				this.form.$type == "camunda:InputParameter"
+					? BpmnXml.createInputParameter(moddle, this.parameters)
+					: BpmnXml.createOutputParameter(moddle, this.parameters);
+			property.name = this.form.name;
+			property.value = this.form.value;
+			this.$emit("ok", property, this.data, this.type);
 		},
 	},
 };

@@ -74,6 +74,12 @@ let HeaderConfig = {
       { text: "Value", value: "value", explanation: "Body needs to be enclosed in ${<var>}", divider: true, align: "left"},
       { text: "Actions", value: "actions", explanation: "Edit or delete the parameter", sortable: false, align: "left" }
     ],
+    sendConfigurationTableHeaders: [
+      { text: "Type", value: "type", explanation: "Input or Output type parameter", divider: true, align: "left" },
+      { text: "Name", value: "name", explanation: "Variable name", divider: true, align: "left" },
+      { text: "Value", value: "value", explanation: "Body needs to be enclosed in ${<var>}", divider: true, align: "left"},
+      { text: "Actions", value: "actions", explanation: "Edit or delete the parameter", sortable: false, align: "left" }
+    ],    
     userTaskConfigurationTableHeaders: [
       { text: "Type", value: "type", explanation: "Form field type", divider: true, align: "left" },
       { text: "Identifer", value: "id", explanation: "Form field ID", divider: true, align: "left" },

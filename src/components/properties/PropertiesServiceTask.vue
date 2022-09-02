@@ -153,18 +153,12 @@ export default {
 			//Params
 			connectorData: null,
 			inputOutputData: null,
-			parameters: [],
+			parameters: [], //inputOutput Params
 			defaultParameters: [],
 			isApplyButtonDisabled: true,
-			rules: {
-				notEmpty: (field) => {
-					return common.isInputValid(field) || "Cannot be empty.";
-				},
-			},
-			//delete dialog
 			isVisibleDeleteDialog: false,
-			item: null,
 			isVisibleAddEditDialog: false,
+			item: null,
 			itemType: null,
 			buttonColor: null,
 			title: null,
@@ -175,71 +169,75 @@ export default {
 				routeText: {},
 				urlParams: [],
 			},
-			isConnectorFilled: false,
-			isConnectorChanged: false,
-			serviceDefault: null,
-			methodDefault: null,
-			routeDefault: null,
+			serviceDefault: {},
+			methodDefault: {},
+			routeDefault: {},
+			urlParamsDefault: [],
+			rules: {
+				notEmpty: (field) => {
+					return common.isInputValid(field) || "Cannot be empty.";
+				},
+			},
 		};
 	},
 	watch: {
 		parameters: function() {
-			this.compareData();
+			this.checkDataAndDisableButtonIfNeeded();
 		},
 		serviceSelectorData: {
 			handler: function() {
-				debugger;
-				let isFilled =
-					this.serviceSelectorData.serviceItem != null &&
-					this.serviceSelectorData.methodText != null &&
-					this.serviceSelectorData.routeText != null;
-				let isEqual = this.compareConnector();
-				this.isConnectorFilled = isFilled && !isEqual;
+				this.checkDataAndDisableButtonIfNeeded();
 			},
 			deep: true,
-		},
-		isConnectorFilled: function(newValue) {
-			this.setApplyButtonState(!newValue);
 		},
 	},
 	mounted() {
 		this.setData();
-		//tu negdje se dinamicki mora graditi novi konektor - pogledaj ispod data -> service
 	},
 	methods: {
 		setData() {
-			if (this.connector && this.connector.connectorId == null) {
-				this.connectorData = [];
-				this.inputOutputData = [];
-				this.parameters = [];
-			} else {
-				this.connectorData = _.cloneDeep(this.connector);
-				this.inputOutputData = _.cloneDeep(this.inputOutput);
-				if (this.inputOutputData.inputParameters) {
-					this.parameters = this.inputOutputData.inputParameters.concat(this.inputOutputData.outputParameters);
-				} else {
-					this.parameters = this.inputOutputData.outputParameters;
-				}
-			}
-			this.serviceDefault = this.connector.connectorId;
-			this.methodDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "method").value;
-			this.routeDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "url").value;
+			this.connectorData = this.connector.connectorId != null ? _.cloneDeep(this.connector) : [];
+			this.inputOutputData = this.inputOutput != null ? _.cloneDeep(this.inputOutput) : [];
+			this.parameters =
+				this.inputOutput != null
+					? this.inputOutputData.inputParameters
+						? this.inputOutputData.inputParameters.concat(this.inputOutputData.outputParameters)
+						: (this.parameters = this.inputOutputData.outputParameters)
+					: [];
 			this.defaultParameters = _.cloneDeep(this.parameters);
-		},
-		compareConnector() {
-			let isEqual =
-				this.serviceDefault.toUpperCase() == this.serviceSelectorData.serviceItem.name.toUpperCase() &&
-				this.methodDefault == this.serviceSelectorData.methodText &&
-				this.serviceSelectorData.routeText == this.routeDefault;
-			return isEqual;
+			this.serviceDefault = this.connector.connectorId || {};
+			this.methodDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "method")?.value || {};
+			this.routeDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "url")?.value || {};
+			let urlParamsDefault = this.connector.inputOutput.inputParameters;
+			if (_.has(urlParamsDefault, "definition")) {
+				this.urlParamsDefault = urlParamsDefault?.definition.entries.find((x) => x.name == "url_parameter") || [];
+			} else {
+				this.urlParamsDefault = [];
+			}
 		},
 		compareData() {
+			let isConnectorDataEqual = true;
+			if (typeof this.serviceDefault == "string" && _.has(this.serviceSelectorData.serviceItem, "name")) {
+				isConnectorDataEqual =
+					this.serviceDefault?.toUpperCase() == this.serviceSelectorData.serviceItem?.name.toUpperCase() &&
+					this.methodDefault == this.serviceSelectorData.methodText &&
+					this.routeDefault == this.serviceSelectorData.routeText;
+			}
+			let urlParamsCheck = this.urlParamsDefault.find((x) => x.key == null && x.value == null);
+			if (urlParamsCheck && this.urlParamsDefault.length == 1) urlParamsCheck = [];
+			let areUrlParamsEq = _.isEqual(this.urlParamsDefault, urlParamsCheck);
 			let areParamsEqual = _.isEqual(this.parameters, this.defaultParameters);
-			this.setApplyButtonState(areParamsEqual);
+			let isApplyButtonDisabled = isConnectorDataEqual && areUrlParamsEq && areParamsEqual;
+			this.setApplyButtonState(isApplyButtonDisabled);
+		},
+		checkDataAndDisableButtonIfNeeded() {
+			let isApplyButtonDisabled = this.compareData();
+			this.setApplyButtonState(isApplyButtonDisabled);
 		},
 		setApplyButtonState(value) {
 			this.isApplyButtonDisabled = value;
 		},
+		//Dialogs
 		showAddEditDialog(item, type) {
 			if (type == "add") {
 				this.buttonColor = this.serviceConfig.add.buttonColor;
@@ -255,12 +253,24 @@ export default {
 		closeAddAndEditDialog() {
 			this.isVisibleAddEditDialog = false;
 		},
-		handleAddEdit(item, type) {
+		handleAddEdit(item, oldItem, type) {
 			if (type == "edit") {
-				let idx = this.parameters.findIndex((x) => x.name == item.name);
+				let idx = this.parameters.findIndex((x) => x.name == oldItem.name);
 				this.parameters.splice(idx, 1, item);
+				if (oldItem.$type == "camunda:InputParameter") {
+					idx = this.inputOutput.inputParameters.findIndex((x) => x.name == oldItem.name);
+					this.inputOutput.inputParameters.splice(idx, 1, item);
+				} else {
+					idx = this.inputOutput.outputParameters.findIndex((x) => x.name == oldItem.name);
+					this.inputOutput.outputParameters.splice(idx, 1, item);
+				}
 			} else {
 				this.parameters.push(item);
+				if (item.$type == "camunda:InputParameter") {
+					this.inputOutput.inputParameters.push(item);
+				} else {
+					this.inputOutput.outputParameters.push(item);
+				}
 			}
 			this.closeAddAndEditDialog();
 		},
@@ -269,38 +279,35 @@ export default {
 			this.isVisibleDeleteDialog = true;
 		},
 		handleDelete() {
-			debugger;
 			this.isVisibleDeleteDialog = false;
 			let idx = this.parameters.findIndex((x) => x.name == this.item.name);
 			this.parameters.splice(idx, 1);
+			if (this.item.$type == "camunda:InputParameter") {
+				idx = this.inputOutput.inputParameters.findIndex((x) => x.name == this.item.name);
+				this.inputOutput.inputParameters.splice(idx, 1);
+			} else {
+				idx = this.inputOutput.outputParameters.findIndex((x) => x.name == this.item.name);
+				this.inputOutput.outputParameters.splice(idx, 1);
+			}
 		},
 		cancel() {
 			this.$emit("cancel");
 		},
 		ok() {
-			let moddle = this.context.modeler.get("moddle");
-			this.connector;
-			this.serviceSelectorData.serviceItem;
-			debugger;
-			//name
-			this.connector.connectorId = this.serviceSelectorData.serviceItem.name;
-			//method
+			this.connector.connectorId = _.has(this.serviceSelectorData.serviceItem, "name") ? this.serviceSelectorData.serviceItem.name : null;
 			let method = this.connector.inputOutput.inputParameters.find((x) => x.name == "method");
 			method.value = this.serviceSelectorData.methodText;
-			//url
 			let url = this.connector.inputOutput.inputParameters.find((x) => x.name == "url");
 			url.value = this.serviceSelectorData.routeText;
 			let urlParameter = this.connector?.inputOutput.inputParameters.find((x) => x.name == "url_parameter");
 			if (!urlParameter) {
-				this.connector.inputOutput.inputParameters.push(this.serviceSelectorData.urlParams);
+				let moddle = this.context.modeler.get("moddle");
+				let inputParameter = BpmnXml.createSpecialConnectorInputIrregular(moddle, this.connector.inputOutput);
+				inputParameter.definition.entries = this.serviceSelectorData.urlParams;
+				this.connector.inputOutput.inputParameters.push(inputParameter);
 			}
-			//maybe
-			let connector = BpmnXml.createSpecialConnector(moddle, this.connectorData); //maybe not connectorData
-			connector;
-			let data = null;
-			this.$emit("ok", data);
+			this.$emit("ok", this.connector, this.inputOutput);
 		},
-		//Service
 		setServiceValue(service, serviceName) {
 			this.service = service;
 			this.serviceSelectorData.serviceItem = serviceName;
@@ -312,7 +319,7 @@ export default {
 			this.serviceSelectorData.routeText = routeName;
 		},
 		setUrlParams(urlParams) {
-			this.serviceSelectorData.urlParams = urlParams;
+			this.serviceSelectorData.urlParams = urlParams.definition.entries;
 		},
 	},
 };

@@ -263,7 +263,6 @@ export default {
 			} else {
 				response = await WebService.changeServiceStatus(this.data.id);
 				this.handleSnackbar(response.show, response.message, response.color);
-				debugger;
 				if (response.data) {
 					let idx = this.serviceTableData.findIndex((x) => x.id == response.data.id);
 					this.serviceTableData.splice(idx, 1, response.data);

@@ -36,7 +36,7 @@
 						<v-tooltip bottom>
 							<template #activator="{ on }">
 								<v-btn icon tile>
-									<v-icon class="btn-group-space-around" :disabled="isDisabledSaveButton" v-on="on" @click="globalSave()">mdi-content-save</v-icon>
+									<v-icon class="btn-group-space-around" v-on="on" @click="globalSave()">mdi-content-save</v-icon>
 								</v-btn>
 							</template>
 							<span>Save</span>
@@ -50,10 +50,10 @@
 							</template>
 							<span>Search</span>
 						</v-tooltip>
-						<v-divider vertical></v-divider>
+						<!-- <v-divider vertical></v-divider>
 						<v-tooltip bottom>
 							<template #activator="{ on }">
-								<v-icon dense v-on="on" @click="test()">mdi-heart</v-icon>
+								<v-icon v-on="on" @click="test()">mdi-heart</v-icon>
 							</template>
 							<span>Test</span>
 						</v-tooltip>
@@ -63,7 +63,7 @@
 								<v-icon v-on="on" @click="xTest()">mdi-heart</v-icon>
 							</template>
 							<span>xTest</span>
-						</v-tooltip>
+						</v-tooltip> -->
 						<v-divider vertical></v-divider>
 						<v-tooltip bottom>
 							<template #activator="{ on }">
@@ -78,6 +78,7 @@
 				<div v-show="isSearchShown">
 					<v-text-field
 						v-model="search"
+						clearable
 						class="input-remove-border-sans-serif properties-search-padding"
 						outlined
 						dense
@@ -90,12 +91,13 @@
 				<div v-show="isPropPanelExpanded">
 					<v-expansion-panels inset multiple outlined flat accordion>
 						<v-expansion-panel v-for="p in panels" :key="p.label">
-							<div v-if="p.visible">
+							<div v-show="p.visible">
 								<v-expansion-panel-header class="panel-header">
 									{{ p.label.toUpperCase() }}
 								</v-expansion-panel-header>
-								<v-expansion-panel-content>
+								<v-expansion-panel-content eager>
 									<component
+										:key="propertyData.id"
 										:is="p.module"
 										:data="propertyData"
 										:process="process"
@@ -103,7 +105,8 @@
 										:context="{ modeler, bpmnElement }"
 										@infoOk="handleProcessInfoChange"
 										@generalOk="handleGeneralInfoChange"
-										@disableSaveButton="disableSaveButton"
+										@setProcessData="setProcessData"
+										@setElementIdCheck="setElementIdCheck"
 									></component>
 								</v-expansion-panel-content>
 							</div>
@@ -141,6 +144,7 @@ import { BpmnUI, BpmnXml } from "@/utils/bpmn";
 import { ProcessDefinition, ProcessVersion } from "@/services/index.js";
 import { newFile, PanelsConfig } from "@/utils/config.js";
 import * as common from "@/utils/common.js";
+import _ from "lodash";
 export default {
 	name: "editor",
 	components: {
@@ -173,6 +177,8 @@ export default {
 			processId: null,
 			processType: null,
 			process: null, //Process data, not diagram data
+			processName: null,
+			processFilename: null,
 			diagramXML: null,
 			bpmnElement: null,
 			propertyData: {
@@ -193,7 +199,7 @@ export default {
 			//Valid
 			isValid: null,
 			errorMessage: "Unparsable content detected, going back.",
-			isDisabledSaveButton: false,
+			isDisabledSaveButton: true,
 		};
 	},
 	watch: {
@@ -210,6 +216,7 @@ export default {
 		},
 	},
 	async mounted() {
+		//provjeriti za paramse kod new versiona, treba staviti neki guard ili nesto
 		this.hasDiagramArrived = false;
 		let params = this.$route.params;
 		this.processId = params.id;
@@ -218,6 +225,88 @@ export default {
 		await this.getDiagram();
 	},
 	methods: {
+		setElementIdCheck(form) {
+			if (form && form.id) {
+				let element = this.elementRegistry.get(form.id);
+				this.modeling.setColor(element, { stroke: "black", fill: "white" });
+				return;
+			}
+			if (this.propertyData && this.propertyData.id) {
+				let element = this.elementRegistry.get(this.propertyData.id);
+				if (element.type != "bpmn:Collaboration") {
+					this.modeling.setColor(element, { stroke: "red", fill: "white" });
+				}
+			}
+		},
+		setProcessData(form) {
+			this.processName = form.name;
+			this.processFilename = form.filename;
+		},
+		async globalSave() {
+			await this.preselectElementIfNoneSelected();
+			if (!this.processName || !this.processFilename) {
+				this.handleSnackbar(true, "Please, check the process info.", "yellow darken-4");
+				return;
+			}
+			await this.getCurrentDiagram(); //this.diagramXML
+
+			if (this.processId == "-1" && this.processType == "version") {
+				let data = {
+					process_definition_id: this.process.process_definition_id,
+					process_name: this.processName,
+					file_name: this.processFilename,
+					is_active: false,
+					xml_definition: this.diagramXML,
+				};
+				let response = await ProcessVersion.addProcessVersion(data);
+				this.handleSnackbar(response.show, response.message, response.color);
+			} else if (this.processId == "-1" && this.processType == "definition") {
+				let data = {
+					process_definition_name: this.processName,
+					file_name: this.processFilename,
+					is_active: false,
+					xml_definition: this.diagramXML,
+				};
+				let response = await ProcessDefinition.addProcessDefinition(data);
+				this.handleSnackbar(response.show, response.message, response.color);
+			} else if (this.processId != "-1" && this.processType == "version") {
+				let data = {
+					process_definition_id: this.process.process_definition_id,
+					process_name: this.processName,
+					file_name: this.processFilename,
+					is_active: false,
+					xml_definition: this.diagramXML,
+				};
+				let response = await ProcessVersion.addProcessVersion(data);
+				this.handleSnackbar(response.show, response.message, response.color);
+			}
+			await new Promise((resolve) => setTimeout(resolve, 3000));
+			this.$router.push({ name: "processes" });
+		},
+		async getCurrentDiagram() {
+			try {
+				const result = await this.modeler.saveXML({ format: true });
+				const { xml } = result;
+				this.diagramXML = xml;
+			} catch (err) {
+				console.error(err);
+			}
+		},
+		// async xTest() {
+		// 	debugger;
+		// 	window.modeler = this.modeler;
+		// 	const test = await this.moddle.toXML(this.modeler._definitions);
+		// 	console.log(test.xml);
+		// },
+		// async test() {
+		// 	try {
+		// 		const result = await this.modeler.saveXML({ format: true });
+		// 		const { xml } = result;
+		// 		console.log(xml);
+		// 	} catch (err) {
+		// 		console.log(err);
+		// 	}
+		// },
 		async goBackIfNotValid() {
 			this.handleSnackbar(true, this.errorMessage, "red darken-3");
 			await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -257,6 +346,7 @@ export default {
 			if (formData) {
 				this.propertyData.formData = Object.assign({}, this.propertyData.formData, formData);
 			}
+			// debugger;
 			let connector = BpmnXml.getExtension(bpmnObject, "camunda:Connector");
 			if (connector) {
 				this.propertyData.connector = Object.assign({}, this.propertyData.connector, connector);
@@ -266,7 +356,6 @@ export default {
 			if (inputOutput) {
 				this.propertyData.inputOutput = Object.assign({}, this.propertyData.inputOutput, inputOutput);
 			}
-			// debugger;
 		},
 		updatePanels() {
 			if (!this.bpmnElement) return;
@@ -274,38 +363,9 @@ export default {
 			BpmnUI.showPanel(this.panels, bpmnObject.$type);
 			BpmnUI.setLabelOntoPanel(this.panels, bpmnObject.$type);
 		},
-
-		//
-		//
-		//
-		//
-		async xTest() {
-			debugger;
-			window.modeler = this.modeler;
-			const test = await this.moddle.toXML(this.modeler._definitions);
-			console.log(test.xml);
-		},
-		async test() {
-			try {
-				const result = await this.modeler.saveXML({ format: false });
-				const { xml } = result;
-				console.log(xml);
-			} catch (err) {
-				console.log(err);
-			}
-		},
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
 		async onShown() {
 			this.setReferences();
 			this.eventBus.on("element.hover", () => {});
-
 			this.eventBus.on("element.out", () => {});
 			var self = this;
 			this.eventBus.on("element.click", (e) => {
@@ -323,7 +383,8 @@ export default {
 			this.modeling = this.modeler.get("modeling");
 		},
 		handleProcessInfoChange(form) {
-			if (this.utils.isItemProcessDefinition(this.process)) {
+			if (_.isEmpty(this.process)) return;
+			if (this.processType == "definition") {
 				this.process.process_definition_name = form.name;
 			} else {
 				this.process.process_version_name = form.name;
@@ -331,16 +392,16 @@ export default {
 			this.process.file_name = form.filename;
 		},
 		handleGeneralInfoChange(form, oldId) {
+			//needs fire over commandstack
 			let element = this.elementRegistry.get(oldId);
-			console.log(element);
 			this.modeling.updateProperties(element, { id: form.id, name: form.name });
 		},
-		expandProperties() {
+		async expandProperties() {
 			this.isPropPanelExpanded = !this.isPropPanelExpanded;
 			this.panelHeight = "auto";
 			if (this.isPropPanelExpanded) {
 				this.panelWidth = 360;
-				this.preselectElementIfNoneSelected();
+				await this.preselectElementIfNoneSelected();
 			} else {
 				this.panelWidth = 300;
 			}
@@ -358,7 +419,7 @@ export default {
 				this.modeling.setColor(element, null);
 			});
 		},
-		preselectElementIfNoneSelected() {
+		async preselectElementIfNoneSelected() {
 			let selectedElements = this.modeler.get("selection").get();
 			if (selectedElements.length > 0) {
 				this.handlePanels();
@@ -378,23 +439,16 @@ export default {
 			this.modeler.get("commandStack").redo();
 		},
 		async propertiesDownload() {
-			let name = this.utils.isItemProcessDefinition(this.process) ? this.process.process_definition_name : this.process.process_version_name;
-			const model = await this.moddle.toXML(this.modeler._definitions);
-			this.utils.exportDiagram(name, model.xml);
-		},
-		globalSave() {
-			debugger;
-			let modeling = this.modeler.get("modeling");
-			let moddle = this.modeler.get("moddle");
-			let formData = BpmnXml.getExtension(this.bpmnElement.businessObject, "camunda:formData");
-			if (formData) {
-				this.propertyData.extensionElements = moddle.create("bpmn:ExtensionElements");
-				this.propertyData.extensionElements.get("values").push(formData);
-				delete this.propertyData.formData;
+			try {
+				const result = await this.modeler.saveXML({ format: true });
+				const { xml } = result;
+				this.diagramXML = xml;
+			} catch (err) {
+				console.error(err);
 			}
-			modeling.updateProperties(this.bpmnElement, this.propertyData);
-			this.setPropertyData();
+			common.exportDiagram("NewFile", this.diagramXML);
 		},
+
 		searchElements(id) {
 			if (id == null) return;
 			var allElements = this.elementRegistry.getAll();
@@ -416,6 +470,10 @@ export default {
 				this.diagramXML = newFile.xml_definition;
 				this.hasDiagramArrived = true;
 			} else if (this.processType == "definition") {
+				if (_.isEmpty(this.process)) {
+					this.handleSnackbar(true, "Selected route is not valid.", "yellow darken-3");
+					return null;
+				}
 				let response = await ProcessDefinition.getProcessDefinition(this.process.process_definition_id);
 				this.handleSnackbar(response.show, response.message, response.color);
 				if (!response.data) this.diagramXML = "";

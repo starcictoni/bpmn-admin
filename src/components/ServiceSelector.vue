@@ -24,8 +24,8 @@
 			<div class="warning-outter-fill">
 				<div class="warning-frame">
 					<v-sheet elevation="0" color="yellow darken-2" class="warning-text white--text"
-						>The selected service is not online; therefore its selection is not available. You can check service statuses in the service overview
-						option.</v-sheet
+						>The selected service is not online; therefore its selection is not available. For further information you can check service statuses
+						in the service overview screen.</v-sheet
 					>
 				</div>
 			</div>
@@ -172,6 +172,7 @@ export default {
 			handler: function() {
 				if (this.parameters.length == 0) {
 					let urlParameter = this.createUrlParameter();
+					debugger;
 					this.parameters.push(urlParameter);
 				}
 				this.$emit("setUrlParameters", this.params);
@@ -205,10 +206,13 @@ export default {
 				this.connector = BpmnXml.createSpecialConnector(moddle, parent);
 			}
 			this.params = this.connector?.inputOutput.inputParameters.find((x) => x.name == "url_parameter");
+
 			if (!this.params) {
 				this.params = this.createUrlParameter();
+				console.log("Params", this.params);
 			}
 			this.parameters = this.params.definition.entries;
+			console.log("Parameters", this.parameters);
 		},
 		createUrlParameter() {
 			let moddle = this.context.modeler.get("moddle");
@@ -218,6 +222,7 @@ export default {
 		addEntry() {
 			let moddle = this.context.modeler.get("moddle");
 			let entry = BpmnXml.createEntry(moddle, this.parameters);
+			debugger;
 			this.parameters.push(entry);
 		},
 		removeEntry(item, index) {

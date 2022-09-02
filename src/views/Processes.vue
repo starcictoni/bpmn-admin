@@ -252,8 +252,8 @@
 				<div v-if="isVisibleEditDialog">
 					<model-edit-dialog
 						:model="isVisibleEditDialog"
-						:formData="data1"
-						:defaultValues="data1"
+						:formData="selectedProcess"
+						:defaultValues="selectedProcess"
 						@cancel="isVisibleEditDialog = false"
 						@ok="handleEdit"
 					></model-edit-dialog>
@@ -262,14 +262,14 @@
 				<div v-if="isVisibleActivateDialog">
 					<model-activate-dialog
 						:model="isVisibleActivateDialog"
-						:data="data1"
+						:data="selectedProcess"
 						@cancel="isVisibleActivateDialog = false"
 						@ok="handleActivate"
 					></model-activate-dialog>
 				</div>
 				<!-- add -->
 				<div v-if="isVisibleAddDialog">
-					<model-add-dialog :model="isVisibleAddDialog" :data="data1" @cancel="isVisibleAddDialog = false" @ok="handleAdd"></model-add-dialog>
+					<model-add-dialog :model="isVisibleAddDialog" :data="selectedProcess" @cancel="isVisibleAddDialog = false"></model-add-dialog>
 				</div>
 				<snackbar :show="showSnackbar" :color="snackbarColor" :text="snackbarText"></snackbar>
 			</v-col>
@@ -308,27 +308,23 @@ export default {
 			config: DialogConfig.model,
 			footerProps: FooterConfig.footerProps,
 			headerProps: HeaderConfig.headerProps,
-
-			data1: null,
+			selectedProcess: null,
+			isVisibleAddDialog: false,
 			isVisibleDeactivateDialog: false,
 			isVisibleDeleteDialog: false,
 			isVisibleEditDialog: false,
 			isVisibleActivateDialog: false,
-			isVisibleAddDialog: false,
-
 			//Main table
 			expanded: [], //state of expanded rows
 			mainSearch: null,
 			mainTableData: [],
 			isMainTableLoading: true,
 			mainTableHeaders: HeaderConfig.mainTableHeaders,
-
 			//Expand table
 			expandSearch: null,
 			expandTableData: [],
 			isExpandTableDataLoading: true,
 			expandTableHeaders: HeaderConfig.expandTableHeaders,
-
 			//Snackbar
 			showSnackbar: false,
 			snackbarColor: null,
@@ -350,7 +346,7 @@ export default {
 		},
 		showAndHideDialog(data, type) {
 			if (data != null) {
-				this.data1 = Object.assign({}, this.data1, data);
+				this.selectedProcess = Object.assign({}, this.selectedProcess, data);
 			}
 			switch (type) {
 				case "add":
@@ -370,16 +366,13 @@ export default {
 					break;
 			}
 		},
-		async handleAdd() {
-			debugger;
-		},
 		async handleDelete(type) {
-			if (common.isItemProcessDefinition(this.data1)) {
-				let response = await ProcessDefinition.deleteProcessDefinition(this.data1.process_definition_id);
+			if (common.isItemProcessDefinition(this.selectedProcess)) {
+				let response = await ProcessDefinition.deleteProcessDefinition(this.selectedProcess.process_definition_id);
 				this.handleSnackbar(response.show, response.message, response.color);
 				this.mainTableData = common.findAndRemove(this.mainTableData, response.data, "definition"); //id
 			} else {
-				let response = await ProcessVersion.deleteProcessVersion(this.data1.process_version_id);
+				let response = await ProcessVersion.deleteProcessVersion(this.selectedProcess.process_version_id);
 				this.handleSnackbar(response.show, response.message, response.color);
 				let process_definition = response.data.process_definition;
 				let process_version = response.data.process_version;
@@ -427,12 +420,15 @@ export default {
 		},
 		async handleDeactivate(type) {
 			if (this.expanded.length > 0) {
-				let response = await ProcessVersion.deactivateProcessVersion(this.data1.process_definition_id, this.data1.process_version_id);
+				let response = await ProcessVersion.deactivateProcessVersion(
+					this.selectedProcess.process_definition_id,
+					this.selectedProcess.process_version_id
+				);
 				this.handleSnackbar(response.show, response.message, response.color);
 				this.mainTableData = common.findAndReplace(this.mainTableData, response.data.process_definition, "definition");
 				this.expandTableData = common.findAndReplace(this.expandTableData, response.data.process_version, "version");
 			} else {
-				let response = await ProcessDefinition.deactivateProcessDefinition(this.data1.process_definition_id);
+				let response = await ProcessDefinition.deactivateProcessDefinition(this.selectedProcess.process_definition_id);
 				this.handleSnackbar(response.show, response.message, response.color);
 				this.mainTableData = common.findAndReplace(this.mainTableData, response.data, "definition");
 			}

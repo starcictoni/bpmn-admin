@@ -1,6 +1,5 @@
 <template>
-	<div ref="container" class="vue-bpmn-modeler-container"></div>
-	<!-- :options="options" -->
+	<div :options="options" ref="container" class="vue-bpmn-modeler-container"></div>
 </template>
 
 <script>
@@ -26,15 +25,6 @@ export default {
 			isValid: null,
 			errorMessage: "Unparsable content detected, going back.",
 		};
-	},
-	watch: {
-		// $router: {
-		// 	handler: function() {
-		// 		debugger;
-		// 		this.setData();
-		// 	},
-		// 	deep: true,
-		// },
 	},
 	async mounted() {
 		await this.setData();
@@ -68,9 +58,6 @@ export default {
 	},
 	beforeDestroy() {
 		this.BpmnModeler.destroy();
-	},
-	updated() {
-		debugger;
 	},
 };
 </script>

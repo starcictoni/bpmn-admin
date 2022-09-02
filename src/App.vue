@@ -1,5 +1,6 @@
 <template>
-	<v-app class="background">
+	<v-app>
+		<!-- class="background" -->
 		<v-navigation-drawer class="nav-border" app floating permanent mini-variant expand-on-hover>
 			<v-list>
 				<v-list-item class="pl-2" two-line>
@@ -60,7 +61,7 @@ export default {
 			localStorage.setItem("theme", this.$vuetify.theme.dark ? "dark" : "light");
 		},
 		goToModeler() {
-			if (this.$route.path != "/processes/new/-1" && this.$route.path != "/editor/new/-1") {
+			if (this.$route.path != "/processes/new/-1" && this.$route.path != "/editor/definition/-1") {
 				this.$router.push({ name: "editor", params: { id: "-1", type: "definition" } });
 			}
 		},
