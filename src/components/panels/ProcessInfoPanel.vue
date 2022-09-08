@@ -85,21 +85,21 @@ export default {
 			let routeParams = this.$route.params;
 			let id = routeParams.id;
 			let type = routeParams.type;
-			if (id == "-1") {
+			if (id == "-1" && type == "definition") {
 				this.form.name = "New process name";
 				this.defaultForm.name = "New process name";
 				this.form.filename = "newFilename.bpmn";
 				this.defaultForm.filename = "newFilename.bpmn";
 			} else if (id != "-1" && type == "definition") {
-				this.form.name = this.process.process_definition_name;
-				this.defaultForm.name = this.process.process_definition_name;
-				this.form.filename = this.process.file_name;
-				this.defaultForm.filename = this.process.file_name;
-			} else if (id != "-1" && type == "version") {
-				this.form.name = this.process.process_version_name;
-				this.defaultForm.name = this.process.process_version_name;
-				this.form.filename = this.process.file_name;
-				this.defaultForm.filename = this.process.file_name;
+				this.form.name = this.process.name;
+				this.defaultForm.name = this.process.name;
+				this.form.filename = this.process.filename;
+				this.defaultForm.filename = this.process.filename;
+			} else if (type == "version") {
+				this.form.name = this.process.name;
+				this.defaultForm.name = this.process.name;
+				this.form.filename = this.process.filename;
+				this.defaultForm.filename = this.process.filename;
 			}
 		},
 		handleButtonState(newValue) {

@@ -5,9 +5,7 @@
 			<v-col cols="12">
 				<v-card class="card-padding" tile outlined>
 					<v-card-title class="card-header-margin">
-						<div class="card-title">
-							PROCESS DEFINITIONS
-						</div>
+						<div class="card-title" v-text="titleText.processDefinitions"></div>
 						<div class="card-header-action">
 							<v-tooltip slot="append" right>
 								<template #activator="{ on }">
@@ -15,7 +13,7 @@
 										<v-icon class="add-icon-large">mdi-plus-box</v-icon>
 									</v-btn>
 								</template>
-								<span>Go to process definition modeler</span>
+								<span v-text="explanationText.goToPModeler"></span>
 							</v-tooltip>
 						</div>
 						<v-spacer></v-spacer>
@@ -35,7 +33,7 @@
 							ref="mainDataTable"
 							:single-expand="true"
 							:show-expand="true"
-							item-key="process_definition_id"
+							item-key="id"
 							outlined
 							loading-text="Loading..."
 							:loading="isMainTableLoading"
@@ -44,7 +42,7 @@
 							:items="mainTableData"
 							:expanded.sync="expanded"
 							:items-per-page="10"
-							@item-expanded="expandClickHandler"
+							@item-expanded="getProcessVersionData"
 							:footer-props="footerProps"
 							:header-props="headerProps"
 							sort-by="number_of_versions"
@@ -55,9 +53,7 @@
 								<td class="table-data-remove-padding" :colspan="headers.length">
 									<v-card class="expand-table-border" tile>
 										<v-card-title class="card-header-margin">
-											<div class="card-title">
-												PROCESS VERSIONS
-											</div>
+											<div class="card-title" v-text="titleText.processVersions"></div>
 											<div class="card-header-action">
 												<v-tooltip slot="append" right>
 													<template #activator="{ on }">
@@ -65,7 +61,7 @@
 															<v-icon class="add-icon-large" @click="showAndHideDialog(item, 'add')">mdi-plus-box</v-icon>
 														</v-btn>
 													</template>
-													<span>Add new process version</span>
+													<span v-text="explanationText.addNewProcess"></span>
 												</v-tooltip>
 											</div>
 											<v-spacer></v-spacer>
@@ -82,7 +78,7 @@
 										</v-card-title>
 										<v-card-text>
 											<v-data-table
-												:item-id="item.process_version_id"
+												:item-id="item.id"
 												tile
 												outlined
 												loading-text="Loading..."
@@ -93,7 +89,7 @@
 												:items-per-page="5"
 												:footer-props="footerProps"
 												:header-props="headerProps"
-												sort-by="process_version_number"
+												sort-by="number"
 												:sort-desc="false"
 											>
 												<!-- Header tooltip -->
@@ -106,9 +102,9 @@
 													</v-tooltip>
 												</template>
 												<!-- Link -->
-												<template #[`item.file_name`]="{ item }">
-													<router-link :to="{ name: 'viewer', params: { id: item.process_version_id, type: 'version', obj: item } }">
-														{{ item.file_name }}
+												<template #[`item.filename`]="{ item }">
+													<router-link :to="{ name: 'viewer', params: { id: item.id, type: 'version', obj: item } }">
+														{{ item.filename }}
 													</router-link>
 												</template>
 												<!-- Actions -->
@@ -169,9 +165,9 @@
 								</v-tooltip>
 							</template>
 							<!-- Link -->
-							<template #[`item.file_name`]="{ item }">
-								<router-link :to="{ name: 'viewer', params: { id: item.process_definition_id, type: 'definition' } }">
-									{{ item.file_name }}
+							<template #[`item.filename`]="{ item }">
+								<router-link :to="{ name: 'viewer', params: { id: item.id, type: 'definition' } }">
+									{{ item.filename }}
 								</router-link>
 							</template>
 							<!-- Actions -->
@@ -279,7 +275,7 @@
 
 <script>
 import { ProcessDefinition, ProcessVersion } from "@/services";
-import { HeaderConfig, FooterConfig, DialogConfig } from "@/utils/config.js";
+import { HeaderConfig, FooterConfig, DialogConfig, TitleConfig, TextConfig } from "@/utils/config.js";
 import Importer from "@/components/Importer.vue";
 import GenericDialog from "@/components/dialogs/GenericDialog.vue";
 import ModelEditDialog from "@/components/dialogs/ModelEdit.vue";
@@ -300,27 +296,30 @@ export default {
 		ModelAddDialog,
 		Snackbar,
 	},
-	//TODO: need to add loading to the dialogs
 	data() {
 		return {
+			//Configuration
 			importerKey: 0,
+			titleText: TitleConfig,
+			explanationText: TextConfig.explanations,
 			utils: common,
 			config: DialogConfig.model,
 			footerProps: FooterConfig.footerProps,
 			headerProps: HeaderConfig.headerProps,
+			//Dialogs
 			selectedProcess: null,
 			isVisibleAddDialog: false,
 			isVisibleDeactivateDialog: false,
 			isVisibleDeleteDialog: false,
 			isVisibleEditDialog: false,
 			isVisibleActivateDialog: false,
-			//Main table
-			expanded: [], //state of expanded rows
+			//Definitions
+			expanded: [],
 			mainSearch: null,
 			mainTableData: [],
 			isMainTableLoading: true,
 			mainTableHeaders: HeaderConfig.mainTableHeaders,
-			//Expand table
+			//Versions
 			expandSearch: null,
 			expandTableData: [],
 			isExpandTableDataLoading: true,
@@ -332,11 +331,7 @@ export default {
 		};
 	},
 	async mounted() {
-		this.isMainTableLoading = true;
-		let response = await ProcessDefinition.getProcessDefinitions();
-		this.handleSnackbar(response.show, response.message, response.color);
-		this.mainTableData = common.reMapDataTableValues(response.data);
-		this.isMainTableLoading = false;
+		await this.getProcessDefinitionData();
 	},
 	methods: {
 		goToModeler() {
@@ -368,51 +363,47 @@ export default {
 		},
 		async handleDelete(type) {
 			if (common.isItemProcessDefinition(this.selectedProcess)) {
-				let response = await ProcessDefinition.deleteProcessDefinition(this.selectedProcess.process_definition_id);
+				let response = await ProcessDefinition.deleteProcessDefinition(this.selectedProcess.id);
 				this.handleSnackbar(response.show, response.message, response.color);
-				this.mainTableData = common.findAndRemove(this.mainTableData, response.data, "definition"); //id
+				this.mainTableData = common.findAndRemove(this.mainTableData, response.data);
 			} else {
-				let response = await ProcessVersion.deleteProcessVersion(this.selectedProcess.process_version_id);
+				let response = await ProcessVersion.deleteProcessVersion(this.selectedProcess.id);
 				this.handleSnackbar(response.show, response.message, response.color);
 				let process_definition = response.data.process_definition;
 				let process_version = response.data.process_version;
 				if (process_definition == null) {
-					this.expandTableData = common.findAndRemove(this.expandTableData, process_version, "version");
+					this.expandTableData = common.findAndRemove(this.expandTableData, process_version);
 				} else if (process_definition != null && typeof process_definition == "object") {
-					this.mainTableData = common.findAndReplace(this.mainTableData, process_definition, "definition");
-					this.expandTableData = common.findAndRemove(this.expandTableData, process_version, "version");
+					this.mainTableData = common.findAndReplace(this.mainTableData, process_definition);
+					this.expandTableData = common.findAndRemove(this.expandTableData, process_version);
 				} else {
-					this.expandTableData = common.findAndRemove(this.expandTableData, process_version, "version");
-					this.mainTableData = common.findAndRemove(this.mainTableData, process_definition, "definition");
+					this.expandTableData = common.findAndRemove(this.expandTableData, process_version);
+					this.mainTableData = common.findAndRemove(this.mainTableData, process_definition);
 				}
 			}
 			this.showAndHideDialog(null, type);
 		},
-		async handleEdit(data, processType, type) {
+		async handleEdit(id, data, processType, type) {
 			if (processType == "definition") {
-				let response = await ProcessDefinition.updateProcessDefinitionInformation(
-					data.process_definition_id,
-					data.process_definition_name,
-					data.file_name
-				);
+				let response = await ProcessDefinition.updateProcessDefinitionInformation(id, data.name, data.filename);
 				this.handleSnackbar(response.show, response.message, response.color);
-				this.mainTableData = common.findAndReplace(this.mainTableData, response.data, "definition");
+				this.mainTableData = common.findAndReplace(this.mainTableData, response.data);
 			} else {
-				let response = await ProcessVersion.updateProcessVersionInformation(data.process_version_id, data.process_version_name, data.file_name);
+				let response = await ProcessVersion.updateProcessVersionInformation(id, data.name, data.filename);
 				this.handleSnackbar(response.show, response.message, response.color);
 				if (response.process_definition != null) {
-					this.mainTableData = common.findAndReplace(this.mainTableData, response.data.process_definition, "definition");
+					this.mainTableData = common.findAndReplace(this.mainTableData, response.data.process_definition);
 				}
-				this.expandTableData = common.findAndReplace(this.expandTableData, response.data.process_version, "version");
+				this.expandTableData = common.findAndReplace(this.expandTableData, response.data.process_version);
 			}
 			this.showAndHideDialog(null, type);
 		},
 		async handleActivate(data, type) {
-			let response = await ProcessVersion.activateProcessVersion(data.process_definition_id, data.process_version_id);
-			this.mainTableData = common.findAndReplace(this.mainTableData, response.data.process_definition, "definition");
+			let response = await ProcessVersion.activateProcessVersion(data.definition, data.id);
+			this.mainTableData = common.findAndReplace(this.mainTableData, response.data.process_definition);
 			if (this.expanded.length > 0) {
 				response.data.process_version.forEach((processVersion) => {
-					this.expandTableData = common.findAndReplace(this.expandTableData, processVersion, "version");
+					this.expandTableData = common.findAndReplace(this.expandTableData, processVersion);
 				});
 			}
 			this.handleSnackbar(response.show, response.message, response.color);
@@ -420,17 +411,14 @@ export default {
 		},
 		async handleDeactivate(type) {
 			if (this.expanded.length > 0) {
-				let response = await ProcessVersion.deactivateProcessVersion(
-					this.selectedProcess.process_definition_id,
-					this.selectedProcess.process_version_id
-				);
+				let response = await ProcessVersion.deactivateProcessVersion(this.selectedProcess.definition, this.selectedProcess.id);
 				this.handleSnackbar(response.show, response.message, response.color);
-				this.mainTableData = common.findAndReplace(this.mainTableData, response.data.process_definition, "definition");
-				this.expandTableData = common.findAndReplace(this.expandTableData, response.data.process_version, "version");
+				this.mainTableData = common.findAndReplace(this.mainTableData, response.data.process_definition);
+				this.expandTableData = common.findAndReplace(this.expandTableData, response.data.process_version);
 			} else {
-				let response = await ProcessDefinition.deactivateProcessDefinition(this.selectedProcess.process_definition_id);
+				let response = await ProcessDefinition.deactivateProcessDefinition(this.selectedProcess.id);
 				this.handleSnackbar(response.show, response.message, response.color);
-				this.mainTableData = common.findAndReplace(this.mainTableData, response.data, "definition");
+				this.mainTableData = common.findAndReplace(this.mainTableData, response.data);
 			}
 			this.showAndHideDialog(null, type);
 		},
@@ -442,10 +430,17 @@ export default {
 			this.mainTableData = common.reMapDataTableValues(this.mainTableData);
 			fnClearInput();
 		},
-		async expandClickHandler(row) {
+		async getProcessDefinitionData() {
+			this.isMainTableLoading = true;
+			let response = await ProcessDefinition.getProcessDefinitions();
+			this.handleSnackbar(response.show, response.message, response.color);
+			this.mainTableData = common.reMapDataTableValues(response.data);
+			this.isMainTableLoading = false;
+		},
+		async getProcessVersionData(row) {
 			if (row.value == false) return;
 			this.isExpandTableDataLoading = true;
-			let response = await ProcessVersion.getProcessVersions(row.item.process_definition_id);
+			let response = await ProcessVersion.getProcessVersions(row.item.id);
 			this.handleSnackbar(response.show, response.message, response.color);
 			this.expandTableData = common.reMapDataTableValues(response.data);
 			this.isExpandTableDataLoading = false;
@@ -494,9 +489,6 @@ export default {
 .dialog-card-body {
 	margin-top: 4%;
 }
-/* :not(.expand-table-border) {
-	background: linear-gradient(rgba(0, 0, 0, 0.001), rgba(0, 0, 0, 0.005));
-} */
 .v-data-table-header th {
 	white-space: nowrap;
 }
@@ -539,8 +531,7 @@ export default {
 }
 
 .card-header-action {
-	margin-left: 0.2%;
-	/* margin-bottom: 0.3%; */
+	margin-left: 0.3%;
 }
 .input-remove-border {
 	border-radius: 0px !important;

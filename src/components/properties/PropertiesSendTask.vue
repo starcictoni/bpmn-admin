@@ -1,5 +1,14 @@
 <template>
-	<v-dialog content-class="dialog-border" v-model="model" persistent max-width="1000">
+	<v-dialog
+		content-class="dialog-border"
+		v-model="model"
+		persistent
+		max-width="1000"
+		overlay-opacity="0.65"
+		transition="scale-transition"
+		open-delay="500"
+		close-delay="1000"
+	>
 		<v-card tile class="dialog-card-padding title-margin">
 			<v-card-text>
 				<v-form ref="serviceInformation">
@@ -197,14 +206,18 @@ export default {
 	},
 	methods: {
 		setData() {
-			this.connectorData = this.connector.connectorId != null ? _.cloneDeep(this.connector) : [];
+			this.connectorData = _.has(this.connector, "connectorId") ? _.cloneDeep(this.connector) : [];
 			this.inputOutputData = this.inputOutput != null ? _.cloneDeep(this.inputOutput) : [];
-			this.parameters =
-				this.inputOutput != null
-					? this.inputOutputData.inputParameters
-						? this.inputOutputData.inputParameters.concat(this.inputOutputData.outputParameters)
-						: (this.parameters = this.inputOutputData.outputParameters)
-					: [];
+			if (_.has(this.inputOutputData, "inputParameters")) {
+				this.inputOutputData.inputParameters.forEach((element) => {
+					this.parameters.push(element);
+				});
+			}
+			if (_.has(this.inputOutputData, "outputParameters")) {
+				this.inputOutputData.outputParameters.forEach((element) => {
+					this.parameters.push(element);
+				});
+			}
 			this.defaultParameters = _.cloneDeep(this.parameters);
 			this.serviceDefault = this.connector.connectorId || {};
 			this.methodDefault = this.connector.inputOutput.inputParameters.find((x) => x.name == "method")?.value || {};
@@ -307,6 +320,7 @@ export default {
 				inputParameter.definition.entries = this.serviceSelectorData.urlParams;
 				this.connector.inputOutput.inputParameters.push(inputParameter);
 			}
+			debugger;
 			this.$emit("ok", this.connector, this.inputOutput);
 		},
 		setServiceValue(service, serviceName) {

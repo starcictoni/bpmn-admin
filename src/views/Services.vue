@@ -4,9 +4,7 @@
 			<v-col align="center" justify="center" cols="12">
 				<v-card elevation="0" class="card-padding" tile outlined max-width="1200">
 					<v-card-title>
-						<div class="card-title">
-							SERVICES OVERVIEW
-						</div>
+						<div class="card-title" v-text="text"></div>
 						<div class="card-header-action">
 							<v-tooltip slot="append" right>
 								<template #activator="{ on }">
@@ -179,7 +177,7 @@
 <script>
 import * as common from "@/utils/common.js";
 import { WebService } from "@/services/index.js";
-import { HeaderConfig, FooterConfig, DialogConfig } from "../utils/config.js";
+import { HeaderConfig, FooterConfig, DialogConfig, TitleConfig } from "../utils/config.js";
 import GenericDialog from "@/components/dialogs/GenericDialog.vue";
 import ServiceAddEditDialog from "@/components/dialogs/WebServiceAddEdit.vue";
 import Snackbar from "@/components/Snackbar.vue";
@@ -192,6 +190,7 @@ export default {
 	},
 	data() {
 		return {
+			text: TitleConfig.services,
 			config: DialogConfig.service,
 			data: null,
 			isVisibleDeleteDialog: false,
@@ -312,7 +311,7 @@ export default {
 	/* background-color: cornsilk !important; */
 	/* background-color: ghostwhite !important; */
 	/* background-color: floralwhite !important; */
-	background-color: whitesmoke !important;
+	/* background-color: whitesmoke !important; */
 }
 .card-title {
 	font-family: Helvetica, Arial, sans-serif;

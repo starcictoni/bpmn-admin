@@ -1,5 +1,14 @@
 <template>
-	<v-dialog content-class="dialog-border" v-model="model" persistent max-width="660">
+	<v-dialog
+		content-class="dialog-border"
+		v-model="model"
+		persistent
+		max-width="660"
+		overlay-opacity="0.65"
+		transition="scale-transition"
+		open-delay="500"
+		close-delay="1000"
+	>
 		<v-card tile class="dialog-card-padding">
 			<v-card-title class="dialog-card-title-generic" v-text="title"></v-card-title>
 			<v-card-text>
@@ -132,9 +141,6 @@ export default {
 }
 .dialog-border {
 	border-radius: 0px !important;
-}
-.dialog-card-padding {
-	padding: 1.5% !important;
 }
 .dialog-card-title-generic {
 	font-family: Helvetica, Arial, sans-serif !important;

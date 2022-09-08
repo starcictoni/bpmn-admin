@@ -1,5 +1,14 @@
 <template>
-	<v-dialog content-class="dialog-border" v-model="model" persistent max-width="660">
+	<v-dialog
+		content-class="dialog-border"
+		v-model="model"
+		persistent
+		max-width="660"
+		overlay-opacity="0.65"
+		transition="scale-transition"
+		open-delay="500"
+		close-delay="1000"
+	>
 		<v-card tile class="dialog-card-padding">
 			<v-card-title class="dialog-card-title-generic no-bottom-padding" v-text="title"></v-card-title>
 			<v-card-text class="no-bottom-padding">

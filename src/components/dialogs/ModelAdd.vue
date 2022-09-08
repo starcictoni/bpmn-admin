@@ -1,7 +1,17 @@
 <template>
-	<v-dialog content-class="dialog-border" ref="versionDialog" v-model="model" persistent :max-width="versionDialogMaxWidth">
+	<v-dialog
+		content-class="dialog-border"
+		ref="versionDialog"
+		v-model="model"
+		persistent
+		:max-width="versionDialogMaxWidth"
+		overlay-opacity="0.65"
+		transition="scale-transition"
+		open-delay="500"
+		close-delay="1000"
+	>
 		<v-card class="dialog-card-padding" tile>
-			<v-card-title class="dialog-card-title-generic">NEW VERSION</v-card-title>
+			<v-card-title class="dialog-card-title-generic" v-text="text"></v-card-title>
 			<v-card-text>
 				<div v-if="!isVersionDataTableVisible" class="dialog-card-text">Please, pick an option.</div>
 				<div class="card-padding" v-if="isVersionDataTableVisible">
@@ -20,7 +30,7 @@
 						v-model="selected"
 						:single-select="true"
 						:show-select="true"
-						item-key="process_version_id"
+						item-key="id"
 						tile
 						outlined
 						loading-text="Loading..."
@@ -31,7 +41,7 @@
 						:items-per-page="5"
 						:footer-props="footerProps"
 						:header-props="headerProps"
-						sort-by="process_version_number"
+						sort-by="number"
 						:sort-desc="false"
 					>
 						<!-- Header tooltip -->
@@ -51,7 +61,7 @@
 					BACK
 				</v-btn>
 				<v-btn
-					@click="goToModeler(selected[0].process_version_id, selected[0])"
+					@click="goToModeler(selected[0].id, selected[0])"
 					class="white--text form-btn-margin"
 					large
 					:disabled="selected.length < 1"
@@ -68,7 +78,14 @@
 				<v-spacer></v-spacer>
 				<v-tooltip slot="append" top>
 					<template #activator="{ on }">
-						<v-btn @click="goToModeler('-1', null)" class="white--text form-btn-margin" v-on="on" large depressed tile color="amber darken-2"
+						<v-btn
+							@click="goToModeler('-1', versionItem)"
+							class="white--text form-btn-margin"
+							v-on="on"
+							large
+							depressed
+							tile
+							color="amber darken-2"
 							>NEW VERSION</v-btn
 						>
 					</template>
@@ -116,7 +133,7 @@
 <script>
 import { ProcessVersion } from "@/services";
 import Snackbar from "@/components/Snackbar.vue";
-import { HeaderConfig, FooterConfig, DialogConfig } from "../../utils/config.js";
+import { HeaderConfig, FooterConfig, DialogConfig, TitleConfig } from "../../utils/config.js";
 import * as common from "../../utils/common.js";
 export default {
 	name: "ModelAddDialog",
@@ -126,6 +143,7 @@ export default {
 	},
 	data() {
 		return {
+			text: TitleConfig.newVersion,
 			config: DialogConfig.model,
 			footerProps: FooterConfig.footerProps,
 			headerProps: HeaderConfig.headerProps,
@@ -149,7 +167,7 @@ export default {
 			snackbarText: null,
 		};
 	},
-	created() {
+	mounted() {
 		this.isDisabledActiveVersionBtn = true;
 		this.isDisabledMultipleVersionsBtn = true;
 		this.isVersionDataTableVisible = false;
@@ -177,7 +195,7 @@ export default {
 			this.versionDialogMaxWidth = "720";
 			this.isVersionDataTableVisible = false;
 			this.isVersionTableDataLoading = true;
-			let response = await ProcessVersion.getProcessVersions(this.data.process_definition_id);
+			let response = await ProcessVersion.getProcessVersions(this.data.id);
 			this.handleSnackbar(response.show, response.message, response.color); //maybe not ok, move to parent or smth
 			this.versionTableData = response.data;
 			this.activateTableData = common.reMapDataTableValues(response.data);

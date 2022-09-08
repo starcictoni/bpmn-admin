@@ -1,5 +1,14 @@
 <template>
-	<v-dialog v-model="model" content-class="dialog-border" persistent max-width="850">
+	<v-dialog
+		v-model="model"
+		content-class="dialog-border"
+		persistent
+		max-width="850"
+		overlay-opacity="0.65"
+		transition="scale-transition"
+		open-delay="500"
+		close-delay="1000"
+	>
 		<v-card tile class="dialog-card-padding title-margin">
 			<v-card-text>
 				<v-form ref="userTaskInformation">
@@ -170,8 +179,8 @@ export default {
 	},
 	methods: {
 		setData() {
-			this.formFields = _.cloneDeep(this.formData.fields);
-			this.documentationData = this.documentation.text;
+			this.formFields = _.has(this.formData, "fields") ? _.cloneDeep(this.formData.fields) : [];
+			this.documentationData = _.has(this.documentation, "text") ? this.documentation.text : null;
 		},
 		compareFields() {
 			let isEqual = _.isEqual(this.formFields, this.formData.fields);

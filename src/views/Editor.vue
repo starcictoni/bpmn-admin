@@ -211,12 +211,11 @@ export default {
 		search: function(newVal) {
 			this.searchElements(newVal);
 		},
-		bpmnElement: function(newVal) {
-			console.log("BPMN element -", newVal);
-		},
+		// bpmnElement: function(newVal) {
+		// 	newVal;
+		// },
 	},
 	async mounted() {
-		//provjeriti za paramse kod new versiona, treba staviti neki guard ili nesto
 		this.hasDiagramArrived = false;
 		let params = this.$route.params;
 		this.processId = params.id;
@@ -225,64 +224,20 @@ export default {
 		await this.getDiagram();
 	},
 	methods: {
-		setElementIdCheck(form) {
-			if (form && form.id) {
-				let element = this.elementRegistry.get(form.id);
+		setElementIdCheck(oldForm, newForm) {
+			if (oldForm && oldForm.id && newForm && newForm.id) {
+				let element = this.elementRegistry.get(oldForm.id);
 				this.modeling.setColor(element, { stroke: "black", fill: "white" });
 				return;
 			}
-			if (this.propertyData && this.propertyData.id) {
-				let element = this.elementRegistry.get(this.propertyData.id);
+			if (oldForm && oldForm.id && !newForm.id) {
+				let element = this.elementRegistry.get(oldForm.id);
 				if (element.type != "bpmn:Collaboration") {
 					this.modeling.setColor(element, { stroke: "red", fill: "white" });
 				}
 			}
 		},
-		setProcessData(form) {
-			this.processName = form.name;
-			this.processFilename = form.filename;
-		},
-		async globalSave() {
-			await this.preselectElementIfNoneSelected();
-			if (!this.processName || !this.processFilename) {
-				this.handleSnackbar(true, "Please, check the process info.", "yellow darken-4");
-				return;
-			}
-			await this.getCurrentDiagram(); //this.diagramXML
 
-			if (this.processId == "-1" && this.processType == "version") {
-				let data = {
-					process_definition_id: this.process.process_definition_id,
-					process_name: this.processName,
-					file_name: this.processFilename,
-					is_active: false,
-					xml_definition: this.diagramXML,
-				};
-				let response = await ProcessVersion.addProcessVersion(data);
-				this.handleSnackbar(response.show, response.message, response.color);
-			} else if (this.processId == "-1" && this.processType == "definition") {
-				let data = {
-					process_definition_name: this.processName,
-					file_name: this.processFilename,
-					is_active: false,
-					xml_definition: this.diagramXML,
-				};
-				let response = await ProcessDefinition.addProcessDefinition(data);
-				this.handleSnackbar(response.show, response.message, response.color);
-			} else if (this.processId != "-1" && this.processType == "version") {
-				let data = {
-					process_definition_id: this.process.process_definition_id,
-					process_name: this.processName,
-					file_name: this.processFilename,
-					is_active: false,
-					xml_definition: this.diagramXML,
-				};
-				let response = await ProcessVersion.addProcessVersion(data);
-				this.handleSnackbar(response.show, response.message, response.color);
-			}
-			await new Promise((resolve) => setTimeout(resolve, 3000));
-			this.$router.push({ name: "processes" });
-		},
 		async getCurrentDiagram() {
 			try {
 				const result = await this.modeler.saveXML({ format: true });
@@ -292,25 +247,14 @@ export default {
 				console.error(err);
 			}
 		},
-		// async xTest() {
-		// 	debugger;
-		// 	window.modeler = this.modeler;
-		// 	const test = await this.moddle.toXML(this.modeler._definitions);
-		// 	console.log(test.xml);
-		// },
-		// async test() {
-		// 	try {
-		// 		const result = await this.modeler.saveXML({ format: true });
-		// 		const { xml } = result;
-		// 		console.log(xml);
-		// 	} catch (err) {
-		// 		console.log(err);
-		// 	}
-		// },
 		async goBackIfNotValid() {
 			this.handleSnackbar(true, this.errorMessage, "red darken-3");
 			await new Promise((resolve) => setTimeout(resolve, 3000));
-			this.$router.push({ name: "processes" });
+			try {
+				this.$router.push({ name: "processes" });
+			} catch (e) {
+				e;
+			}
 		},
 		showPropsIfValid(value) {
 			this.isValid = value;
@@ -318,51 +262,7 @@ export default {
 		setBpmnElement(element) {
 			this.bpmnElement = element;
 		},
-		handlePanels() {
-			this.resetPanels();
-			this.resetPropertyData();
-			this.setPropertyData();
-			this.updatePanels();
-		},
-		resetPanels() {
-			Object.values(this.panels).map((x) => (x.visible = false));
-		},
-		resetPropertyData() {
-			Object.keys(this.propertyData).map((x) => this.$delete(this.propertyData, x));
-		},
-		setPropertyData() {
-			if (!this.bpmnElement) return;
-			let element = BpmnXml.handleElement(this.moddle, this.bpmnElement);
-			let bpmnObject = element.businessObject;
-			this.propertyData = Object.assign({}, this.propertyData, {
-				id: bpmnObject.id,
-				name: bpmnObject.name,
-			});
-			let documentation = BpmnXml.getDocumentation(bpmnObject);
-			if (documentation) {
-				this.propertyData.docs = Object.assign({}, this.propertyData.docs, documentation);
-			}
-			let formData = BpmnXml.getExtension(bpmnObject, "camunda:FormData");
-			if (formData) {
-				this.propertyData.formData = Object.assign({}, this.propertyData.formData, formData);
-			}
-			// debugger;
-			let connector = BpmnXml.getExtension(bpmnObject, "camunda:Connector");
-			if (connector) {
-				this.propertyData.connector = Object.assign({}, this.propertyData.connector, connector);
-			}
 
-			let inputOutput = BpmnXml.getExtension(bpmnObject, "camunda:InputOutput");
-			if (inputOutput) {
-				this.propertyData.inputOutput = Object.assign({}, this.propertyData.inputOutput, inputOutput);
-			}
-		},
-		updatePanels() {
-			if (!this.bpmnElement) return;
-			let bpmnObject = this.bpmnElement.businessObject;
-			BpmnUI.showPanel(this.panels, bpmnObject.$type);
-			BpmnUI.setLabelOntoPanel(this.panels, bpmnObject.$type);
-		},
 		async onShown() {
 			this.setReferences();
 			this.eventBus.on("element.hover", () => {});
@@ -384,12 +284,11 @@ export default {
 		},
 		handleProcessInfoChange(form) {
 			if (_.isEmpty(this.process)) return;
-			if (this.processType == "definition") {
-				this.process.process_definition_name = form.name;
-			} else {
-				this.process.process_version_name = form.name;
-			}
-			this.process.file_name = form.filename;
+			this.setProcessData(form);
+		},
+		setProcessData(form) {
+			this.processName = form.name;
+			this.processFilename = form.filename;
 		},
 		handleGeneralInfoChange(form, oldId) {
 			//needs fire over commandstack
@@ -432,23 +331,6 @@ export default {
 				}
 			}
 		},
-		undo() {
-			this.modeler.get("commandStack").undo();
-		},
-		redo() {
-			this.modeler.get("commandStack").redo();
-		},
-		async propertiesDownload() {
-			try {
-				const result = await this.modeler.saveXML({ format: true });
-				const { xml } = result;
-				this.diagramXML = xml;
-			} catch (err) {
-				console.error(err);
-			}
-			common.exportDiagram("NewFile", this.diagramXML);
-		},
-
 		searchElements(id) {
 			if (id == null) return;
 			var allElements = this.elementRegistry.getAll();
@@ -467,27 +349,46 @@ export default {
 		async getDiagram() {
 			if (this.processId === undefined) return null;
 			if (this.processId == "-1") {
-				this.diagramXML = newFile.xml_definition;
+				this.diagramXML = newFile.xml;
 				this.hasDiagramArrived = true;
 			} else if (this.processType == "definition") {
 				if (_.isEmpty(this.process)) {
 					this.handleSnackbar(true, "Selected route is not valid.", "yellow darken-3");
 					return null;
 				}
-				let response = await ProcessDefinition.getProcessDefinition(this.process.process_definition_id);
+				let response = await ProcessDefinition.getProcessDefinition(this.process.id);
 				this.handleSnackbar(response.show, response.message, response.color);
 				if (!response.data) this.diagramXML = "";
-				else this.diagramXML = response.data?.xml_definition;
+				else this.diagramXML = response.data?.xml;
 				this.process = response.data;
 				this.hasDiagramArrived = true;
 			} else if (this.processType == "version") {
 				let response = await ProcessVersion.getProcessVersion(this.processId);
 				this.handleSnackbar(response.show, response.message, response.color);
 				if (!response.data) this.diagramXML = "";
-				else this.diagramXML = response.data?.xml_definition;
+				else this.diagramXML = response.data?.xml;
 				this.process = response.data;
 				this.hasDiagramArrived = true;
 			}
+		},
+		//Diagram
+
+		//Properties
+		undo() {
+			this.modeler.get("commandStack").undo();
+		},
+		redo() {
+			this.modeler.get("commandStack").redo();
+		},
+		async propertiesDownload() {
+			try {
+				const result = await this.modeler.saveXML({ format: true });
+				const { xml } = result;
+				this.diagramXML = xml;
+			} catch (err) {
+				console.error(err);
+			}
+			common.exportDiagram("NewFile", this.diagramXML);
 		},
 		handleSnackbar(show, text, color) {
 			this.showSnackbar = show;
@@ -497,9 +398,103 @@ export default {
 				this.showSnackbar = false;
 			}, 3000);
 		},
+		async globalSave() {
+			await this.preselectElementIfNoneSelected();
+			if (!this.processName || !this.processFilename) {
+				this.handleSnackbar(true, "Please, check the process info.", "yellow darken-4");
+				return;
+			}
+			await this.getCurrentDiagram(); //this.diagramXML
+			if (this.processId == "-1" && this.processType == "version") {
+				let data = {
+					id: this.process.id,
+					name: this.processName,
+					filename: this.processFilename,
+					is_active: false,
+					xml: this.diagramXML,
+				};
+				let response = await ProcessVersion.addProcessVersion(data);
+				this.handleSnackbar(response.show, response.message, response.color);
+			} else if (this.processId == "-1" && this.processType == "definition") {
+				let data = {
+					name: this.processName,
+					filename: this.processFilename,
+					is_active: false,
+					xml: this.diagramXML,
+				};
+				let response = await ProcessDefinition.addProcessDefinition(data);
+				this.handleSnackbar(response.show, response.message, response.color);
+			} else if (this.processId != "-1" && this.processType == "version") {
+				let data = {
+					id: this.process.id,
+					name: this.processName,
+					filename: this.processFilename,
+					is_active: false,
+					xml: this.diagramXML,
+				};
+				let response = await ProcessVersion.addProcessVersion(data);
+				this.handleSnackbar(response.show, response.message, response.color);
+			}
+			await new Promise((resolve) => setTimeout(resolve, 3000));
+			this.$router.push({ name: "processes" });
+		},
+		handlePanels() {
+			this.resetPanels();
+			this.resetPropertyData();
+			this.setPropertyData();
+			this.updatePanels();
+		},
+		resetPanels() {
+			Object.values(this.panels).map((x) => (x.visible = false));
+		},
+		resetPropertyData() {
+			Object.keys(this.propertyData).map((x) => this.$delete(this.propertyData, x));
+		},
+		setPropertyData() {
+			if (!this.bpmnElement) return;
+			let element = BpmnXml.handleElement(this.moddle, this.bpmnElement);
+			let bpmnObject = element.businessObject;
+			this.propertyData = Object.assign({}, this.propertyData, {
+				id: bpmnObject.id,
+				name: bpmnObject.name,
+			});
+			let documentation = BpmnXml.getDocumentation(bpmnObject);
+			if (documentation) {
+				this.propertyData.docs = Object.assign({}, this.propertyData.docs, documentation);
+			}
+			let formData = BpmnXml.getExtension(bpmnObject, "camunda:FormData");
+			if (formData) {
+				this.propertyData.formData = Object.assign({}, this.propertyData.formData, formData);
+			}
+
+			let connector = BpmnXml.getExtension(bpmnObject, "camunda:Connector");
+			if (connector) {
+				this.propertyData.connector = Object.assign({}, this.propertyData.connector, connector);
+			}
+
+			let inputOutput = BpmnXml.getExtension(bpmnObject, "camunda:InputOutput");
+			if (inputOutput) {
+				this.propertyData.inputOutput = Object.assign({}, this.propertyData.inputOutput, inputOutput);
+			}
+		},
+		updatePanels() {
+			if (!this.bpmnElement) return;
+			let bpmnObject = this.bpmnElement.businessObject;
+			BpmnUI.showPanel(this.panels, bpmnObject.$type);
+			BpmnUI.setLabelOntoPanel(this.panels, bpmnObject.$type);
+		},
 		disableSaveButton(value) {
 			this.isDisabledSaveButton = value;
 		},
+		// async test() {
+		// 	try {
+		// 		const result = await this.modeler.saveXML({ format: true });
+		// 		const { xml } = result;
+		// 		console.log(xml);
+		// 	} catch (err) {
+		// 		console.log(err);
+		// 	}
+		// },
 	},
 };
 </script>
@@ -507,15 +502,12 @@ export default {
 .v-expansion-panel-content__wrap {
 	padding-bottom: 0px !important;
 }
-
 .djs-palette {
 	background: "#ffffff" !important;
-	/* border-color var(--color-cccccc) */
 }
 .djs-palette--open {
 	background: "#ffffff" !important;
 }
-
 .properties-search-padding {
 	padding: 2% !important;
 }

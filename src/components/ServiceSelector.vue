@@ -172,7 +172,6 @@ export default {
 			handler: function() {
 				if (this.parameters.length == 0) {
 					let urlParameter = this.createUrlParameter();
-					debugger;
 					this.parameters.push(urlParameter);
 				}
 				this.$emit("setUrlParameters", this.params);
@@ -185,6 +184,7 @@ export default {
 	},
 	methods: {
 		async setData() {
+			console.log("---SERVICE SELECTOR---");
 			this.connector = this.connectorData;
 			await this.getServices(); //<- this.services
 			if (this.connector && this.connector.connectorId) {
@@ -209,10 +209,8 @@ export default {
 
 			if (!this.params) {
 				this.params = this.createUrlParameter();
-				console.log("Params", this.params);
 			}
 			this.parameters = this.params.definition.entries;
-			console.log("Parameters", this.parameters);
 		},
 		createUrlParameter() {
 			let moddle = this.context.modeler.get("moddle");
@@ -222,7 +220,6 @@ export default {
 		addEntry() {
 			let moddle = this.context.modeler.get("moddle");
 			let entry = BpmnXml.createEntry(moddle, this.parameters);
-			debugger;
 			this.parameters.push(entry);
 		},
 		removeEntry(item, index) {
@@ -255,7 +252,7 @@ export default {
 		},
 		setRoutesState(method) {
 			let filteredRoutes = this.availableRoutes.filter((x) => x.method == method).map((x) => x.url);
-			this.routes = filteredRoutes; //.map((x) => x.url);
+			this.routes = filteredRoutes;
 			this.setRoutesDisabledState(false);
 		},
 		//Clear

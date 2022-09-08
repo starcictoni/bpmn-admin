@@ -2,14 +2,12 @@
 	<v-dialog
 		content-class="dialog-border"
 		transition="scale-transition"
-		hide-overlay
-		overlay-color="black"
-		overlay-opacity="0.6"
 		open-delay="500"
 		close-delay="1000"
 		v-model="model"
 		persistent
 		max-width="800"
+		overlay-opacity="0.65"
 	>
 		<v-card tile class="dialog-card-padding">
 			<v-card-text>
@@ -185,6 +183,7 @@ export default {
 			this.isApplyButtonDisabled = newValue;
 		},
 		compareData() {
+			debugger;
 			let arePropsEqual = _.isEqual(this.form.properties.values, this.data.properties.values);
 			let areConstraintsEqual = _.isEqual(this.form.validation.constraints, this.data.validation.constraints);
 			let formComp = {
@@ -208,6 +207,7 @@ export default {
 			this.form.label = this.data.label;
 			this.form.defaultValue = this.data.defaultValue;
 			this.form.type = this.data.type;
+			debugger;
 			this.form.validation.constraints = _.cloneDeep(this.data.validation.constraints);
 			this.form.properties.values = _.cloneDeep(this.data.properties.values);
 		},
@@ -329,14 +329,20 @@ export default {
 .form-body-form-field {
 	display: flex;
 	flex-direction: column;
+	margin-left: 3%;
+	margin-right: 3%;
 }
 .form-body-property {
 	display: flex;
 	flex-direction: row;
+	margin-left: 3%;
+	margin-right: 3%;
 }
 .form-body-validation {
 	display: flex;
 	flex-direction: row;
+	margin-left: 3%;
+	margin-right: 3%;
 }
 .form-field-horizontal {
 	margin-right: 3% !important;

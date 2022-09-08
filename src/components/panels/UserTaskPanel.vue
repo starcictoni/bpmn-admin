@@ -22,7 +22,7 @@
 								</v-icon>
 							</v-btn>
 						</template>
-						<span>Edit fields</span>
+						<span>Edit User Task</span>
 					</v-tooltip>
 				</div>
 			</div>
@@ -79,7 +79,7 @@ export default {
 				: this.showDocumentationIcons(false);
 		},
 		handleFormFieldMessage(value) {
-			if (_.isEmpty(this.process)) {
+			if (_.isEmpty(this.formData)) {
 				return;
 			}
 			if (value) {
@@ -97,14 +97,14 @@ export default {
 			this.isEditDialogShown = newValue;
 		},
 		applyChanges() {
-			let eventBus = this.context.modeler.get("eventBus");
+			//let eventBus = this.context.modeler.get("eventBus");
 			let moddle = this.context.modeler.get("moddle");
 			let modeling = this.context.modeler.get("modeling");
 			let element = this.context.bpmnElement;
-			eventBus.on("element.changed", (e) => {
-				console.log(e.element);
-				console.log(e.element.businessObject);
-			});
+			// eventBus.on("element.changed", (e) => {
+			// 	console.log(e.element);
+			// 	console.log(e.element.businessObject);
+			// });
 			BpmnXml.updateDocumentation(moddle, modeling, element, this.documentation);
 			BpmnXml.updateFormData(modeling, element, this.formData);
 			this.setPropertiesPanelData();

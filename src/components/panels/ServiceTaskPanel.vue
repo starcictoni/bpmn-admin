@@ -29,7 +29,7 @@
 								</v-icon>
 							</v-btn>
 						</template>
-						<span>Edit task</span>
+						<span>Edit Service Task</span>
 					</v-tooltip>
 				</div>
 			</div>
@@ -42,9 +42,6 @@
 				:context="context"
 				:connector="connector"
 				:inputOutput="inputOutput"
-				:prefillServiceName="apiServiceName"
-				:prefillMethod="apiServiceMethod"
-				:prefillRoute="apiServiceRoute"
 			></properties-service-task>
 		</div>
 	</v-row>

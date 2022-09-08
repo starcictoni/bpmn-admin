@@ -31,7 +31,7 @@ export function reMapDataTableValues(table) {
     return table;
 }
 export function isItemProcessDefinition(item) {
-    return item.process_version_id === undefined ? true : false;
+    return item.definition === undefined ? true : false;
 }
 export function showCorrespondingDeactivateText(item) {
     if(item == null) return null;
@@ -67,13 +67,9 @@ export function isInputValid(input) {
     return true;
 }
 export function exportItem(item) {
-    let binaryFile = new Blob([item.xml_definition], { type: "text/bpmn" });
+    let binaryFile = new Blob([item.xml], { type: "text/bpmn" });
     let a = document.createElement("a");
-    if (isItemProcessDefinition(item)) {
-        a.download = item.process_definition_name + ".bpmn";
-    } else {
-        a.download = item.process_version_name + ".bpmn";
-    }
+    a.download = item.name + ".bpmn";
     a.href = window.URL.createObjectURL(binaryFile);
     a.click();
 }
@@ -84,42 +80,23 @@ export function exportDiagram(name, xml) {
     a.href = window.URL.createObjectURL(binaryFile);
     a.click();
 }
-export function showCorrespondingBanner(item) {
-    if(item == null) return null;
-    //aktivacija
-    //verzija - Ako aktiviras ovo, druga verzija ce se deaktivirati
-    //deaktivacija
-    //definicija - Ako deaktiviras ovo, onda ces deaktivirati i njihove verzije
-    //verzija - Ako deaktiviras ovu verziju, onda ces deaktivirati i definiciju
-
-    // v-model="showBanner"
-    // :icon="bannerIcon"
-    // :icon-color="bannerIconColor"
-    // :color="bannerColor"
-}
-export function findAndReplace(table, item, type) {
-    let idx = null;
-    if(table == null || table == []) return []; //didnt exist
-    if(item == null || item == {}) return [];
-    if(type == "definition") {
-        idx = table.findIndex((x) => x.process_definition_id == item.process_definition_id);
+export function findAndReplace(table, item) {
+    if(table == null || table == []) {
+        return [];
     }
-    else {
-        idx = table.findIndex((x) => x.process_version_id == item.process_version_id);
+    if(item == null || item == {}) {
+        return [];
     }
+    let idx = table.findIndex((x) => x.id == item.id);
     table.splice(idx, 1, item);
     table = reMapDataTableValues(table)
     return table;
 }
-export function findAndRemove(table, id, type) {
-    let idx = null;
-    if(table == null || table == []) return []; //didnt exist
-    if(type == "definition") {
-        idx = table.findIndex(x => x.process_definition_id == id);
+export function findAndRemove(table, id) {
+    if(table == null || table == []) { 
+        return [];
     }
-    else {
-        idx = table.findIndex(x => x.process_version_id == id);
-    }
+    let idx = table.findIndex(x => x.id == id);
     table.splice(idx, 1);
     table = reMapDataTableValues(table)
     return table;

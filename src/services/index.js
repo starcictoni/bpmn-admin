@@ -2,7 +2,7 @@ import axios from 'axios';
 
 let Service = axios.create({
     baseURL: process.env.VUE_APP_BPMN_SERVER,
-    //timeout: 10000,
+    timeout: 10000,
 });
 
 let errorMessage = {
@@ -231,7 +231,7 @@ let ProcessVersion = {
     async deleteProcessVersion(id) {
         try {
             let data = {
-                "process_version_id": id,
+                "id": id,
             }
             let result = await Service.delete('/process-version', {data: data});
             if(result?.data == null) {

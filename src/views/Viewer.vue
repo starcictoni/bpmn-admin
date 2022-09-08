@@ -12,8 +12,8 @@
 						</v-tooltip>
 						<v-tooltip slot="append" right>
 							<template #activator="{ on }">
-								<v-btn v-on="on" depressed color="yellow accent-3" class="go-back-btn white--text" @click="goBack()">
-									<v-icon>mdi-arrow-left-bold</v-icon>
+								<v-btn v-on="on" depressed color="yellow darken-1" class="go-back-btn white--text" @click="goBack()">
+									<v-icon>mdi-arrow-left</v-icon>
 								</v-btn>
 							</template>
 							<span v-text="goBackMessage"></span>
@@ -32,7 +32,7 @@
 <script>
 import BpmnViewer from "bpmn-js/dist/bpmn-viewer.production.min.js";
 import Snackbar from "@/components/Snackbar.vue";
-import { TextConfig } from "../utils/config.js";
+import { TextConfig, TitleConfig } from "../utils/config.js";
 import { ProcessDefinition, ProcessVersion } from "../services/index.js";
 export default {
 	name: "viewer",
@@ -41,8 +41,8 @@ export default {
 	},
 	data() {
 		return {
+			headerText: TitleConfig.viewer,
 			errorMessage: "Unparsable content detected, going back.",
-			headerText: "PROCESS VIEWER",
 			explanationMessage: TextConfig.explanations.viewer,
 			goBackMessage: TextConfig.explanations.goBack,
 			BpmnViewer: null,
@@ -78,7 +78,7 @@ export default {
 			const options = Object.assign({ container: this.$refs.container }, { width: "100%", height: "100%" });
 			this.BpmnViewer = new BpmnViewer(options);
 			try {
-				await this.BpmnViewer.importXML(this.process.xml_definition);
+				await this.BpmnViewer.importXML(this.process.xml);
 				this.BpmnViewer.attachTo(this.$refs.container);
 				this.BpmnViewer.get("canvas").zoom("fit-viewport");
 			} catch (e) {
@@ -120,9 +120,10 @@ export default {
 	height: 95%;
 }
 .go-back-btn {
-	margin-left: 1%;
+	margin-left: 0.5%;
+	margin-bottom: 0.3%;
 	padding: 0px !important;
 	min-width: 36px !important;
-	max-height: 30px;
+	max-height: 26px !important;
 }
 </style>

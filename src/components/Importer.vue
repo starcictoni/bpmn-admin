@@ -4,9 +4,7 @@
 			<v-row>
 				<v-col class="pb-0" cols="12">
 					<v-card-title>
-						<div class="card-title">
-							PROCESS DEFINITION IMPORT
-						</div>
+						<div class="card-title" v-text="text.importerPd"></div>
 					</v-card-title>
 					<v-card-text class="card-text">
 						<div class="items">
@@ -15,8 +13,8 @@
 									class="form-item-file-input-margin input-remove-border"
 									ref="bpmnInput"
 									v-model="bpmnImportFile"
-									prepend-icon=""
 									prepend-inner-icon="mdi-paperclip"
+									prepend-icon=""
 									type="file"
 									clearable
 									outlined
@@ -40,13 +38,10 @@
 						</div>
 					</v-card-text>
 				</v-col>
-
 				<v-col class="pt-0" v-show="isFileImported" cols="4">
 					<v-card elevation="0" class="import-card-padding" tile>
 						<v-card-title>
-							<div class="card-title">
-								INFORMATION
-							</div>
+							<div class="card-title" v-text="text.information"></div>
 						</v-card-title>
 						<v-card-text class="card-text">
 							<div class="form-item-file-general" v-if="isFileImported">
@@ -73,9 +68,7 @@
 				<v-col class="pt-0" v-show="interception" cols="8">
 					<v-card elevation="0" class="import-card-padding" tile>
 						<v-card-title>
-							<div class="card-title">
-								MODEL PREVIEW
-							</div>
+							<div class="card-title" v-text="text.modelPreview"></div>
 						</v-card-title>
 						<v-card-text class="card-text">
 							<div ref="container" class="vue-bpmn-modeler-container"></div>
@@ -88,6 +81,7 @@
 </template>
 <script>
 import * as common from "../utils/common.js";
+import { TitleConfig } from "../utils/config.js";
 import BpmnViewer from "bpmn-js/dist/bpmn-viewer.production.min.js";
 
 export default {
@@ -95,6 +89,7 @@ export default {
 	props: [],
 	data() {
 		return {
+			text: TitleConfig,
 			interception: false,
 			BpmnViewer: null,
 			options: {
@@ -167,7 +162,6 @@ export default {
 			this.importedFileName = this.bpmnImportFile.name;
 			this.importedFileSize = this.bpmnImportFile.size;
 			this.importedFileLastModifiedDate = new Date(this.bpmnImportFile.lastModifiedDate).toLocaleString();
-
 			this.fileElementLoading = true;
 			this.fileElementDisabled = true;
 			this.isImportButtonDisabled = true;
@@ -181,10 +175,10 @@ export default {
 		},
 		saveImport() {
 			var data = {
-				process_definition_name: this.importedName,
-				file_name: this.importedFileName,
+				name: this.importedName,
+				filename: this.importedFileName,
 				is_active: this.importedActivate,
-				xml_definition: this.importedFileXml,
+				xml: this.importedFileXml,
 			};
 			this.$emit("save", data, this.handleClearFileInput);
 		},

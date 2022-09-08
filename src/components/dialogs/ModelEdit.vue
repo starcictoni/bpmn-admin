@@ -1,7 +1,17 @@
 <template>
-	<v-dialog content-class="dialog-border" v-model="model" persistent tile max-width="600">
-		<v-card class="dialog-card-padding-activate" tile>
-			<v-card-title class="dialog-card-title-generic">EDIT INFORMATION</v-card-title>
+	<v-dialog
+		content-class="dialog-border"
+		v-model="model"
+		persistent
+		tile
+		max-width="660"
+		overlay-opacity="0.65"
+		transition="scale-transition"
+		open-delay="500"
+		close-delay="1000"
+	>
+		<v-card class="dialog-card-padding" tile>
+			<v-card-title class="dialog-card-title-generic" v-text="titleText"></v-card-title>
 			<v-card-text class="dialog-card-body">
 				<v-form v-model="valid" ref="editDialogFormInput">
 					<v-text-field
@@ -32,7 +42,7 @@
 					large
 					depressed
 					tile
-					color="amber darken-3"
+					:color="buttonColor"
 					@click="okAction()"
 				>
 					SAVE
@@ -43,11 +53,14 @@
 </template>
 <script>
 import * as common from "../../utils/common.js";
+import { DialogConfig } from "../../utils/config.js";
 export default {
 	name: "ModelEditDialog",
 	props: ["model", "formData"],
 	data() {
 		return {
+			titleText: DialogConfig.model.edit.title,
+			buttonColor: DialogConfig.model.edit.buttonColor,
 			isOkButtonDisabled: true,
 			valid: null,
 			type: null,
@@ -83,21 +96,11 @@ export default {
 	},
 	methods: {
 		setData() {
-			this.type = common.isItemProcessDefinition(this.formData) ? "definition" : "version";
-			if (this.type == "definition") {
-				this.form.name = this.formData.process_definition_name;
-			} else {
-				this.form.name = this.formData.process_version_name;
-			}
-			this.form.filename = this.formData.file_name;
+			this.form.name = this.formData.name;
+			this.form.filename = this.formData.filename;
 		},
 		compareData() {
-			let isEqual = null;
-			if (this.type === "edit") {
-				isEqual = this.form.name == this.formData.process_definition_name && this.form.filename == this.formData.file_name;
-			} else {
-				isEqual = this.form.name == this.formData.process_version_name && this.form.filename == this.formData.file_name;
-			}
+			let isEqual = this.form.name == this.formData.name && this.form.filename == this.formData.filename;
 			this.setButtonState(isEqual);
 		},
 		setButtonState(newState) {
@@ -107,13 +110,8 @@ export default {
 			this.$emit("cancel");
 		},
 		okAction() {
-			if (this.type == "definition") {
-				this.formData.process_definition_name = this.form.name;
-			} else {
-				this.formData.process_version_name = this.form.name;
-			}
-			this.form.filename = this.formData.file_name;
-			this.$emit("ok", this.formData, this.type, "edit");
+			this.type = common.isItemProcessDefinition(this.formData) ? "definition" : "version";
+			this.$emit("ok", this.formData.id, this.form, this.type, "edit");
 		},
 	},
 };

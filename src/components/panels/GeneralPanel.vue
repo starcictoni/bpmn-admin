@@ -63,7 +63,7 @@ export default {
 	watch: {
 		form: {
 			handler: function() {
-				this.$emit("setElementIdCheck", this.form);
+				this.$emit("setElementIdCheck", this.defaultForm, this.form);
 				this.compareData();
 			},
 			deep: true,

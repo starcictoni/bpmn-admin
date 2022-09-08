@@ -92,6 +92,9 @@ export default {
 .nav-border {
 	border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
+.dialog-card-padding {
+	padding: 1.5% !important;
+}
 // .v-expansion-panel:not(:first-child)::after {
 //     border-top: none !important;
 // }

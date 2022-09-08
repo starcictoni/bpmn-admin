@@ -29,7 +29,7 @@
 								</v-icon>
 							</v-btn>
 						</template>
-						<span>Edit task</span>
+						<span>Edit Send Task</span>
 					</v-tooltip>
 				</div>
 			</div>
@@ -42,9 +42,6 @@
 				:context="context"
 				:connector="connector"
 				:inputOutput="inputOutput"
-				:prefillServiceName="apiServiceName"
-				:prefillMethod="apiServiceMethod"
-				:prefillRoute="apiServiceRoute"
 			></properties-send-task>
 		</div>
 	</v-row>
@@ -99,6 +96,7 @@ export default {
 			this.isEditDialogShown = false;
 		},
 		applyChanges(connector, inputOutput) {
+			debugger;
 			let modeling = this.context.modeler.get("modeling");
 			let element = this.context.bpmnElement;
 			BpmnXml.updateConnector(modeling, element, connector);

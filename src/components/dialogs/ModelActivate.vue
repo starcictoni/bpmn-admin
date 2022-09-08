@@ -1,14 +1,24 @@
 <template>
-	<v-dialog content-class="dialog-border" v-model="model" persistent tile max-width="900">
+	<v-dialog
+		content-class="dialog-border"
+		v-model="model"
+		persistent
+		tile
+		max-width="900"
+		overlay-opacity="0.65"
+		transition="scale-transition"
+		open-delay="500"
+		close-delay="1000"
+	>
 		<v-card class="dialog-card-padding" tile>
-			<v-card-title class="dialog-card-title-generic" v-text="config.active.title"></v-card-title>
+			<v-card-title class="dialog-card-title-generic" v-text="config.title"></v-card-title>
 			<v-card-text>
 				<v-data-table
 					ref="activeDataTable"
 					v-model="selected"
 					:single-select="true"
 					:show-select="true"
-					item-key="process_version_id"
+					item-key="id"
 					outlined
 					loading-text="Loading..."
 					:loading="isActivateDataTableLoading"
@@ -17,7 +27,7 @@
 					:items-per-page="5"
 					:footer-props="footerProps"
 					:header-props="headerProps"
-					sort-by="process_version_number"
+					sort-by="number"
 				>
 					<!-- Header tooltip -->
 					<template v-for="(h, idx) in activateTableHeaders" v-slot:[`header.${h.value}`]="{}">
@@ -40,7 +50,7 @@
 					depressed
 					tile
 					:disabled="selected.length == 0"
-					color="amber darken-3"
+					:color="config.buttonColor"
 					@click="okAction()"
 				>
 					ACTIVATE
@@ -64,14 +74,14 @@ export default {
 	},
 	data() {
 		return {
-			config: DialogConfig.model,
+			config: DialogConfig.model.active,
 			isActivateDataTableLoading: true,
 			activateTableHeaders: HeaderConfig.activateTableHeaders,
 			footerProps: FooterConfig.footerProps,
 			headerProps: HeaderConfig.headerProps,
 			activateTableData: [],
 			isActivateBtnDisabled: true,
-			selected: [], //state of selected rows
+			selected: [],
 			type: "active",
 			//Snackbar
 			showSnackbar: false,
@@ -86,8 +96,8 @@ export default {
 		async setData() {
 			this.isActivateDataTableLoading = true;
 			if (common.isItemProcessDefinition(this.data)) {
-				let response = await ProcessVersion.getProcessVersions(this.data.process_definition_id);
-				this.handleSnackbar(response.show, response.message, response.color); //maybe not ok, move to parent or smth
+				let response = await ProcessVersion.getProcessVersions(this.data.id);
+				this.handleSnackbar(response.show, response.message, response.color);
 				this.activateTableData = common.reMapDataTableValues(response.data);
 			} else {
 				this.activateTableData.splice(0, 0, this.data);
@@ -98,7 +108,7 @@ export default {
 			this.$emit("cancel");
 		},
 		okAction() {
-			this.$emit("ok", this.selected[0], this.type);
+			this.$emit("ok", this.selected[0], "active");
 		},
 		handleSnackbar(show, text, color) {
 			this.showSnackbar = show;

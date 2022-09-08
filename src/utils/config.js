@@ -18,8 +18,8 @@ let HeaderConfig = {
       { text: "Actions", value: "actions", explanation: "Edit process version actions", sortable: false, align: "left" },
     ],
     activateTableHeaders: [
-      { text: "Version Nr.", value: "process_version_number", explanation: "Deployed version number", divider: true, align: "left" },
-      { text: "Process Version Name", value: "process_version_name", explanation: "Version name", divider: true, align: "left" },
+      { text: "Version Nr.", value: "number", explanation: "Deployed version number", divider: true, align: "left" },
+      { text: "Process Version Name", value: "name", explanation: "Version name", divider: true, align: "left" },
       { text: "Created", value: "created", explanation: "Created timestamp", divider: true, align: "left" },
       {
           text: "Last Modified",
@@ -31,8 +31,8 @@ let HeaderConfig = {
       { text: "Active", value: "is_active", explanation: "Is the version deployed?", divider: true, align: "left" },
     ],
     mainTableHeaders: [
-      { text: "Process Name", value: "process_definition_name", explanation: "Process definition name", divider: true, align: "left" },
-      { text: "Filename", value: "file_name", explanation: "Filename", divider: true, align: "left" },
+      { text: "Process Name", value: "name", explanation: "Process definition name", divider: true, align: "left" },
+      { text: "Filename", value: "filename", explanation: "Filename", divider: true, align: "left" },
       { text: "Active", value: "is_active", explanation: "Is the process deployed?", sortable: false, divider: true, align: "left" },
       {
           text: "Active Version",
@@ -54,9 +54,9 @@ let HeaderConfig = {
       { text: "Actions", value: "actions", explanation: "Edit process definition actions", sortable: false, align: "left" },
     ],
     expandTableHeaders: [
-      { text: "Process Version Name", value: "process_version_name", explanation: "Version name", divider: true, align: "left" },
-      { text: "Filename", value: "file_name", explanation: "Filename", divider: true, align: "left" },  
-      { text: "Version Nr.", value: "process_version_number", explanation: "Deployed version number", divider: true, align: "left"},
+      { text: "Process Version Name", value: "name", explanation: "Version name", divider: true, align: "left" },
+      { text: "Filename", value: "filename", explanation: "Filename", divider: true, align: "left" },  
+      { text: "Version Nr.", value: "number", explanation: "Deployed version number", divider: true, align: "left"},
       { text: "Active", value: "is_active", explanation: "Is the version deployed?", divider: true, align: "left" },
       { text: "Created", value: "created", explanation: "Created timestamp", divider: true, align: "left" },
       {
@@ -69,7 +69,7 @@ let HeaderConfig = {
       { text: "Actions", value: "actions", explanation: "Edit process version actions", sortable: false, divider: true, align: "left" },
     ],
     serviceConfigurationTableHeaders: [
-      { text: "Type", value: "$type", explanation: "Input or Output type parameter", divider: true, align: "left" },
+      { text: "Type", value: "type", explanation: "Input or Output type parameter", divider: true, align: "left" },
       { text: "Name", value: "name", explanation: "Variable name", divider: true, align: "left" },
       { text: "Value", value: "value", explanation: "Body needs to be enclosed in ${<var>}", divider: true, align: "left"},
       { text: "Actions", value: "actions", explanation: "Edit or delete the parameter", sortable: false, align: "left" }
@@ -92,7 +92,41 @@ let HeaderConfig = {
       { text: "Actions", value: "actions", explanation: "Edit or delete the parameter", sortable: false, align: "left" }
     ]
 }
-
+let FooterConfig = {
+  footerProps: {
+      showFirstLastPage: true,
+      firstIcon: "mdi-chevron-left",
+      lastIcon: "mdi-chevron-right",
+      prevIcon: "mdi-minus",
+      nextIcon: "mdi-plus",
+      "items-per-page-text": "Items per page",
+  },
+  footerReduced: {
+    firstIcon: "mdi-chevron-left",
+    lastIcon: "mdi-chevron-right",
+    prevIcon: "mdi-minus",
+    nextIcon: "mdi-plus",
+    "items-per-page-text": "Per page",
+  }
+}
+let TitleConfig = {
+  processDefinitions: "PROCESS DEFINITIONS",
+  processVersions: "PROCESS VERSIONS",
+  importerPd: "PROCESS DEFINITION IMPORT",
+  information: "INFORMATION",
+  modelPreview: "MODEL PREVIEW",
+  newVersion: "NEW VERSION",
+  services: "SERVICES OVERVIEW",
+  viewer: "PROCESS VIEWER",
+}
+let TextConfig = {
+  explanations: {
+    viewer: "The existing process definition is read-only. You can create or import a new one, but you cannot edit the existing one",
+    goBack: "Go Back to Processes",
+    goToPModeler: "Go To Process Definition Modeler",
+    addNewProcess: "Add New Process Version",
+  },
+}
 let DialogConfig = {
   service: {
     active: {
@@ -171,8 +205,8 @@ let DialogConfig = {
 			buttonColor: "amber darken-1",
     },
     edit: {
-			title: "EDIT ITEM",
-			buttonColor: "amber darken-1",
+			title: "EDIT INFORMATION",
+			buttonColor: "amber darken-3",
     },
     addUserField: {
       formFieldText: "FORM FIELD",
@@ -185,31 +219,6 @@ let DialogConfig = {
     }
   }  
 }
-
-let TextConfig = {
-  explanations: {
-    viewer: "The existing process definition is read-only. You can create or import a new one, but you cannot edit the existing one",
-    goBack: "Return",
-  },
-}
-let FooterConfig = {
-  footerProps: {
-      showFirstLastPage: true,
-      firstIcon: "mdi-chevron-left",
-      lastIcon: "mdi-chevron-right",
-      prevIcon: "mdi-minus",
-      nextIcon: "mdi-plus",
-      "items-per-page-text": "Items per page",
-  },
-  footerReduced: {
-    firstIcon: "mdi-chevron-left",
-    lastIcon: "mdi-chevron-right",
-    prevIcon: "mdi-minus",
-    nextIcon: "mdi-plus",
-    "items-per-page-text": "Per page",
-  }
-}
-
 let PanelsConfig = {
     processInformation: {
       label: "Process info",
@@ -239,7 +248,7 @@ let PanelsConfig = {
 }
 
 let newFile = {
-  xml_definition: `<?xml version="1.0" encoding="UTF-8"?>
+  xml: `<?xml version="1.0" encoding="UTF-8"?>
   <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_0ij2edp" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.0.0">
     <bpmn:collaboration id="Collaboration_18kgnih">
       <bpmn:participant id="pool_id" processRef="new-process" />
@@ -261,4 +270,4 @@ let newFile = {
   `
 }
 
-export { HeaderConfig, FooterConfig, newFile, DialogConfig, TextConfig, PanelsConfig }
+export { HeaderConfig, FooterConfig, newFile, DialogConfig, TextConfig, PanelsConfig, TitleConfig }
