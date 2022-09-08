@@ -1,33 +1,34 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Home from '../views/Home.vue';
-import SearchInstances from '../views/SearchInstances.vue';
-import ProcessInstance from '../views/ProcessInstance.vue';
-import Models from '../views/Models.vue';
+import Editor from '../views/Editor.vue';
+import Viewer from '../views/Viewer.vue'
+import Services from '../views/Services.vue'
+import Processes from '../views/Processes.vue';
 
 Vue.use(VueRouter);
 
 const routes = [
     {
-        path: '/',
-        name: 'home',
-        component: Home,
+        path: '/processes',
+        name: 'processes',
+        component: Processes,
     },
     {
-        path: '/models',
-        name: 'models',
-        component: Models,
-    },
-    {
-        path: '/instances/:id',
-        name: 'instance',
-        component: ProcessInstance,
+        path: '/editor/:type/:id',
+        name: 'editor',
+        component: Editor,
         props: true,
     },
     {
-        path: '/instances',
-        name: 'instances',
-        component: SearchInstances,
+        path: '/viewer/:type/:id',
+        name: 'viewer',
+        component: Viewer,
+        props: true
+    },
+    {
+        path: '/services',
+        name: 'services',
+        component: Services
     },
 ];
 
