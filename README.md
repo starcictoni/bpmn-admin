@@ -1,24 +1,8 @@
-# bpmn-admin
+## BPMN ADMIN (Client)
 
-## Project setup
-```
-npm install
-```
+### Master thesis project
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+#### Implementation of the web application for the management of business process models
 
-### Compiles and minifies for production
-```
-npm run build
-```
+#### Toni Starčić
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
