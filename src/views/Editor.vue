@@ -407,7 +407,7 @@ export default {
 			await this.getCurrentDiagram(); //this.diagramXML
 			if (this.processId == "-1" && this.processType == "version") {
 				let data = {
-					id: this.process.id,
+					id: this.process.definition,
 					name: this.processName,
 					filename: this.processFilename,
 					is_active: false,
@@ -426,12 +426,14 @@ export default {
 				this.handleSnackbar(response.show, response.message, response.color);
 			} else if (this.processId != "-1" && this.processType == "version") {
 				let data = {
-					id: this.process.id,
+					id: this.process.definition,
 					name: this.processName,
 					filename: this.processFilename,
 					is_active: false,
 					xml: this.diagramXML,
 				};
+				console.log(this);
+				console.log(data);
 				let response = await ProcessVersion.addProcessVersion(data);
 				this.handleSnackbar(response.show, response.message, response.color);
 			}

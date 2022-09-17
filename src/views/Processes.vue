@@ -369,6 +369,7 @@ export default {
 			} else {
 				let response = await ProcessVersion.deleteProcessVersion(this.selectedProcess.id);
 				this.handleSnackbar(response.show, response.message, response.color);
+				console.log(response);
 				let process_definition = response.data.process_definition;
 				let process_version = response.data.process_version;
 				if (process_definition == null) {
@@ -390,8 +391,9 @@ export default {
 				this.mainTableData = common.findAndReplace(this.mainTableData, response.data);
 			} else {
 				let response = await ProcessVersion.updateProcessVersionInformation(id, data.name, data.filename);
+				console.log(response);
 				this.handleSnackbar(response.show, response.message, response.color);
-				if (response.process_definition != null) {
+				if (response.data.process_definition != null) {
 					this.mainTableData = common.findAndReplace(this.mainTableData, response.data.process_definition);
 				}
 				this.expandTableData = common.findAndReplace(this.expandTableData, response.data.process_version);
